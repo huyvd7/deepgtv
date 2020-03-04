@@ -4,8 +4,7 @@ import numpy as np
 import os
 import cv2
 import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
-from torchvision.utils import save_image
+from torch.utils.data import Dataset
 
 cuda = True if torch.cuda.is_available() else False
 if cuda:
@@ -117,35 +116,29 @@ class cnny(nn.Module):
         return out
 
 
-class cnnu(nn.Module):
+class cnnp(nn.Module):
     """
-    CNNU of GLR
+    CNN Y of GLR
     """
 
-    def __init__(self):
-        super(cnnu, self).__init__()
+    def __init__(self, wt=36):
+        super(cnnp, self).__init__()
+        self.wt = wt
         self.layer = nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=3, stride=2, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
-            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
-            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
-        )
-
-        self.fc = nn.Sequential(
-            nn.Linear(3 * 3 * 32, 1 * 1 * 32), nn.Linear(1 * 1 * 32, 1)
+            torch.nn.Linear(self.wt ** 2, 100),
+            torch.nn.ReLU(),
+            torch.nn.Linear(100, 100),
+            torch.nn.ReLU(),
+            torch.nn.Linear(100, 100),
+            torch.nn.ReLU(),
+            torch.nn.Linear(100, 100),
+            torch.nn.ReLU(),
+            torch.nn.Linear(100, 1),
+            torch.nn.ReLU(),
         )
 
     def forward(self, x):
         out = self.layer(x)
-        out = out.view(out.shape[0], -1)
-        out = self.fc(out)
         return out
 
 
@@ -300,7 +293,7 @@ def laplacian_construction(width, F, ntype="8"):
     with torch.no_grad():
         pixel_indices = [i for i in range(width * width)]
         pixel_indices = np.reshape(pixel_indices, (width, width))
-        A = connected_adjacency(pixel_indices, ntype)
+        A = connected_adjacency(pixel_indices, connect="8")
         A_pair = np.asarray(np.where(A.toarray() == 1)).T
 
         def lambda_func(x):
@@ -308,15 +301,20 @@ def laplacian_construction(width, F, ntype="8"):
 
         W = list(map(lambda_func, A_pair))
         A = torch.zeros(F.shape[0], width ** 2, width ** 2).type(dtype)
+        #         R = X.repeat(1, X.shape[2], 1).type(dtype)
+        #         R = abs(R - R.permute(0, 2, 1) )
+
         for idx, p in enumerate(A_pair):
+            # CAN SPEED UP THIS
             i = p[0]
             j = p[1]
             A[:, i, j] = W[idx]
-        D = torch.diag_embed(torch.sum(A, axis=1), offset=0, dim1=-2, dim2=-1).type(
-            dtype
-        )
-        L = D - A
-    return L.type(dtype)
+    #         print(R.shape, A.shape)
+    #         GTV = (R*A).sum()
+    return A
+
+
+#     return R.type(dtype)
 
 
 def weights_init_normal(m):
@@ -328,189 +326,68 @@ def weights_init_normal(m):
         torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
 
 
-class GLR(nn.Module):
+class GTV(nn.Module):
     """
     GLR network
     """
 
     def __init__(self, width=36, cuda=False):
-        super(GLR, self).__init__()
+        super(GTV, self).__init__()
         self.cnnf = cnnf()
         self.cnny = cnny()
-        self.cnnu = cnnu()
+        self.cnnp = cnnp()
         self.wt = width
-        self.identity_matrix = torch.eye(self.wt ** 2, self.wt ** 2).type(dtype)
-        self.umax = (250 - 1) / (2 * 8)  # 15.5625
+
         if cuda:
             self.cnnf.cuda()
-            self.cnny.cuda()
-            self.cnnu.cuda()
-            self.identity_matrix.cuda()
+
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.cnnf.apply(weights_init_normal)
-        self.cnny.apply(weights_init_normal)
-        self.cnnu.apply(weights_init_normal)
 
     def forward(self, xf):
-        E = self.cnnf.forward(xf).squeeze(0)
-        Y = self.cnny.forward(xf).squeeze(0)
-        u = self.cnnu.forward(xf)
-        if u.max() > 15.5625:
-            u[u > 15.5625] = 15.5625
         img_dim = self.wt
 
-        L = laplacian_construction(
+        E = self.cnnf.forward(xf).squeeze(0)
+        Y = self.cnny.forward(xf).squeeze(0)
+        _lambda = self.cnnp.forward(xf.view(xf.shape[0], xf.shape[1], img_dim ** 2))
+
+        A = laplacian_construction(
             width=img_dim, F=E.view(E.shape[0], E.shape[1], img_dim ** 2)
         )
+        x = Y.view(Y.shape[0], Y.shape[1], img_dim ** 2)
+        W = A.view(A.shape[0], A.shape[1], img_dim ** 2)
 
-        out = qpsolve(
-            L=L, u=u, y=Y.view(Y.shape[0], img_dim ** 2, 3), Im=self.identity_matrix
-        )
+        out = proximal_gradient_descent(x=x, y=x, w=W, eta=_lambda)
+
         return out.view(xf.shape[0], 3, img_dim, img_dim)
 
     def predict(self, xf):
-        E = self.cnnf.forward(xf).squeeze(0)
-        Y = self.cnny.forward(xf).squeeze(0)
-        u = self.cnnu.forward(xf)
-        u[u > 15.5625] = 15.5625
-        img_dim = self.wt
-        identity_matrix = torch.eye(img_dim ** 2, img_dim ** 2).type(self.dtype)
-        if xf.shape[0] == 1:
-            E = E.unsqueeze(0)
-            Y = Y.unsqueeze(0)
-        E = E.view(E.shape[0], E.shape[1], img_dim ** 2)
-        Y = Y.view(Y.shape[0], img_dim ** 2, 3)
-
-        L = laplacian_construction(width=img_dim, F=E)
-
-        out = qpsolve(L=L, u=u, y=Y, Im=identity_matrix)
-        return out.view(xf.shape[0], 3, img_dim, img_dim)
+        pass
 
 
-class DeepGLR(nn.Module):
-    """
-    Stack 4 GLRs
-    """
+def proximal_gradient_descent(x, y, w, eta=1):
 
-    def __init__(self, width=36, cuda=False):
-        super(DeepGLR, self).__init__()
-        self.glr1 = GLR(cuda=cuda)
-        self.glr2 = GLR(cuda=cuda)
-        self.glr3 = GLR(cuda=cuda)
-        self.glr4 = GLR(cuda=cuda)
-        self.cuda = cuda
+    grad = eta * (2 * x - 2 * y)
+    w = w.sum(axis=2).unsqueeze(1)
+    w = w.repeat(1, 3, 1)
+    x = x - grad
+    xhat = prox_gtv(w, x, eta)
 
-        if self.cuda:
-            self.glr1.cuda()
-            self.glr2.cuda()
-            self.glr3.cuda()
-            self.glr4.cuda()
-
-    def load(self, PATH1, PATH2, PATH3, PATH4):
-        if self.cuda:
-            device = torch.device("cuda")
-        else:
-            device = torch.device("cpu")
-        self.glr1.load_state_dict(torch.load(PATH1, map_location=device))
-        self.glr2.load_state_dict(torch.load(PATH2, map_location=device))
-        self.glr3.load_state_dict(torch.load(PATH3, map_location=device))
-        self.glr4.load_state_dict(torch.load(PATH4, map_location=device))
-
-    def predict(self, sample):
-        if self.cuda:
-            sample.cuda()
-        P = self.glr1.predict(sample)
-        P = self.glr2.predict(P)
-        P = self.glr3.predict(P)
-        P = self.glr4.predict(P)
-        return P
-
-    def forward(self, sample):
-        P = self.glr1.forward(sample)
-        P = self.glr2.forward(P)
-        P = self.glr3.forward(P)
-        P = self.glr4.forward(P)
-        return P
-
-
-def qpsolve(L, u, y, Im):
-    """
-    Solve equation (2) using (6)
-    """
-    xhat = torch.inverse(Im + u[:, None] * L)
-    xhat = torch.bmm(xhat, y)
     return xhat
 
 
-def patch_splitting(dataset, output_dst, patch_size=36):
-    """Split each image in the dataset to patch size with size patch_size x patch_size"""
-    import shutil
+def prox_gtv(w, v, eta=1):
+    #     with torch.no_grad():
 
-    output_dst_temp = os.path.join(output_dst, "patches")
-    output_dst_noisy = os.path.join(output_dst_temp, "noisy")
-    output_dst_ref = os.path.join(output_dst_temp, "ref")
-    try:
-        if not os.path.exists(output_dst_temp):
-            os.makedirs(output_dst_temp)
-        else:
-            shutil.rmtree(output_dst_temp)  # Removes all the subdirectories!
-            os.makedirs(output_dst_temp)
-
-        if not os.path.exists(output_dst_noisy):
-            os.makedirs(output_dst_noisy)
-        else:
-            shutil.rmtree(output_dst_noisy)  # Removes all the subdirectories!
-            os.makedirs(output_dst_noisy)
-
-        if not os.path.exists(output_dst_ref):
-            os.makedirs(output_dst_ref)
-        else:
-            shutil.rmtree(output_dst_ref)  # Removes all the subdirectories!
-            os.makedirs(output_dst_ref)
-
-    except Exception:
-        print(
-            "Cannot create temporary directories for saving image patches at ",
-            output_dst,
-        )
-
-    dataloader = DataLoader(dataset, batch_size=1)
-    total = 0
-    for i_batch, s in enumerate(dataloader):
-        nnn = dataset.nimg_name[i_batch]
-        rn = dataset.rimg_name[i_batch]
-        T1 = (
-            s["nimg"]
-            .unfold(2, patch_size, patch_size)
-            .unfold(3, patch_size, patch_size)
-            .reshape(1, 3, -1, patch_size, patch_size)
-            .squeeze()
-        )
-        T2 = (
-            s["rimg"]
-            .unfold(2, patch_size, patch_size)
-            .unfold(3, patch_size, patch_size)
-            .reshape(1, 3, -1, patch_size, patch_size)
-            .squeeze()
-        )
-        for i in range(T1.shape[1]):
-            save_image(
-                T1[:, i, :, :], os.path.join(output_dst_noisy, "{0}_{1}".format(i, nnn))
-            )
-            total += 1
-        for i in range(T2.shape[1]):
-            save_image(
-                T2[:, i, :, :], os.path.join(output_dst_ref, "{0}_{1}".format(i, rn))
-            )
-    print("Total image patches: ", total)
-
-
-def cleaning(output_dst):
-    """Clean the directory after running"""
-    import shutil
-
-    output_dst_temp = os.path.join(output_dst, "patches")
-    try:
-        shutil.rmtree(output_dst_temp)  # Removes all the subdirectories!
-    except Exception:
-        print("Cannot clean the temporary image patches")
+    #     print(masks.shape)
+    #     v[ ~masks] = 0
+    #     with torch.no_grad():
+    #         V = v[masks] - torch.mul(torch.mul(eta,  w[masks]) ,torch.sign(v[masks]))
+    masks = (w > 0).type(dtype)
+    v = v - masks * eta * w * torch.sign(v)
+    masks = (w <= 0).type(dtype)
+    v = v - masks * v
+    #     a = torch.mul(eta,  w[masks])
+    #     print(w[masks].shape, eta.shape, v.shape, a.shape)
+    #     v[masks] = V
+    return v
