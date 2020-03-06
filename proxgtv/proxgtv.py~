@@ -89,37 +89,6 @@ class cnnf(nn.Module):
         del outl1, outl2, outl3
         out = self.layer5(outl4)
         return out
-    
-class cnnu(nn.Module):
-    """
-    CNNU of GLR
-    """
-
-    def __init__(self):
-        super(cnnu, self).__init__()
-        self.layer = nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=3, stride=2, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
-            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
-            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
-        )
-
-        self.fc = nn.Sequential(
-            nn.Linear(3 * 3 * 32, 1 * 1 * 32), nn.Linear(1 * 1 * 32, 1)
-        )
-
-    def forward(self, x):
-        out = self.layer(x)
-        out = out.view(out.shape[0], -1)
-        out = self.fc(out)
-        return out
 
 
 class cnny(nn.Module):
@@ -146,6 +115,7 @@ class cnny(nn.Module):
         del identity
         return out
 
+
 class cnnp(nn.Module):
     """
     CNN Y of GLR
@@ -154,26 +124,24 @@ class cnnp(nn.Module):
     def __init__(self, wt=36):
         super(cnnp, self).__init__()
         self.wt = wt
-        self.l1 = nn.Sequential(
-            torch.nn.Linear(self.wt**2, 400),
+        self.layer = nn.Sequential(
+            torch.nn.Linear(self.wt ** 2, 100),
             torch.nn.ReLU(),
-            torch.nn.Linear(400, 1),
-            torch.nn.ReLU())
-#         self.l2 = nn.Sequential(
-#             torch.nn.Linear(self.wt**2, 100),
-#             torch.nn.ReLU(),
-#             torch.nn.Linear(100, 1),
-#             torch.nn.ReLU())
-#         self.l3 = nn.Sequential(
-#             torch.nn.Linear(self.wt**2, 100),
-#             torch.nn.ReLU(),
-#             torch.nn.Linear(100, 1),
-#             torch.nn.ReLU())
+            torch.nn.Linear(100, 100),
+            torch.nn.ReLU(),
+            torch.nn.Linear(100, 100),
+            torch.nn.ReLU(),
+            torch.nn.Linear(100, 100),
+            torch.nn.ReLU(),
+            torch.nn.Linear(100, 1),
+            torch.nn.ReLU(),
+        )
 
     def forward(self, x):
-        _lambda = self.l1(x)
-        return _lambda
-    
+        out = self.layer(x)
+        return out
+
+
 class RENOIR_Dataset(Dataset):
     """
     Dataset loader
@@ -325,7 +293,7 @@ def laplacian_construction(width, F, ntype="8"):
     with torch.no_grad():
         pixel_indices = [i for i in range(width * width)]
         pixel_indices = np.reshape(pixel_indices, (width, width))
-        A = connected_adjacency(pixel_indices, connect='8')
+        A = connected_adjacency(pixel_indices, connect="8")
         A_pair = np.asarray(np.where(A.toarray() == 1)).T
 
         def lambda_func(x):
@@ -333,18 +301,21 @@ def laplacian_construction(width, F, ntype="8"):
 
         W = list(map(lambda_func, A_pair))
         A = torch.zeros(F.shape[0], width ** 2, width ** 2).type(dtype)
-#         R = X.repeat(1, X.shape[2], 1).type(dtype)
-#         R = abs(R - R.permute(0, 2, 1) )
+        #         R = X.repeat(1, X.shape[2], 1).type(dtype)
+        #         R = abs(R - R.permute(0, 2, 1) )
 
         for idx, p in enumerate(A_pair):
             # CAN SPEED UP THIS
             i = p[0]
             j = p[1]
             A[:, i, j] = W[idx]
-#         print(R.shape, A.shape)
-#         GTV = (R*A).sum()
+    #         print(R.shape, A.shape)
+    #         GTV = (R*A).sum()
     return A
+
+
 #     return R.type(dtype)
+
 
 def weights_init_normal(m):
     """
@@ -364,172 +335,59 @@ class GTV(nn.Module):
         super(GTV, self).__init__()
         self.cnnf = cnnf()
         self.cnny = cnny()
-        self.cnnp1 = cnnp()
-        self.cnnp2 = cnnp()
-        self.cnnp3 = cnnp()
-        self.cnnp4 = cnnp()
-        self.cnnp5 = cnnp()
-        
+        self.cnnp = cnnp()
         self.wt = width
-        self.lambda_list = list()
-        
+
         if cuda:
             self.cnnf.cuda()
-            
+
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.cnnf.apply(weights_init_normal)
-        self.cnnp1.apply(weights_init_normal)
-        self.cnnp2.apply(weights_init_normal)
-        self.cnnp3.apply(weights_init_normal)
-        self.cnnp4.apply(weights_init_normal)
-        self.cnnp5.apply(weights_init_normal)
-        
-        self._lambda = 0
-        
+
     def forward(self, xf):
-        
         img_dim = self.wt
-        lambda_list = []
-        upper_lambda = 100
-        lower_lambda = .5
+
         E = self.cnnf.forward(xf).squeeze(0)
         Y = self.cnny.forward(xf).squeeze(0)
+        _lambda = self.cnnp.forward(xf.view(xf.shape[0], xf.shape[1], img_dim ** 2))
 
         A = laplacian_construction(
             width=img_dim, F=E.view(E.shape[0], E.shape[1], img_dim ** 2)
         )
-        
-        x = Y.view(Y.shape[0],Y.shape[1], img_dim**2)
-#         x = xf.view(xf.shape[0], xf.shape[1], img_dim**2)
-        W = A.view(A.shape[0], A.shape[1], img_dim**2)
-        W = W.sum(axis=2).unsqueeze(1)
-        W = W.repeat(1, 3, 1)
-        
-        # ACCELERATED PROXIMAL GRADIENT
-        t = torch.ones(xf.shape[0], xf.shape[1], 1)
-        self._lambda = self.cnnp1.forward(xf.view(xf.shape[0], xf.shape[1], img_dim**2))
-        
-        v = x
-        masks = (self._lambda < lower_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - lower_lambda)*masks
-        masks = (self._lambda > upper_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - upper_lambda)*masks
-        lambda_list.append(self._lambda)
-        
-        out = proximal_gradient_descent(x=v, y=x, w=W, eta=self._lambda)
-        
-        old_t = t.clone()
-        t = (1 + torch.sqrt(1 + 4*(t**2)))/2
-        v = v +( (old_t-1)/t )* (out-v)
-        
-        self._lambda = self.cnnp2.forward(out)
-        masks = (self._lambda < lower_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - lower_lambda)*masks
-        masks = (self._lambda > upper_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - upper_lambda)*masks
-        lambda_list.append(self._lambda)
-        out = proximal_gradient_descent(x=v, y=x, w=W, eta=self._lambda)
-        
-        old_t = t.clone()
-        t = (1 + torch.sqrt(1 + 4*(t**2)))/2
-        v = v +( (old_t-1)/t )* (out-v)
-        
-        self._lambda = self.cnnp3.forward(out)
-        masks = (self._lambda < lower_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - lower_lambda)*masks
-        masks = (self._lambda > upper_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - upper_lambda)*masks
-        lambda_list.append(self._lambda)
-        out = proximal_gradient_descent(x=v, y=x, w=W, eta=self._lambda)
-        
-        old_t = t.clone()
-        t = (1 + torch.sqrt(1 + 4*(t**2)))/2
-        v = v +( (old_t-1)/t )* (out-v)
-        
-        self._lambda = self.cnnp4.forward(out)
-        masks = (self._lambda < lower_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - lower_lambda)*masks
-        masks = (self._lambda > upper_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - upper_lambda)*masks
-        lambda_list.append(self._lambda)
-        out = proximal_gradient_descent(x=v, y=x, w=W, eta=self._lambda)
-        
-        self._lambda = self.cnnp5.forward(out)
-        masks = (self._lambda < lower_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - lower_lambda)*masks
-        masks = (self._lambda > upper_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - upper_lambda)*masks
-        lambda_list.append(self._lambda)
-        out = proximal_gradient_descent(x=v, y=x, w=W, eta=self._lambda)
-        
-        self.lambda_list = lambda_list
+        x = Y.view(Y.shape[0], Y.shape[1], img_dim ** 2)
+        W = A.view(A.shape[0], A.shape[1], img_dim ** 2)
+
+        out = proximal_gradient_descent(x=x, y=x, w=W, eta=_lambda)
+
         return out.view(xf.shape[0], 3, img_dim, img_dim)
 
     def predict(self, xf):
         pass
-    
-class DeepGTV(nn.Module):
-    """
-    Stack 4 GLRs
-    """
 
-    def __init__(self, width=36, cuda=False):
-        super(DeepGTV, self).__init__()
-        self.glr1 = GTV(cuda=cuda)
-        self.glr2 = GTV(cuda=cuda)
-        self.glr3 = GTV(cuda=cuda)
-        self.glr4 = GTV(cuda=cuda)
-        self.cuda = cuda
 
-        if self.cuda:
-            self.glr1.cuda()
-            self.glr2.cuda()
-            self.glr3.cuda()
-            self.glr4.cuda()
+def proximal_gradient_descent(x, y, w, eta=1):
 
-    def load(self, PATH1, PATH2, PATH3, PATH4):
-        if self.cuda:
-            device = torch.device("cuda")
-        else:
-            device = torch.device("cpu")
-        self.glr1.load_state_dict(torch.load(PATH1, map_location=device))
-        self.glr2.load_state_dict(torch.load(PATH2, map_location=device))
-        self.glr3.load_state_dict(torch.load(PATH3, map_location=device))
-        self.glr4.load_state_dict(torch.load(PATH4, map_location=device))
-
-    def predict(self, sample):
-        if self.cuda:
-            sample.cuda()
-        P = self.glr1.predict(sample)
-        P = self.glr2.predict(P)
-        P = self.glr3.predict(P)
-        P = self.glr4.predict(P)
-        return P
-
-    def forward(self, sample):
-        P = self.glr1.forward(sample)
-        P = self.glr2.forward(P)
-        P = self.glr3.forward(P)
-        P = self.glr4.forward(P)
-        return P
-    
-def proximal_gradient_descent(x, y, w, eta=1): 
-    grad = eta * (2*x - 2*y)
+    grad = eta * (2 * x - 2 * y)
+    w = w.sum(axis=2).unsqueeze(1)
+    w = w.repeat(1, 3, 1)
     x = x - grad
     xhat = prox_gtv(w, x, eta)
 
     return xhat
 
+
 def prox_gtv(w, v, eta=1):
-    
-    masks = (v.abs() - (eta*w).abs() >0).type(dtype)
-    v = v - masks*eta*w*torch.sign(v)
-    masks = (v.abs() - (eta*w).abs() <=0).type(dtype)
-    v = v - masks*v
-    
-#     elif w<0:
-#         if abs(v) >= abs(eta*w):
-#             return 0
-#         else:
-#             return v - eta * w * np.sign(v)
+    #     with torch.no_grad():
+
+    #     print(masks.shape)
+    #     v[ ~masks] = 0
+    #     with torch.no_grad():
+    #         V = v[masks] - torch.mul(torch.mul(eta,  w[masks]) ,torch.sign(v[masks]))
+    masks = (w > 0).type(dtype)
+    v = v - masks * eta * w * torch.sign(v)
+    masks = (w <= 0).type(dtype)
+    v = v - masks * v
+    #     a = torch.mul(eta,  w[masks])
+    #     print(w[masks].shape, eta.shape, v.shape, a.shape)
+    #     v[masks] = V
     return v
