@@ -112,14 +112,15 @@ class cnnu(nn.Module):
         )
 
         self.fc = nn.Sequential(
-            nn.Linear(3 * 3 * 32, 1 * 1 * 32), nn.Linear(1 * 1 * 32, 1)
+            nn.Linear(3 * 3 * 32, 1 * 1 * 32), nn.Linear(1 * 1 * 32, 1),
+            nn.ReLU()
         )
 
     def forward(self, x):
         out = self.layer(x)
         out = out.view(out.shape[0], -1)
         out = self.fc(out)
-        return out
+        return out + 1e-3
 
 
 class cnny(nn.Module):
@@ -159,16 +160,6 @@ class cnnp(nn.Module):
             torch.nn.ReLU(),
             torch.nn.Linear(400, 1),
             torch.nn.ReLU())
-#         self.l2 = nn.Sequential(
-#             torch.nn.Linear(self.wt**2, 100),
-#             torch.nn.ReLU(),
-#             torch.nn.Linear(100, 1),
-#             torch.nn.ReLU())
-#         self.l3 = nn.Sequential(
-#             torch.nn.Linear(self.wt**2, 100),
-#             torch.nn.ReLU(),
-#             torch.nn.Linear(100, 1),
-#             torch.nn.ReLU())
 
     def forward(self, x):
         _lambda = self.l1(x)
@@ -360,15 +351,18 @@ class GTV(nn.Module):
     GLR network
     """
 
-    def __init__(self, width=36, cuda=False):
+    def __init__(self, width=36, prox_iter=5, u_max = 1, cuda=False):
         super(GTV, self).__init__()
+        self.u = 1
+        self.u_max = u_max
         self.cnnf = cnnf()
         self.cnny = cnny()
-        self.cnnp1 = cnnp()
-        self.cnnp2 = cnnp()
-        self.cnnp3 = cnnp()
-        self.cnnp4 = cnnp()
-        self.cnnp5 = cnnp()
+        self.cnnu = cnnu()
+#         self.cnnp = list()
+        self.cnnp= nn.ModuleList()
+        self.prox_iter = prox_iter
+        for i in range(prox_iter):
+            self.cnnp.append( cnnp())
         
         self.wt = width
         self.lambda_list = list()
@@ -378,11 +372,8 @@ class GTV(nn.Module):
             
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.cnnf.apply(weights_init_normal)
-        self.cnnp1.apply(weights_init_normal)
-        self.cnnp2.apply(weights_init_normal)
-        self.cnnp3.apply(weights_init_normal)
-        self.cnnp4.apply(weights_init_normal)
-        self.cnnp5.apply(weights_init_normal)
+        for i in range(prox_iter):
+            self.cnnp[i].apply(weights_init_normal)
         
         self._lambda = 0
         
@@ -390,11 +381,18 @@ class GTV(nn.Module):
         
         img_dim = self.wt
         lambda_list = []
-        upper_lambda = 100
-        lower_lambda = .5
+        upper_lambda = 1e5
+        lower_lambda = 1e-5
+        u_max = self.u_max
         E = self.cnnf.forward(xf).squeeze(0)
         Y = self.cnny.forward(xf).squeeze(0)
-
+        self.u = self.cnnu.forward(xf)
+        if self.u.max() > u_max:
+            masks = (self.u > u_max).type(dtype)
+            self.u = self.u - (self.u - u_max)*masks
+            
+        u = self.u.unsqueeze(1).repeat(1, 3, 1)
+        
         A = laplacian_construction(
             width=img_dim, F=E.view(E.shape[0], E.shape[1], img_dim ** 2)
         )
@@ -407,60 +405,22 @@ class GTV(nn.Module):
         
         # ACCELERATED PROXIMAL GRADIENT
         t = torch.ones(xf.shape[0], xf.shape[1], 1)
-        self._lambda = self.cnnp1.forward(xf.view(xf.shape[0], xf.shape[1], img_dim**2))
-        
         v = x
-        masks = (self._lambda < lower_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - lower_lambda)*masks
-        masks = (self._lambda > upper_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - upper_lambda)*masks
-        lambda_list.append(self._lambda)
-        
-        out = proximal_gradient_descent(x=v, y=x, w=W, eta=self._lambda)
-        
-        old_t = t.clone()
-        t = (1 + torch.sqrt(1 + 4*(t**2)))/2
-        v = v +( (old_t-1)/t )* (out-v)
-        
-        self._lambda = self.cnnp2.forward(out)
-        masks = (self._lambda < lower_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - lower_lambda)*masks
-        masks = (self._lambda > upper_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - upper_lambda)*masks
-        lambda_list.append(self._lambda)
-        out = proximal_gradient_descent(x=v, y=x, w=W, eta=self._lambda)
-        
-        old_t = t.clone()
-        t = (1 + torch.sqrt(1 + 4*(t**2)))/2
-        v = v +( (old_t-1)/t )* (out-v)
-        
-        self._lambda = self.cnnp3.forward(out)
-        masks = (self._lambda < lower_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - lower_lambda)*masks
-        masks = (self._lambda > upper_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - upper_lambda)*masks
-        lambda_list.append(self._lambda)
-        out = proximal_gradient_descent(x=v, y=x, w=W, eta=self._lambda)
-        
-        old_t = t.clone()
-        t = (1 + torch.sqrt(1 + 4*(t**2)))/2
-        v = v +( (old_t-1)/t )* (out-v)
-        
-        self._lambda = self.cnnp4.forward(out)
-        masks = (self._lambda < lower_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - lower_lambda)*masks
-        masks = (self._lambda > upper_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - upper_lambda)*masks
-        lambda_list.append(self._lambda)
-        out = proximal_gradient_descent(x=v, y=x, w=W, eta=self._lambda)
-        
-        self._lambda = self.cnnp5.forward(out)
-        masks = (self._lambda < lower_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - lower_lambda)*masks
-        masks = (self._lambda > upper_lambda).type(dtype)
-        self._lambda = self._lambda - (self._lambda - upper_lambda)*masks
-        lambda_list.append(self._lambda)
-        out = proximal_gradient_descent(x=v, y=x, w=W, eta=self._lambda)
+        out = xf.view(xf.shape[0], xf.shape[1], img_dim**2)
+        for i in range(self.prox_iter):
+            self._lambda = self.cnnp[i].forward(out)
+            masks = (self._lambda < lower_lambda).type(dtype)
+            self._lambda = self._lambda - (self._lambda - lower_lambda)*masks
+            masks = (self._lambda > upper_lambda).type(dtype)
+            self._lambda = self._lambda - (self._lambda - upper_lambda)*masks
+            lambda_list.append(self._lambda)
+
+            out = proximal_gradient_descent(x=v, y=x, w=W, u=u, eta=self._lambda)
+            
+            if i != (self.prox_iter-1):
+                old_t = t.clone()
+                t = (1 + torch.sqrt(1 + 4*(t**2)))/2
+                v = v +( (old_t-1)/t )* (out-v)
         
         self.lambda_list = lambda_list
         return out.view(xf.shape[0], 3, img_dim, img_dim)
@@ -473,58 +433,62 @@ class DeepGTV(nn.Module):
     Stack 4 GLRs
     """
 
-    def __init__(self, width=36, cuda=False):
+    def __init__(self, gtv_no = 4, starting_point = None, width=36, cuda=False):
         super(DeepGTV, self).__init__()
-        self.glr1 = GTV(cuda=cuda)
-        self.glr2 = GTV(cuda=cuda)
-        self.glr3 = GTV(cuda=cuda)
-        self.glr4 = GTV(cuda=cuda)
+        self.gtv_no = gtv_no
+        self.gtv = nn.ModuleList()
+        if starting_point:
+            for i in range(gtv_no):
+                gtv = GTV(width=36, prox_iter = 3, cuda=cuda)
+                gtv.load_state_dict(starting_point.state_dict())
+                self.gtv.append(gtv)
+        else:
+            for i in range(gtv_no):
+                self.gtv.append(GTV(cuda=cuda))
+                
         self.cuda = cuda
 
         if self.cuda:
-            self.glr1.cuda()
-            self.glr2.cuda()
-            self.glr3.cuda()
-            self.glr4.cuda()
+            for i in range(gtv_no):
+                self.gtv[i].cuda()
 
-    def load(self, PATH1, PATH2, PATH3, PATH4):
+    def load(self, PATH):
         if self.cuda:
             device = torch.device("cuda")
         else:
             device = torch.device("cpu")
-        self.glr1.load_state_dict(torch.load(PATH1, map_location=device))
-        self.glr2.load_state_dict(torch.load(PATH2, map_location=device))
-        self.glr3.load_state_dict(torch.load(PATH3, map_location=device))
-        self.glr4.load_state_dict(torch.load(PATH4, map_location=device))
+        
+        for i in range(self.gtv_no):
+            self.gtv[i].load_state_dict(torch.load(PATH[i], map_location=device))
 
     def predict(self, sample):
         if self.cuda:
             sample.cuda()
-        P = self.glr1.predict(sample)
-        P = self.glr2.predict(P)
-        P = self.glr3.predict(P)
-        P = self.glr4.predict(P)
+        P = sample
+        for i in range(self.gtv_no):
+            P = self.gtv[i].predict(P)
+        
         return P
 
     def forward(self, sample):
-        P = self.glr1.forward(sample)
-        P = self.glr2.forward(P)
-        P = self.glr3.forward(P)
-        P = self.glr4.forward(P)
+        P = sample
+        for i in range(self.gtv_no):
+            P = self.gtv[i].forward(P)
+        
         return P
     
-def proximal_gradient_descent(x, y, w, eta=1): 
+def proximal_gradient_descent(x, y, w, u=1, eta=1): 
     grad = eta * (2*x - 2*y)
     x = x - grad
-    xhat = prox_gtv(w, x, eta)
+    xhat = prox_gtv(w, x, u, eta)
 
     return xhat
 
-def prox_gtv(w, v, eta=1):
+def prox_gtv(w, v, u, eta=1):
     
-    masks = (v.abs() - (eta*w).abs() >0).type(dtype)
-    v = v - masks*eta*w*torch.sign(v)
-    masks = (v.abs() - (eta*w).abs() <=0).type(dtype)
+    masks = (v.abs() - (eta*w*u).abs() >0).type(dtype)
+    v = v - masks*eta*w*u*torch.sign(v)
+    masks = (v.abs() - (eta*w*u).abs() <=0).type(dtype)
     v = v - masks*v
     
 #     elif w<0:
