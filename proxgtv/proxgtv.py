@@ -307,35 +307,14 @@ def dist(fi, fj):
     return torch.sum((fi - fj) ** 2, axis=1).type(dtype)
 
 
-def laplacian_construction(width, F, ntype="8"):
+
+def laplacian_construction(opt, F):
     """
     Construct Laplacian matrix
     """
-    if type(F) != torch.Tensor:
-        F = torch.from_numpy(F)
-    with torch.no_grad():
-        pixel_indices = [i for i in range(width * width)]
-        pixel_indices = np.reshape(pixel_indices, (width, width))
-        A = connected_adjacency(pixel_indices, connect='8')
-        A_pair = np.asarray(np.where(A.toarray() == 1)).T
-
-        def lambda_func(x):
-            return get_w(x, F)
-
-        W = list(map(lambda_func, A_pair))
-        A = torch.zeros(F.shape[0], width ** 2, width ** 2).type(dtype)
-#         R = X.repeat(1, X.shape[2], 1).type(dtype)
-#         R = abs(R - R.permute(0, 2, 1) )
-
-        for idx, p in enumerate(A_pair):
-            # CAN SPEED UP THIS
-            i = p[0]
-            j = p[1]
-            A[:, i, j] = W[idx]
-#         print(R.shape, A.shape)
-#         GTV = (R*A).sum()
-    return A
-#     return R.type(dtype)
+    Fs = F.unsqueeze(-1).repeat(1, 1, 1, F.shape[-1]) 
+    W = w(((Fs - Fs.permute(0, 1, 3, 2))**2).sum(axis=1))
+    return A_pair
 
 def weights_init_normal(m):
     """
