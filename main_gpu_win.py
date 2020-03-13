@@ -503,7 +503,7 @@ else:
 DST = "./"
 DST = ""
 PATH = os.path.join(DST, "GTV.pkl")
-batch_size = 25
+batch_size = 100
 
 dataset = RENOIR_Dataset(
     img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv\\test'),
