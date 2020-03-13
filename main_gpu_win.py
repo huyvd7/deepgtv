@@ -362,7 +362,7 @@ class GTV(nn.Module):
         E = self.cnnf.forward(xf)
         # E.register_hook(printmax)
         self.u = self.cnnu.forward(xf)
-        u_max =15
+        u_max =2.5
         if self.u.max() > u_max:
             masks = (self.u > u_max).type(dtype)
             self.u = self.u - (self.u - u_max)*masks
@@ -501,11 +501,12 @@ else:
     dtype = torch.FloatTensor
     
 DST = "./"
+DST = ""
 PATH = os.path.join(DST, "GTV.pkl")
 batch_size = 25
 
 dataset = RENOIR_Dataset(
-    img_dir=os.path.join('test'),
+    img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv\\test'),
     # transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
     transform=transforms.Compose([standardize(normalize=False), ToTensor(), gaussian_noise_(mean=0, stddev=1)]),
 )
