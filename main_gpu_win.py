@@ -478,6 +478,7 @@ def proximal_gradient_descent(x, grad, W, u=1, eta=1, debug=False):
     v = x - eta* grad    
     v = _norm(v,0,255)
     xhat = prox_gtv(w=W, v=v, u=u, eta=eta, debug=debug)
+    xhat.register_hook(printmean)
     return xhat
 
 def prox_gtv(w, v, u, eta=1, debug=False):
@@ -522,7 +523,7 @@ dataloader = DataLoader(
 width = 36
 opt = OPT(batch_size = batch_size, admm_iter=2, prox_iter=1)
 supporting_matrix(opt)
-lr = 4e-3
+lr = 8e-3
 total_epoch = 1000
 print("Dataset: " , len(dataset))
 gtv = GTV(width=36, prox_iter = 1, u_max=10, u_min=.5, lambda_min=.5, lambda_max=1e9, cuda=cuda, opt=opt)
