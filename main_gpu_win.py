@@ -466,18 +466,23 @@ def admm(opt, x, y, z, w, delta=1, u=1, lagrange=0, T=1, P=1):
         # STEP 2
         for j in range(P):
             grad = (delta*zhat + lagrange - delta*H.matmul(xhat))
-            zhat  = proximal_gradient_descent(x=zhat, grad=grad, W=w, u=u)
+            zhat  = proximal_gradient_descent(x=zhat, grad=grad, w=w, u=u)
         # STEP 3
         lagrange = lagrange + delta*(H.matmul(xhat) - zhat).permute(0, 1, 3, 2).matmul(H.matmul(xhat) - zhat)
 
     return xhat, zhat, lagrange
 
 
-def proximal_gradient_descent(x, grad, W, u=1, eta=1, debug=False): 
+def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False): 
     v = x - eta* grad    
     v = _norm(v,0,255)
-    xhat = prox_gtv(w=W, v=v, u=u, eta=eta, debug=debug)
-    return xhat
+
+    masks1 = ((v.abs() -  (eta*w*u).abs()) > 0).type(dtype)
+    masks2 = ((v.abs() -  (eta*w*u).abs()) <=0).type(dtype)
+    v = v - masks1*eta*w*u*torch.sign(v)
+    v = v - masks2*v
+    masks1.register_hook(printmean)
+    return v
 
 def prox_gtv(w, v, u, eta=1, debug=False):
     masks1 = (( v.abs() -  (eta*w*u).abs() )>0).type(dtype).requires_grad_(True)
@@ -485,8 +490,8 @@ def prox_gtv(w, v, u, eta=1, debug=False):
     v = v - masks1*eta*w*u*torch.sign(v)
     v = v - masks2*v
 
-    #masks1.register_hook(printmean)
-    w.register_hook(printmean)
+    masks1.register_hook(printmean)
+    #w.register_hook(printmean)
     return v
 
 def _norm(x, newmin, newmax):
