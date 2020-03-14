@@ -376,7 +376,8 @@ class GTV(nn.Module):
         # Y = self.cnny.forward(xf).squeeze(0)
 
         x = torch.zeros(xf.shape[0], xf.shape[1], opt.width**2, 1).type(dtype).requires_grad_(True)
-        z = opt.H.matmul(x)
+        z = opt.H.matmul(x).requires_grad_(True)
+
         ###################
         # E = xf
         # Fs = (opt.H.matmul(E.view(E.shape[0], E.shape[1], opt.width**2, 1))**2)
@@ -395,17 +396,17 @@ class GTV(nn.Module):
         eta=.1
         lagrange = opt.lagrange
 
-        y = xf.view(xf.shape[0], xf.shape[1], opt.width**2, 1) 
+        y = xf.view(xf.shape[0], xf.shape[1], opt.width**2, 1).requires_grad_(True)
         I = opt.I
         H = opt.H
         D = torch.inverse(2*opt.I + delta*(opt.H.T.mm(H))).type(dtype)
         for i in range(T):
             # STEP 1
-            xhat = D.matmul(2*y - H.T.matmul(lagrange) + delta*H.T.matmul(z))
+            xhat = D.matmul(2*y - H.T.matmul(lagrange) + delta*H.T.matmul(z)).requires_grad_(True)
             # STEP 2
             for j in range(P):
-                grad = (delta*z - lagrange - delta*H.matmul(xhat))
-                z  = proximal_gradient_descent(x=z, grad=grad, W=w, u=u, eta=eta)
+                grad = (delta*z - lagrange - delta*H.matmul(xhat)).requires_grad_(True)
+                z  = proximal_gradient_descent(x=z, grad=grad, W=w, u=u, eta=eta).requires_grad_(True)
                 if debug:
                     l = ( (y-xhat).permute(0, 1, 3, 2).matmul(y-xhat) + (u * w * z.abs()).sum())
                     hist.append(l[0, 0, :, :])
