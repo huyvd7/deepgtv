@@ -347,6 +347,7 @@ class GTV(nn.Module):
         self.wt = width
         self.width = width
         self.cnnu = cnnu(u_min=u_min)
+        self.u_min= u_min
         self.cnny = cnny()
         
         if cuda:
