@@ -394,12 +394,12 @@ class GTV(nn.Module):
         P=opt.prox_iter
         delta=1
         eta=.1
-        lagrange = opt.lagrange
+        lagrange = opt.lagrange.requires_grad_(True)
 
         y = xf.view(xf.shape[0], xf.shape[1], opt.width**2, 1).requires_grad_(True)
-        I = opt.I
-        H = opt.H
-        D = torch.inverse(2*opt.I + delta*(opt.H.T.mm(H))).type(dtype)
+        I = opt.I.requires_grad_(True)
+        H = opt.H.requires_grad_(True)
+        D = torch.inverse(2*opt.I + delta*(opt.H.T.mm(H))).type(dtype).requires_grad_(True)
         for i in range(T):
             # STEP 1
             xhat = D.matmul(2*y - H.T.matmul(lagrange) + delta*H.T.matmul(z)).requires_grad_(True)
@@ -412,7 +412,7 @@ class GTV(nn.Module):
                     hist.append(l[0, 0, :, :])
             # STEP 3
 
-            lagrange = lagrange + delta*(H.matmul(xhat) - z)
+            lagrange = (lagrange + delta*(H.matmul(xhat) - z)).requires_grad_(True)
 
         if debug:
             hist = [h.flatten() for h in hist]
