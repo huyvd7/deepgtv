@@ -373,7 +373,7 @@ class GTV(nn.Module):
         u = self.u.unsqueeze(1).repeat(1, 3, 1)
         u = self.u.median()
         # u=1
-        # Y = self.cnny.forward(xf).squeeze(0)
+        Y = self.cnny.forward(xf).squeeze(0)
 
         x = torch.zeros(xf.shape[0], xf.shape[1], opt.width**2, 1).type(dtype).requires_grad_(True)
         z = opt.H.matmul(x).requires_grad_(True)
@@ -396,7 +396,7 @@ class GTV(nn.Module):
         eta=.1
         lagrange = opt.lagrange.requires_grad_(True)
 
-        y = xf.view(xf.shape[0], xf.shape[1], opt.width**2, 1).requires_grad_(True)
+        y = Y.view(xf.shape[0], xf.shape[1], opt.width**2, 1).requires_grad_(True)
         I = opt.I.requires_grad_(True)
         H = opt.H.requires_grad_(True)
         D = torch.inverse(2*opt.I + delta*(opt.H.T.mm(H))).type(dtype).requires_grad_(True)
@@ -521,7 +521,7 @@ dataloader = DataLoader(
 width = 36
 opt = OPT(batch_size = batch_size, admm_iter=2, prox_iter=1)
 supporting_matrix(opt)
-lr = 5e-2
+lr = 4e-3
 total_epoch = 100
 print("Dataset: " , len(dataset))
 gtv = GTV(width=36, prox_iter = 1, u_max=10, u_min=.5, lambda_min=.5, lambda_max=1e9, cuda=cuda, opt=opt)
