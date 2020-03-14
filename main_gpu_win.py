@@ -374,7 +374,6 @@ class GTV(nn.Module):
         # u=1
         Y = self.cnny.forward(xf).squeeze(0)
 
-        Y.register_hook(printmean)
         x = torch.zeros(xf.shape[0], xf.shape[1], opt.width**2, 1).type(dtype).requires_grad_(True)
         z = opt.H.matmul(x).requires_grad_(True)
 
@@ -478,7 +477,7 @@ def proximal_gradient_descent(x, grad, W, u=1, eta=1, debug=False):
     v = x - eta* grad    
     v = _norm(v,0,255)
     xhat = prox_gtv(w=W, v=v, u=u, eta=eta, debug=debug)
-    xhat.register_hook(printmean)
+    W.register_hook(printmean)
     return xhat
 
 def prox_gtv(w, v, u, eta=1, debug=False):
