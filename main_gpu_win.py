@@ -519,7 +519,7 @@ dataloader = DataLoader(
 width = 36
 opt = OPT(batch_size = batch_size, admm_iter=5, prox_iter=2)
 supporting_matrix(opt)
-lr = 5e-2
+lr = 1e-2
 total_epoch = 100
 print("Dataset: " , len(dataset))
 gtv = GTV(width=36, prox_iter = 1, u_max=10, u_min=1, lambda_min=.5, lambda_max=1e9, cuda=cuda, opt=opt)
