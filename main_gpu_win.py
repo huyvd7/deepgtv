@@ -477,8 +477,8 @@ def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False):
     v = x - eta* grad    
     v = _norm(v,0,255)
 
-    masks1 = ((v.abs() -  (eta*w*u).abs()) > 0).type(dtype)
-    masks2 = ((v.abs() -  (eta*w*u).abs()) <=0).type(dtype)
+    masks1 = ((v.abs() -  (eta*w*u).abs()) > 0).type(dtype).requires_grad_(True)
+    masks2 = ((v.abs() -  (eta*w*u).abs()) <=0).type(dtype).requires_grad_(True)
     v = v - masks1*eta*w*u*torch.sign(v)
     v = v - masks2*v
     masks1.register_hook(printmean)
