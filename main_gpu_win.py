@@ -127,7 +127,7 @@ class cnnu(nn.Module):
         out = self.layer(x)
         out = out.view(out.shape[0], -1)
         out = self.fc(out)
-        return out + self.u_min
+        return out
  
 
 class cnny(nn.Module):
@@ -358,7 +358,7 @@ class GTV(nn.Module):
         self.cnnf.apply(weights_init_normal)
         self.cnnu.apply(weights_init_normal)
         
-    def forward(self, xf, debug=False):
+    def forward(self, xf, debug=False): #gtvforward
         E = self.cnnf.forward(xf)
         E.register_hook(printmean)
         self.u = self.cnnu.forward(xf)
@@ -366,6 +366,9 @@ class GTV(nn.Module):
         if self.u.max() > u_max:
             masks = (self.u > u_max).type(dtype)
             self.u = self.u - (self.u - u_max)*masks
+
+        masks = (self.u > self.u_min).type(dtype)
+        self.u = self.u - (self.u - self.u_min)*masks
         u = self.u.unsqueeze(1).repeat(1, 3, 1)
         u = self.u.median()
         # u=1
@@ -380,18 +383,15 @@ class GTV(nn.Module):
         ###################
         Fs = (opt.H.matmul(E.view(E.shape[0], E.shape[1], opt.width**2, 1))**2)
         w = torch.exp(-(Fs.sum(axis=1)) / (2 * 1 ** 2)).requires_grad_(True)
-        # w = graph_construction(opt, E.view(E.shape[0], E.shape[1], opt.width**2, 1)).requires_grad_(True)
         if debug:
-            # return w
             print(w[0, :, :].sum().data, 'WEIGHT SUM')
             hist = list()
         w = w.unsqueeze(1).repeat(1, 3, 1, 1)
-        # xhat, _, _ = admm(opt, x=x, y=x, z=z, w=w, delta=1, u=.5, lagrange=opt.lagrange, T=opt.admm_iter, P=opt.prox_iter)
         
         T=opt.admm_iter
         P=opt.prox_iter
         delta=1
-        eta=2
+        eta=.1
         lagrange = opt.lagrange
 
         y = xf.view(xf.shape[0], xf.shape[1], opt.width**2, 1) 
@@ -517,9 +517,9 @@ dataloader = DataLoader(
 )
 
 width = 36
-opt = OPT(batch_size = batch_size, admm_iter=5, prox_iter=2)
+opt = OPT(batch_size = batch_size, admm_iter=6, prox_iter=1)
 supporting_matrix(opt)
-lr = 2e-3
+lr = 4e-3
 total_epoch = 100
 print("Dataset: " , len(dataset))
 gtv = GTV(width=36, prox_iter = 1, u_max=10, u_min=1, lambda_min=.5, lambda_max=1e9, cuda=cuda, opt=opt)
