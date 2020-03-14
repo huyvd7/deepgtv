@@ -518,7 +518,7 @@ dataloader = DataLoader(
 )
 
 width = 36
-opt = OPT(batch_size = batch_size, admm_iter=6, prox_iter=1)
+opt = OPT(batch_size = batch_size, admm_iter=2, prox_iter=1)
 supporting_matrix(opt)
 lr = 1e-3
 total_epoch = 100
