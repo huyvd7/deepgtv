@@ -560,6 +560,10 @@ for epoch in range(total_epoch):  # loop over the dataset multiple times
     if ((epoch + 1) % 5 == 0) or (epoch+1)==total_epoch:
         print("save @ epoch ", epoch + 1)
         torch.save(gtv.state_dict(), PATH)
+        histW = gtv(inputs, debug=1)
+        histW = [h.cpu().detach().numpy() for h in histW]
+
+        print(min(histW))
 
 torch.save(gtv.state_dict(), PATH)
 print("Total running time: {0:.3f}".format(time.time() - tstart))
