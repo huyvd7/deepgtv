@@ -360,7 +360,7 @@ class GTV(nn.Module):
         
     def forward(self, xf, debug=False):
         E = self.cnnf.forward(xf)
-        E.register_hook(printmax)
+        E.register_hook(printmean)
         self.u = self.cnnu.forward(xf)
         u_max =2.5
         if self.u.max() > u_max:
