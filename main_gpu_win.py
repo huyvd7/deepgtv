@@ -477,7 +477,6 @@ def proximal_gradient_descent(x, grad, W, u=1, eta=1, debug=False):
     v = x - eta* grad    
     v = _norm(v,0,255)
     xhat = prox_gtv(w=W, v=v, u=u, eta=eta, debug=debug)
-    W.register_hook(printmean)
     return xhat
 
 def prox_gtv(w, v, u, eta=1, debug=False):
@@ -486,6 +485,7 @@ def prox_gtv(w, v, u, eta=1, debug=False):
     v = v - masks1*eta*w*u*torch.sign(v)
     v = v - masks2*v
 
+    w.register_hook(printmean)
     return v
 
 def _norm(x, newmin, newmax):
