@@ -490,6 +490,8 @@ def _norm(x, newmin, newmax):
 
 def printmax(x):
     print(x.max().data)
+def printmean(x):
+    print(x.mean().data)
 
 cuda = True if torch.cuda.is_available() else False
 torch.autograd.set_detect_anomaly(True)
