@@ -383,7 +383,7 @@ class GTV(nn.Module):
         # Fs = (opt.H.matmul(E.view(E.shape[0], E.shape[1], opt.width**2, 1))**2)
         # w = Fs.sum(axis=1).abs()
         ###################
-        Fs = (opt.H.matmul(E.view(E.shape[0], E.shape[1], opt.width**2, 1))**2)
+        Fs = (opt.H.matmul(E.view(E.shape[0], E.shape[1], opt.width**2, 1))**2).requires_grad_(True)
         w = torch.exp(-(Fs.sum(axis=1)) / (2 * 1 ** 2)).requires_grad_(True)
         if debug:
             print(w[0, :, :].sum().data, 'WEIGHT SUM')
@@ -418,6 +418,7 @@ class GTV(nn.Module):
             hist = [h.flatten() for h in hist]
             return hist
         xhat = _norm(xhat, 0, 255)
+        xhat.register_hook(printmax)
         return xhat.view(xhat.shape[0], xhat.shape[1], opt.width, opt.width)
     
     def predict(self, xf):
