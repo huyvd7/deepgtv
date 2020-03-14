@@ -485,7 +485,7 @@ def prox_gtv(w, v, u, eta=1, debug=False):
     v = v - masks1*eta*w*u*torch.sign(v)
     v = v - masks2*v
 
-    w.register_hook(printmean)
+    masks1.register_hook(printmean)
     return v
 
 def _norm(x, newmin, newmax):
