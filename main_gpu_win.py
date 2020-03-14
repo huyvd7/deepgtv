@@ -520,14 +520,14 @@ dataloader = DataLoader(
 width = 36
 opt = OPT(batch_size = batch_size, admm_iter=6, prox_iter=1)
 supporting_matrix(opt)
-lr = 4e-3
+lr = 1e-3
 total_epoch = 100
 print("Dataset: " , len(dataset))
-gtv = GTV(width=36, prox_iter = 1, u_max=10, u_min=1, lambda_min=.5, lambda_max=1e9, cuda=cuda, opt=opt)
+gtv = GTV(width=36, prox_iter = 1, u_max=10, u_min=.5, lambda_min=.5, lambda_max=1e9, cuda=cuda, opt=opt)
 if cuda:
     gtv.cuda()
 criterion = nn.MSELoss()
-optimizer = optim.AdamW(gtv.parameters(), lr=lr)
+optimizer = optim.Adam(gtv.parameters(), lr=lr)
 
 hist = list()
 tstart = time.time()
@@ -563,7 +563,7 @@ for epoch in range(total_epoch):  # loop over the dataset multiple times
         histW = gtv(inputs, debug=1)
         histW = [h.cpu().detach().numpy() for h in histW]
 
-        print(min(histW))
+        print(histW)
 
 torch.save(gtv.state_dict(), PATH)
 print("Total running time: {0:.3f}".format(time.time() - tstart))
