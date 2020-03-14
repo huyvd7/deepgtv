@@ -416,8 +416,7 @@ class GTV(nn.Module):
         if debug:
             hist = [h.flatten() for h in hist]
             return hist
-        # xhat = _norm(xhat, 0, 255)
-        print(xhat.min(), xhat.max())
+        xhat = _norm(xhat, 0, 255)
         return xhat.view(xhat.shape[0], xhat.shape[1], opt.width, opt.width)
     
     def predict(self, xf):
