@@ -360,7 +360,7 @@ class GTV(nn.Module):
         
     def forward(self, xf, debug=False):
         E = self.cnnf.forward(xf)
-        # E.register_hook(printmax)
+        E.register_hook(printmax)
         self.u = self.cnnu.forward(xf)
         u_max =2.5
         if self.u.max() > u_max:
@@ -517,7 +517,7 @@ dataloader = DataLoader(
 width = 36
 opt = OPT(batch_size = batch_size, admm_iter=5, prox_iter=2)
 supporting_matrix(opt)
-lr = 5e-5
+lr = 1e-5
 total_epoch = 100
 print("Dataset: " , len(dataset))
 gtv = GTV(width=36, prox_iter = 1, u_max=10, u_min=1, lambda_min=.5, lambda_max=1e9, cuda=cuda, opt=opt)
