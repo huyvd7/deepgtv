@@ -361,7 +361,6 @@ class GTV(nn.Module):
         
     def forward(self, xf, debug=False): #gtvforward
         E = self.cnnf.forward(xf)
-        E.register_hook(printmean)
         self.u = self.cnnu.forward(xf)
         u_max =2.5
         if self.u.max() > u_max:
@@ -375,6 +374,7 @@ class GTV(nn.Module):
         # u=1
         Y = self.cnny.forward(xf).squeeze(0)
 
+        Y.register_hook(printmean)
         x = torch.zeros(xf.shape[0], xf.shape[1], opt.width**2, 1).type(dtype).requires_grad_(True)
         z = opt.H.matmul(x).requires_grad_(True)
 
