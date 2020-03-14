@@ -405,7 +405,7 @@ class GTV(nn.Module):
             # STEP 2
             for j in range(P):
                 grad = (delta*z - lagrange - delta*H.matmul(xhat)).requires_grad_(True)
-                z  = proximal_gradient_descent(x=z, grad=grad, W=w, u=u, eta=eta).requires_grad_(True)
+                z  = proximal_gradient_descent(x=z, grad=grad, w=w, u=u, eta=eta).requires_grad_(True)
                 if debug:
                     l = ( (y-xhat).permute(0, 1, 3, 2).matmul(y-xhat) + (u * w * z.abs()).sum())
                     hist.append(l[0, 0, :, :])
