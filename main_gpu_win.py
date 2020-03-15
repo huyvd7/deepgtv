@@ -417,7 +417,6 @@ class GTV(nn.Module):
             hist = [h.flatten() for h in hist]
             return hist
         xhat = _norm(xhat, 0, 255)
-        xhat.register_hook(printmax)
         return xhat.view(xhat.shape[0], xhat.shape[1], opt.width, opt.width)
     
     def predict(self, xf):
@@ -483,7 +482,6 @@ def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False):
     v = v - masks2*v
     if debug:
         print(eta,w,u)
-    masks2.register_hook(printmean)
     return v
 
 def prox_gtv(w, v, u, eta=1, debug=False):
