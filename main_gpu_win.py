@@ -409,7 +409,7 @@ class GTV(nn.Module):
                 grad = (delta*z - lagrange - delta*H.matmul(xhat)).requires_grad_(True)
                 #z  = proximal_gradient_descent(x=z, grad=grad, w=w, u=u, eta=eta).requires_grad_(True)
 
-                z = x - eta* grad    
+                z = z - eta* grad    
                 z = _norm(v,0,255)
             
                 masks1 = ((z.abs() -  (eta*w*u).abs()) > 0).type(dtype).requires_grad_(True)
