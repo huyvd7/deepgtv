@@ -401,6 +401,7 @@ class GTV(nn.Module):
         D = torch.inverse(2*opt.I + delta*(opt.H.T.mm(H))).type(dtype).requires_grad_(True)
         MASKS = list()
         m = 0
+        w.register_hook(printmean)
         for i in range(T):
             # STEP 1
             xhat = D.matmul(2*y - H.T.matmul(lagrange) + delta*H.T.matmul(z)).requires_grad_(True)
