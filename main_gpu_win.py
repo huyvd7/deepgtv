@@ -399,13 +399,27 @@ class GTV(nn.Module):
         I = opt.I.requires_grad_(True)
         H = opt.H.requires_grad_(True)
         D = torch.inverse(2*opt.I + delta*(opt.H.T.mm(H))).type(dtype).requires_grad_(True)
+        MASKS = list()
+        m = 0
         for i in range(T):
             # STEP 1
             xhat = D.matmul(2*y - H.T.matmul(lagrange) + delta*H.T.matmul(z)).requires_grad_(True)
             # STEP 2
             for j in range(P):
                 grad = (delta*z - lagrange - delta*H.matmul(xhat)).requires_grad_(True)
-                z  = proximal_gradient_descent(x=z, grad=grad, w=w, u=u, eta=eta).requires_grad_(True)
+                #z  = proximal_gradient_descent(x=z, grad=grad, w=w, u=u, eta=eta).requires_grad_(True)
+
+                z = x - eta* grad    
+                z = _norm(v,0,255)
+            
+                masks1 = ((z.abs() -  (eta*w*u).abs()) > 0).type(dtype).requires_grad_(True)
+                masks2 = ((z.abs() -  (eta*w*u).abs()) <=0).type(dtype).requires_grad_(True)
+                MASKS.append(masks1)
+                MASKS.append(masks2)
+                z = z - MASKS[m]*eta*w*u*torch.sign(z)
+                m+=1
+                z = z - MASKS[m]*z
+                m+=1
                 if debug:
                     l = ( (y-xhat).permute(0, 1, 3, 2).matmul(y-xhat) + (u * w * z.abs()).sum())
                     hist.append(l[0, 0, :, :])
