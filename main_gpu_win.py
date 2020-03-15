@@ -405,7 +405,7 @@ class GTV(nn.Module):
             # STEP 2
             for j in range(P):
                 grad = (delta*z - lagrange - delta*H.matmul(xhat)).requires_grad_(True)
-                z  = proximal_gradient_descent(x=z, grad=grad, w=w, u=u, eta=eta).requires_grad_(True)
+                z  = proximal_gradient_descent(x=z, grad=grad, w=w, u=u, eta=eta, debug=debug).requires_grad_(True)
                 if debug:
                     l = ( (y-xhat).permute(0, 1, 3, 2).matmul(y-xhat) + (u * w * z.abs()).sum())
                     hist.append(l[0, 0, :, :])
@@ -517,7 +517,8 @@ PATH = os.path.join(DST, "GTV.pkl")
 batch_size = 100
 
 dataset = RENOIR_Dataset(
-    img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv_fullsize\\train'),
+    #img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv_fullsize\\train'),
+    img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv\\train'),
     # transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
     transform=transforms.Compose([standardize(normalize=False), ToTensor(), gaussian_noise_(mean=0, stddev=1)]),
 )
