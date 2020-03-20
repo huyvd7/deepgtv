@@ -309,8 +309,6 @@ def graph_construction(opt, F):
 #     Fs = F.unsqueeze(-1).repeat(1, 1, 1, F.shape[-1]) 
     Fs = (opt.H.matmul(F)**2).requires_grad_(True)
     W = gauss(Fs.sum(axis=1)).requires_grad_(True)
-    Fs.register_hook(printmax)
-    W.register_hook(printmax)
     return W
 
 def weights_init_normal(m):
@@ -481,6 +479,7 @@ def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False):
     masks2 = ((v.abs() -  (eta*w*u).abs()) <=0).type(dtype).requires_grad_(True)
     v = v - masks1*eta*w*u*torch.sign(v)
     v = v - masks2*v
+    w.register_hook(printmean)
     if debug:
         print(w.mean(),
                 #u.mean(), 
