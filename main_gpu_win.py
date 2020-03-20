@@ -418,7 +418,6 @@ class GTV(nn.Module):
         xhat = _norm(xhat, 0, 255)
         xhat.register_hook(printall)
         #lagrange.register_hook(printmean)
-        print(xhat.max(), xhat.min())
         return xhat.view(xhat.shape[0], xhat.shape[1], opt.width, opt.width)
     
     def predict(self, xf):
@@ -526,8 +525,8 @@ PATH = os.path.join(DST, "GTV.pkl")
 batch_size = 4
 
 dataset = RENOIR_Dataset(
-    img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv_fullsize\\train'),
-    #img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv\\train'),
+    #img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv_fullsize\\train'),
+    img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv\\train'),
     transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
     #transform=transforms.Compose([standardize(normalize=False), ToTensor(), gaussian_noise_(mean=0, stddev=1)]),
 )
