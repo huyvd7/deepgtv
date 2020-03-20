@@ -417,7 +417,7 @@ class GTV(nn.Module):
             return hist
         xhat = _norm(xhat, 0, 255)
         xhat.register_hook(printmean)
-        lagrange.register_hook(printmean)
+        #lagrange.register_hook(printmean)
         return xhat.view(xhat.shape[0], xhat.shape[1], opt.width, opt.width)
     
     def predict(self, xf):
