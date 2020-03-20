@@ -416,7 +416,7 @@ class GTV(nn.Module):
             hist = [h.flatten() for h in hist]
             return hist
         xhat = _norm(xhat, 0, 255)
-        xhat.register_hook(printmean)
+        xhat.register_hook(printall)
         #lagrange.register_hook(printmean)
         print(xhat.max(), xhat.min())
         return xhat.view(xhat.shape[0], xhat.shape[1], opt.width, opt.width)
@@ -508,6 +508,8 @@ def printmax(x):
     print(x.max().data)
 def printmean(x):
     print(x.mean().data)
+def printall(x):
+    print(x.mean().data, x.max().data, x.min().data)
 
 cuda = True if torch.cuda.is_available() else False
 torch.autograd.set_detect_anomaly(True)
