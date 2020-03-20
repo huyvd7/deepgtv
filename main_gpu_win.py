@@ -535,7 +535,7 @@ dataloader = DataLoader(
 width = 36
 opt = OPT(batch_size = batch_size, admm_iter=2, prox_iter=1)
 supporting_matrix(opt)
-lr = 8e-3
+lr = .1
 total_epoch = 1000
 print("Dataset: " , len(dataset))
 gtv = GTV(width=36, prox_iter = 1, u_max=10, u_min=.5, lambda_min=.5, lambda_max=1e9, cuda=cuda, opt=opt)
@@ -559,7 +559,6 @@ for epoch in range(total_epoch):  # loop over the dataset multiple times
         optimizer.zero_grad()
         # forward + backward + optimize
         outputs = gtv(inputs, debug=0)
-        outputs.register_hook(printmean)
         loss = criterion(outputs, labels)    
 
         loss.backward()
