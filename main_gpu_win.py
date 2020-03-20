@@ -559,6 +559,7 @@ for epoch in range(total_epoch):  # loop over the dataset multiple times
         optimizer.zero_grad()
         # forward + backward + optimize
         outputs = gtv(inputs, debug=0)
+        outputs.register_hook(printmean)
         loss = criterion(outputs, labels)    
 
         loss.backward()
