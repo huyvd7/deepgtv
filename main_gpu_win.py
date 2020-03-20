@@ -509,11 +509,12 @@ def printmean(x):
     print(x.mean().data)
 def printall(x):
     print(x.mean().data, x.max().data, x.min().data)
+
 def check_symmetric(a, rtol=1e-05, atol=1e-08):
     return np.allclose(a, a.T, rtol=rtol, atol=atol)
 
 def printfull(x):
-    print(check_symmetric(x[0,0,:].detach().numpy()))
+    print(check_symmetric(x[0,0,:].cpu().detach().numpy()))
 
 
 cuda = True if torch.cuda.is_available() else False
