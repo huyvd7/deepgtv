@@ -359,18 +359,18 @@ class GTV(nn.Module):
         
     def forward(self, xf, debug=False): #gtvforward
         E = self.cnnf.forward(xf)
-        #self.u = self.cnnu.forward(xf)
-        #u_max =2.5
-        #if self.u.max() > u_max:
-        #    masks = (self.u > u_max).type(dtype)
-        #    self.u = self.u - (self.u - u_max)*masks
+        self.u = self.cnnu.forward(xf)
+        u_max =2.5
+        if self.u.max() > u_max:
+            masks = (self.u > u_max).type(dtype)
+            self.u = self.u - (self.u - u_max)*masks
 
-        #masks = (self.u > self.u_min).type(dtype)
-        #self.u = self.u - (self.u - self.u_min)*masks
-        #u = self.u.unsqueeze(1).repeat(1, 3, 1)
-        #u = self.u.median()
+        masks = (self.u > self.u_min).type(dtype)
+        self.u = self.u - (self.u - self.u_min)*masks
+        u = self.u.unsqueeze(1).repeat(1, 3, 1)
+        u = self.u.median()
 
-        u=.5
+        #u=.5
         Y = self.cnny.forward(xf).squeeze(0)
 
         x = torch.zeros(xf.shape[0], xf.shape[1], opt.width**2, 1).type(dtype).requires_grad_(True)
@@ -532,7 +532,7 @@ dataloader = DataLoader(
 width = 36
 opt = OPT(batch_size = batch_size, admm_iter=2, prox_iter=1)
 supporting_matrix(opt)
-lr=1e-2
+lr = 8e-3
 total_epoch = 1000
 print("Dataset: " , len(dataset))
 gtv = GTV(width=36, prox_iter = 1, u_max=10, u_min=.5, lambda_min=.5, lambda_max=1e9, cuda=cuda, opt=opt)
