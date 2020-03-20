@@ -371,7 +371,7 @@ class GTV(nn.Module):
         u = self.u.median()
 
         #u=.5
-        Y = self.cnny.forward(xf).squeeze(0)
+        #Y = self.cnny.forward(xf).squeeze(0)
 
         x = torch.zeros(xf.shape[0], xf.shape[1], opt.width**2, 1).type(dtype).requires_grad_(True)
         z = opt.H.matmul(x).requires_grad_(True)
@@ -394,7 +394,7 @@ class GTV(nn.Module):
         eta=.1
         lagrange = opt.lagrange.requires_grad_(True)
 
-        y = Y.view(xf.shape[0], xf.shape[1], opt.width**2, 1).requires_grad_(True)
+        y = xf.view(xf.shape[0], xf.shape[1], opt.width**2, 1).requires_grad_(True)
         I = opt.I.requires_grad_(True)
         H = opt.H.requires_grad_(True)
         D = torch.inverse(2*opt.I + delta*(opt.H.T.mm(H))).type(dtype).requires_grad_(True)
