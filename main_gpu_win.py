@@ -482,7 +482,9 @@ def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False):
     v = v - masks1*eta*w*u*torch.sign(v)
     v = v - masks2*v
     if debug:
-        print(w.mean(),u.mean(), eta)
+        print(w.mean(),
+                #u.mean(), 
+                eta)
     return v
 
 def prox_gtv(w, v, u, eta=1, debug=False):
