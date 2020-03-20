@@ -520,7 +520,7 @@ dataset = RENOIR_Dataset(
     #img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv_fullsize\\train'),
     img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv\\train'),
     # transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
-    transform=transforms.Compose([standardize(normalize=False), ToTensor(), gaussian_noise_(mean=0, stddev=1)]),
+    transform=transforms.Compose([standardize(normalize=False), ToTensor(), gaussian_noise_(mean=0, stddev=5)]),
 )
 dataloader = DataLoader(
     dataset, batch_size=batch_size, shuffle=True#, pin_memory=True
