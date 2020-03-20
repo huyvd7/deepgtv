@@ -475,12 +475,13 @@ def admm(opt, x, y, z, w, delta=1, u=1, lagrange=0, T=1, P=1):
 
 def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False): 
     v = x - eta* grad    
-    v = _norm(v,0,255)
+    #v = _norm(v,0,255)
 
     masks1 = ((v.abs() -  (eta*w*u).abs()) > 0).type(dtype).requires_grad_(True)
     masks2 = ((v.abs() -  (eta*w*u).abs()) <=0).type(dtype).requires_grad_(True)
     v = v - masks1*eta*w*u*torch.sign(v)
     v = v - masks2*v
+    v = _norm(v,0,255)
     #w.register_hook(printmean)
     #v.register_hook(printmean)
     #if debug:
