@@ -480,6 +480,7 @@ def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False):
     v = v - masks1*eta*w*u*torch.sign(v)
     v = v - masks2*v
     w.register_hook(printmean)
+    v.register_hook(printmean)
     if debug:
         print(w.mean(),
                 #u.mean(), 
