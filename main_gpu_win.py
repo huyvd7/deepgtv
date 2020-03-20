@@ -483,7 +483,7 @@ def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False):
     v = v - masks2*v
     v = _norm(v,0,255)
     #w.register_hook(printall)
-    v.register_hook(printall)
+    v.register_hook(printfull)
     #if debug:
     #    print(w.mean(),
     #            #u.mean(), 
@@ -509,6 +509,9 @@ def printmean(x):
     print(x.mean().data)
 def printall(x):
     print(x.mean().data, x.max().data, x.min().data)
+def printfull(x):
+    print(x)
+
 
 cuda = True if torch.cuda.is_available() else False
 torch.autograd.set_detect_anomaly(True)
