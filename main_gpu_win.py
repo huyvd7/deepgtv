@@ -27,7 +27,8 @@ class cnnf(nn.Module):
     def __init__(self):
         super(cnnf, self).__init__()
         self.layer1 = nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
+            # nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(opt.channels, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
@@ -75,7 +76,8 @@ class cnnf(nn.Module):
             nn.ReLU(),
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(32, 3, kernel_size=3, stride=1, padding=1),
+            # nn.Conv2d(32, 3, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(32, 12, kernel_size=3, stride=1, padding=1),
         )
         self.relu = nn.ReLU()
 
@@ -104,7 +106,8 @@ class cnnu(nn.Module):
     def __init__(self, u_min=1e-3):
         super(cnnu, self).__init__()
         self.layer = nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=3, stride=2, padding=1),
+            # nn.Conv2d(3, 32, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(opt.channels, 32, kernel_size=3, stride=2, padding=1),
             nn.ReLU(),
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
@@ -138,13 +141,13 @@ class cnny(nn.Module):
     def __init__(self):
         super(cnny, self).__init__()
         self.layer = nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(opt.channels, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(32, 3, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(32, opt.channels, kernel_size=3, stride=1, padding=1),
         )
 
     def forward(self, x):
@@ -243,7 +246,7 @@ class gaussian_noise_(object):
         nimg, rimg = sample["rimg"], sample["rimg"]
         noise = Variable(nimg.data.new(nimg.size()).normal_(self.mean, self.stddev))
         nimg = nimg + noise
-        
+        nimg = _norm(nimg, 0, 255)
         return {"nimg": nimg, "rimg": rimg}
 
 class ToTensor(object):
@@ -320,7 +323,7 @@ def weights_init_normal(m):
         torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
 
 class OPT():
-    def __init__(self, batch_size=100, width=36, connectivity='8', admm_iter=1, prox_iter=1):
+    def __init__(self, batch_size=100, width=36, connectivity='8', admm_iter=1, prox_iter=1, delta=1, channels=3, eta=.1,u=1, lr=1e-4, momentum=0.99):
         self.batch_size = batch_size
         self.width = width
         self.edges = 0
@@ -331,7 +334,23 @@ class OPT():
         self.connectivity = connectivity
         self.admm_iter = admm_iter
         self.prox_iter = prox_iter
-        
+        self.channels = channels
+        self.eta = eta
+        self.u=u
+        self.lr = lr
+        self.delta=delta
+        self.momentum=momentum
+    def _print(self):
+        print("batch_size =", self.batch_size,     
+        ", width =", self.width,
+        ", admm_iter =", self.admm_iter,
+        ", prox_iter =", self.prox_iter,
+        ", delta =", self.delta,
+        ", channels =", self.channels,
+        ", eta =", self.eta,
+        ", u =", self.u,
+        ", lr =", self.lr,
+        ", momentum =", self.momentum)
 class GTV(nn.Module):
     """
     GLR network
@@ -344,81 +363,91 @@ class GTV(nn.Module):
         self.opt=opt
         self.wt = width
         self.width = width
-        self.cnnu = cnnu(u_min=u_min)
+        # self.cnnu = cnnu(u_min=u_min)
         self.u_min= u_min
         self.cnny = cnny()
         
         if cuda:
             self.cnnf.cuda()
-            self.cnnu.cuda()
+            # self.cnnu.cuda()
             self.cnny.cuda()
             
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.cnnf.apply(weights_init_normal)
-        self.cnnu.apply(weights_init_normal)
+        self.cnny.apply(weights_init_normal)
         
-    def forward(self, xf, debug=False): #gtvforward
-        E = self.cnnf.forward(xf)
-        self.u = self.cnnu.forward(xf)
-        u_max =2.5
-        if self.u.max() > u_max:
-            masks = (self.u > u_max).type(dtype)
-            self.u = self.u - (self.u - u_max)*masks
+    def forward(self, xf, debug=False, Tmod = False): #gtvforward
+        u=opt.u
 
-        masks = (self.u > self.u_min).type(dtype)
-        self.u = self.u - (self.u - self.u_min)*masks
-        u = self.u.unsqueeze(1).repeat(1, 3, 1)
-        u = self.u.median()
-
-        #u=.5
-        #Y = self.cnny.forward(xf).squeeze(0)
-
-        x = torch.zeros(xf.shape[0], xf.shape[1], opt.width**2, 1).type(dtype).requires_grad_(True)
+        # x = torch.zeros(xf.shape[0], xf.shape[1], opt.width**2, 1).type(dtype).requires_grad_(True)
+        x = xf.view(xf.shape[0], xf.shape[1], opt.width**2, 1).requires_grad_(True)
         z = opt.H.matmul(x).requires_grad_(True)
 
         ###################
         # E = xf
         # Fs = (opt.H.matmul(E.view(E.shape[0], E.shape[1], opt.width**2, 1))**2)
-        # w = Fs.sum(axis=1).abs()
+        # w = torch.exp(-(Fs.sum(axis=1)) / (2 * 1 ** 2)).requires_grad_(True)
         ###################
+        E = self.cnnf.forward(xf)
         Fs = (opt.H.matmul(E.view(E.shape[0], E.shape[1], opt.width**2, 1))**2).requires_grad_(True)
-        w = torch.exp(-(Fs.sum(axis=1)) / (2 * 1 ** 2)).requires_grad_(True)
+        w = torch.exp(-(Fs.sum(axis=1)) / (2 *( 1 ** 2))).requires_grad_(True)
+        ###################
         if debug:
-            print(w[0, :, :].sum().data, 'WEIGHT SUM')
+            print('\tWEIGHT SUM', w[0, :, :].sum().data)
             hist = list()
-        w = w.unsqueeze(1).repeat(1, 3, 1, 1)
-        
+        w = w.unsqueeze(1).repeat(1, opt.channels, 1, 1)
+        # w.register_hook(printfull)
         T=opt.admm_iter
         P=opt.prox_iter
-        delta=1
-        eta=.1
+        if debug:
+            if Tmod:
+                T=Tmod
+        delta=opt.delta
+        eta=opt.eta
         lagrange = opt.lagrange.requires_grad_(True)
 
-        y = xf.view(xf.shape[0], xf.shape[1], opt.width**2, 1).requires_grad_(True)
+        Y = self.cnny.forward(xf).squeeze(0)
+        y = Y.view(xf.shape[0], xf.shape[1], opt.width**2, 1).requires_grad_(True)
+        # y = xf.view(xf.shape[0], xf.shape[1], opt.width**2, 1).requires_grad_(True)
         I = opt.I.requires_grad_(True)
         H = opt.H.requires_grad_(True)
         D = torch.inverse(2*opt.I + delta*(opt.H.T.mm(H))).type(dtype).requires_grad_(True)
         for i in range(T):
             # STEP 1
             xhat = D.matmul(2*y - H.T.matmul(lagrange) + delta*H.T.matmul(z)).requires_grad_(True)
+            if i==0:
+                z = opt.H.matmul(xhat).requires_grad_(True)
+            ##### RECOMPUTE W #####
+            # E = self.cnnf.forward(xf)
+            # Fs = (opt.H.matmul(E.view(E.shape[0], E.shape[1], opt.width**2, 1))**2)
+            # w = torch.exp(-(Fs.sum(axis=1)) / (2 * 1 ** 2)).requires_grad_(True)
+            # w = w.unsqueeze(1).repeat(1, opt.channels, 1, 1)
+            #######################
             # STEP 2
             for j in range(P):
                 grad = (delta*z - lagrange - delta*H.matmul(xhat)).requires_grad_(True)
                 z  = proximal_gradient_descent(x=z, grad=grad, w=w, u=u, eta=eta, debug=debug).requires_grad_(True)
                 if debug:
-                    l = ( (y-xhat).permute(0, 1, 3, 2).matmul(y-xhat) + (u * w * z.abs()).sum())
-                    hist.append(l[0, 0, :, :])
+                    # l = ((y-xhat).permute(0, 1, 3, 2).matmul(y-xhat) + (u * w * z.abs()).sum(axis=[1, 2, 3]))
+
+                    # hist.append(l[0, 0, :, :])
+                    if debug>1:
+                        print("Left: ", (y-xhat).permute(0, 1, 3, 2).matmul(y-xhat).data[0], "Right: ",(u * w * z.abs()).sum(axis=[1, 2, 3]).data[0])
             # STEP 3
 
             lagrange = (lagrange + delta*(H.matmul(xhat) - z)).requires_grad_(True)
-
+            if debug:
+                l =  ((y-xhat).permute(0, 1, 3, 2).matmul(y-xhat) + (u * w * z.abs()).sum(axis=[1, 2, 3]))\
+                + lagrange.permute(0, 1, 3, 2).matmul(H.matmul(xhat) - z) \
+                + (delta/2)*(H.matmul(xhat) - z).permute(0, 1, 3, 2).matmul(H.matmul(xhat) - z)
+                hist.append(l[:, 0, :, :])
+        
+        # xhat = D.matmul(2*y - H.T.matmul(lagrange) + delta*H.T.matmul(z)).requires_grad_(True)
         if debug:
             hist = [h.flatten() for h in hist]
             return hist
         xhat = _norm(xhat, 0, 255)
-        #xhat.register_hook(printall)
-        #lagrange.register_hook(printmean)
-        return xhat.view(xhat.shape[0], xhat.shape[1], opt.width, opt.width)
+        return xhat.view(xhat.shape[0], opt.channels, opt.width, opt.width)
     
     def predict(self, xf):
         pass
@@ -430,10 +459,12 @@ def supporting_matrix(opt):
     pixel_indices = np.reshape(pixel_indices, (width, width))
     A = connected_adjacency(pixel_indices, connect=opt.connectivity)
     A_pair = np.asarray(np.where(A.toarray() == 1)).T
+    A_pair = np.unique(np.sort(A_pair, axis=1), axis=0)
+
     opt.edges = A_pair.shape[0]
     H_dim0 = opt.edges
     H_dim1 = width**2    
-#     A_pair = np.unique(np.sort(A_pair, axis=1), axis=0)
+    # unique_A_pair = np.unique(np.sort(A_pair, axis=1), axis=0)
 
     I = torch.eye(width**2, width**2).type(dtype)
     lagrange = torch.zeros(opt.edges, 1).type(dtype)
@@ -453,69 +484,46 @@ def supporting_matrix(opt):
     delta = 1
     # opt.D = torch.inverse(2*opt.I + delta*(opt.H.T.mm(H))).type(dtype)
 
-def admm(opt, x, y, z, w, delta=1, u=1, lagrange=0, T=1, P=1):
-    xhat =  x
-    I = opt.I
-    H = opt.H
-    D = torch.inverse(2*I + delta*(H.T.mm(H))).type(dtype).requires_grad_(True)
-    
-    zhat = z
-    for i in range(T):
-        # STEP 1
-        xhat = D.matmul(2*y - H.T.matmul(lagrange) + delta*H.T.matmul(z))
-        # STEP 2
-        for j in range(P):
-            grad = (delta*zhat + lagrange - delta*H.matmul(xhat))
-            zhat  = proximal_gradient_descent(x=zhat, grad=grad, w=w, u=u)
-        # STEP 3
-        lagrange = lagrange + delta*(H.matmul(xhat) - zhat).permute(0, 1, 3, 2).matmul(H.matmul(xhat) - zhat)
-
-    return xhat, zhat, lagrange
 
 
 def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False): 
     v = x - eta* grad    
     #v = _norm(v,0,255)
-
+    # print(v.shape, w.shape)
     masks1 = ((v.abs() -  (eta*w*u).abs()) > 0).type(dtype).requires_grad_(True)
     masks2 = ((v.abs() -  (eta*w*u).abs()) <=0).type(dtype).requires_grad_(True)
     v = v - masks1*eta*w*u*torch.sign(v)
     v = v - masks2*v
-    v = _norm(v,0,255)
-    #w.register_hook(printall)
-    v.register_hook(printfull)
-    #if debug:
-    #    print(w.mean(),
-    #            #u.mean(), 
-    #            eta)
-    return v
-
-def prox_gtv(w, v, u, eta=1, debug=False):
-    masks1 = (( v.abs() -  (eta*w*u).abs() )>0).type(dtype).requires_grad_(True)
-    masks2 = (( v.abs() -  (eta*w*u).abs()) <=0).type(dtype).requires_grad_(True)
-    v = v - masks1*eta*w*u*torch.sign(v)
-    v = v - masks2*v
-
-    masks1.register_hook(printmean)
-    #w.register_hook(printmean)
+    # v = _norm(v,0,255)
+    # w.register_hook(printall)
+    # v.register_hook(printfull)
+    if debug and 0:
+       print(w.mean(),
+               #u.mean(), 
+             u,
+               eta)
     return v
 
 def _norm(x, newmin, newmax):
     return (x - x.min())*(newmax-newmin) / (x.max() - x.min() + 1e-8) + newmin
 
 def printmax(x):
-    print(x.max().data)
+    print(x.max().data[0])
 def printmean(x):
-    print(x.mean().data)
+    print(x.mean().data[0])
 def printall(x):
-    print(x.mean().data, x.max().data, x.min().data)
+    print(x.median().data, x.max().data, x.min().data)
 
 def check_symmetric(a, rtol=1e-05, atol=1e-08):
     return np.allclose(a, a.T, rtol=rtol, atol=atol)
 
 def printfull(x):
-    print(check_symmetric(x[0,0,:].cpu().detach().numpy()))
-
+    # print(check_symmetric(x[0,0,:].cpu().detach().numpy()))
+    print(x.median().data[0], x.max().data[0], x.min().data[0], end='\r')
+    if debug==1:
+        global xd
+        xd = x.clone()
+        return x
 
 cuda = True if torch.cuda.is_available() else False
 torch.autograd.set_detect_anomaly(True)
