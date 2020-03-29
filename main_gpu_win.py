@@ -29,9 +29,11 @@ class cnnf(nn.Module):
         self.layer1 = nn.Sequential(
             # nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
             nn.Conv2d(opt.channels, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            # nn.ReLU(),
+            nn.LeakyReLU(0.05),
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            # nn.ReLU(),
+            nn.LeakyReLU(0.05)
         )
         self.layer2a = nn.Sequential(
             nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1), nn.ReLU()
@@ -59,9 +61,11 @@ class cnnf(nn.Module):
         # CONCAT with output of layer2
         self.layer4 = nn.Sequential(
             nn.Conv2d(128, 64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            # nn.ReLU(),
+            nn.LeakyReLU(0.05),
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            # nn.ReLU(),
+            nn.LeakyReLU(0.05)
         )
         # DECONVO
         self.deconvo2 = nn.Sequential(
@@ -73,13 +77,15 @@ class cnnf(nn.Module):
         # CONCAT with output of layer1
         self.layer5 = nn.Sequential(
             nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            # nn.ReLU(),
+            nn.LeakyReLU(0.05),
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            # nn.ReLU(),
+            nn.LeakyReLU(0.05),
             # nn.Conv2d(32, 3, kernel_size=3, stride=1, padding=1),
             nn.Conv2d(32, 12, kernel_size=3, stride=1, padding=1),
         )
-        self.relu = nn.ReLU()
+        self.relu = nn.LeakyReLU(0.05)  # nn.ReLU()
 
     def forward(self, x):
         outl1 = self.layer1(x)
@@ -108,22 +114,27 @@ class cnnu(nn.Module):
         self.layer = nn.Sequential(
             # nn.Conv2d(3, 32, kernel_size=3, stride=2, padding=1),
             nn.Conv2d(opt.channels, 32, kernel_size=3, stride=2, padding=1),
-            nn.ReLU(),
+            # nn.ReLU(),
+            nn.LeakyReLU(0.05),
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            # nn.ReLU(),
+            nn.LeakyReLU(0.05),
             nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            # nn.ReLU(),
+            nn.LeakyReLU(0.05),
             nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            # nn.ReLU(),
+            nn.LeakyReLU(0.05),
             nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
         )
         
         self.u_min = u_min
         self.fc = nn.Sequential(
             nn.Linear(3 * 3 * 32, 1 * 1 * 32), nn.Linear(1 * 1 * 32, 1),
-            nn.ReLU()
+            # nn.ReLU()
+            nn.LeakyReLU(0.05)
         )
 
     def forward(self, x):
@@ -142,11 +153,14 @@ class cnny(nn.Module):
         super(cnny, self).__init__()
         self.layer = nn.Sequential(
             nn.Conv2d(opt.channels, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            # nn.ReLU(),
+            nn.LeakyReLU(0.05),
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            # nn.ReLU(),
+            nn.LeakyReLU(0.05),
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            # nn.ReLU(),
+            nn.LeakyReLU(0.05),
             nn.Conv2d(32, opt.channels, kernel_size=3, stride=1, padding=1),
         )
 
@@ -162,7 +176,7 @@ class RENOIR_Dataset(Dataset):
     Dataset loader
     """
 
-    def __init__(self, img_dir, transform=None):
+    def __init__(self, img_dir, transform=None, subset=None):
         """
         Args:
             img_dir (string): Path to the csv file with annotations.
@@ -171,6 +185,7 @@ class RENOIR_Dataset(Dataset):
         self.img_dir = img_dir
         self.npath = os.path.join(img_dir, "noisy")
         self.rpath = os.path.join(img_dir, "ref")
+        self.subset = subset
         self.nimg_name = sorted(os.listdir(self.npath))
         self.rimg_name = sorted(os.listdir(self.rpath))
         self.nimg_name = [
@@ -178,11 +193,26 @@ class RENOIR_Dataset(Dataset):
             for i in self.nimg_name
             if i.split(".")[-1].lower() in ["jpeg", "jpg", "png", "bmp"]
         ]
+        
         self.rimg_name = [
             i
             for i in self.rimg_name
             if i.split(".")[-1].lower() in ["jpeg", "jpg", "png", "bmp"]
         ]
+
+        if self.subset:
+            nimg_name = list()
+            rimg_name = list()
+            for i in range(len(self.nimg_name)):
+                for j in self.subset:
+                    if j in self.nimg_name[i]:
+                        nimg_name.append(self.nimg_name[i])
+                    # if j in self.rimg_name[i]:
+                        rimg_name.append(self.rimg_name[i])
+            self.nimg_name = sorted(nimg_name)
+            self.rimg_name = sorted(rimg_name)
+            
+
         self.transform = transform
 
     def __len__(self):
@@ -323,7 +353,7 @@ def weights_init_normal(m):
         torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
 
 class OPT():
-    def __init__(self, batch_size=100, width=36, connectivity='8', admm_iter=1, prox_iter=1, delta=1, channels=3, eta=.1,u=1, lr=1e-4, momentum=0.99):
+    def __init__(self, batch_size=100, width=36, connectivity='8', admm_iter=1, prox_iter=1, delta=1, channels=3, eta=.1,u=1, u_max=100, u_min=10, lr=1e-4, momentum=0.99):
         self.batch_size = batch_size
         self.width = width
         self.edges = 0
@@ -340,6 +370,10 @@ class OPT():
         self.lr = lr
         self.delta=delta
         self.momentum=momentum
+        self.u_max=u_max
+        self.u_min=u_min
+
+
     def _print(self):
         print("batch_size =", self.batch_size,     
         ", width =", self.width,
@@ -351,6 +385,7 @@ class OPT():
         ", u =", self.u,
         ", lr =", self.lr,
         ", momentum =", self.momentum)
+
 class GTV(nn.Module):
     """
     GLR network
@@ -364,7 +399,7 @@ class GTV(nn.Module):
         self.wt = width
         self.width = width
         # self.cnnu = cnnu(u_min=u_min)
-        self.u_min= u_min
+        
         self.cnny = cnny()
         
         if cuda:
@@ -375,9 +410,18 @@ class GTV(nn.Module):
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.cnnf.apply(weights_init_normal)
         self.cnny.apply(weights_init_normal)
+        # self.cnnu.apply(weights_init_normal)
         
     def forward(self, xf, debug=False, Tmod = False): #gtvforward
         u=opt.u
+        # self.u = self.cnnu.forward(xf)
+        # u_max = opt.u_max
+        # u_min = opt.u_min
+        
+        # masks = (self.u > u_max).type(dtype)
+        # self.u = self.u - (self.u - u_max)*masks
+        # masks = (self.u > self.u_min).type(dtype)
+        # self.u = self.u - (self.u - self.u_min)*masks
 
         # x = torch.zeros(xf.shape[0], xf.shape[1], opt.width**2, 1).type(dtype).requires_grad_(True)
         x = xf.view(xf.shape[0], xf.shape[1], opt.width**2, 1).requires_grad_(True)
@@ -525,6 +569,10 @@ def printfull(x):
         xd = x.clone()
         return x
 
+debug=0
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=1e-4, momentum=0.9, u_max=75, u_min=25)
+
+xd = None
 cuda = True if torch.cuda.is_available() else False
 torch.autograd.set_detect_anomaly(True)
 print("CUDA: ", cuda)
@@ -537,39 +585,47 @@ else:
 DST = "./"
 DST = ""
 PATH = os.path.join(DST, "GTV.pkl")
-batch_size = 4
-
+#SAVEPATH = '/content/drive/My Drive/data/GTV_realnoise.pkl'
+SAVEPATH = PATH
+batch_size = opt.batch_size
+_subset = ['10', '1', '7', '8','9']
+subset = [i + '_' for i in _subset]
 dataset = RENOIR_Dataset(
     #img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv_fullsize\\train'),
     img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv\\train'),
+    # img_dir=os.path.join('./train'),
     transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
-    #transform=transforms.Compose([standardize(normalize=False), ToTensor(), gaussian_noise_(mean=0, stddev=1)]),
+    # transform=transforms.Compose([standardize(normalize=False), ToTensor(), gaussian_noise_(mean=0, stddev=10)]),
+    subset=subset
 )
 dataloader = DataLoader(
     dataset, batch_size=batch_size, shuffle=True#, pin_memory=True
 )
 
 width = 36
-opt = OPT(batch_size = batch_size, admm_iter=2, prox_iter=1)
 supporting_matrix(opt)
-lr = .1
-total_epoch = 1000
+total_epoch = 400
 print("Dataset: " , len(dataset))
-gtv = GTV(width=36, prox_iter = 1, u_max=10, u_min=.5, lambda_min=.5, lambda_max=1e9, cuda=cuda, opt=opt)
+# gtv = GTV(width=36, prox_iter = 1, u_max=10, u_min=.5, lambda_min=.5, lambda_max=1e9, cuda=cuda, opt=opt)
 if cuda:
     gtv.cuda()
 criterion = nn.MSELoss()
-optimizer = optim.Adam(gtv.parameters(), lr=lr)
+# optimizer = optim.Adam(gtv.parameters(), lr=lr)
+optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
 
 hist = list()
+losshist = list()
 tstart = time.time()
+opt._print()
 for epoch in range(total_epoch):  # loop over the dataset multiple times
 
     running_loss = 0.0
     for i, data in enumerate(dataloader, 0):  # start index at 0
         # get the inputs; data is a list of [inputs, labels]
-        labels = data["rimg"].float().type(dtype)
-        inputs = data['nimg'].float().type(dtype)
+        inputs = data['nimg'][:, :opt.channels, :, :].float().type(dtype)
+        labels = data["rimg"][:, :opt.channels, :, :].float().type(dtype)
+        # inputs = data['nimg'].float().type(dtype)
+        # labels = data["rimg"].float().type(dtype)
 
         # inputs = torch.autograd.Variable(inputs, requires_grad=True)
         # zero the parameter gradients
@@ -577,25 +633,40 @@ for epoch in range(total_epoch):  # loop over the dataset multiple times
         # forward + backward + optimize
         outputs = gtv(inputs, debug=0)
         loss = criterion(outputs, labels)    
-
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(gtv.parameters(), 20)
+
         optimizer.step()
         running_loss += loss.item()
         # if (i+1)%5 == 0:
     print(
         time.ctime(),
-        "[{0}] loss: {1:.3f}, time elapsed: {2:.3f}".format(
-            epoch + 1, 255 * running_loss / (i + 1), time.time() - tstart
-        ), "mean weight: ", gtv.cnnf.layer1[0].weight.mean().data) 
-    gtv(inputs,debug=1)
+        "[{0}] \x1b[31m\"LOSS\"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}".format(
+            epoch + 1, running_loss / (i + 1), time.time() - tstart
+        )#,"CNNF stats:\n", gtv.cnnf.layer1[0].weight.grad.min(), gtv.cnnf.layer1[0].weight.grad.max(), gtv.cnnf.layer1[0].weight.grad.mean(), gtv.cnnf.layer1[0].weight.grad.median()
+         ) 
+    print('\tCNNF stats: ', gtv.cnnf.layer1[0].weight.grad.mean())
+    losshist.append(running_loss / (i + 1))
+    pmax = list()
+    for p in gtv.parameters():
+        pmax.append(p.grad.max())
+    print('\tmax gradients', max(pmax))
+    # gtv(inputs,debug=1)
     hist.append(running_loss / (i + 1))
-    if ((epoch + 1) % 5 == 0) or (epoch+1)==total_epoch:
-        print("save @ epoch ", epoch + 1)
-        torch.save(gtv.state_dict(), PATH)
-        histW = gtv(inputs, debug=1)
-        histW = [h.cpu().detach().numpy() for h in histW]
 
-        print(histW)
+    if ((epoch + 1) % 10 == 0) or (epoch+1)==total_epoch:
+        print("\tsave @ epoch ", epoch + 1)
+        torch.save(gtv.state_dict(), SAVEPATH)
+        torch.save(optimizer.state_dict(), SAVEPATH+'optim')
+        histW = gtv(inputs[:1, :, : , :], debug=1)
+        histW = [h.cpu().detach().numpy()[0] for h in histW]
+        print('\t', np.argmin(histW), min(histW), histW)
+    elif 1:
+        histW = gtv(inputs[:1, :, : , :], debug=1)
+        histW = [h.cpu().detach().numpy()[0] for h in histW]
+        print('\t', np.argmin(histW), min(histW), histW)
+        
 
-torch.save(gtv.state_dict(), PATH)
+torch.save(gtv.state_dict(), SAVEPATH)
+torch.save(optimizer.state_dict(), SAVEPATH+'optim')
 print("Total running time: {0:.3f}".format(time.time() - tstart))
