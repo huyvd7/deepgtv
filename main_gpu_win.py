@@ -618,7 +618,7 @@ losshist = list()
 tstart = time.time()
 opt._print()
 for epoch in range(total_epoch):  # loop over the dataset multiple times
-
+    running_loss_inside = 0.0
     running_loss = 0.0
     for i, data in enumerate(dataloader, 0):  # start index at 0
         # get the inputs; data is a list of [inputs, labels]
@@ -638,13 +638,21 @@ for epoch in range(total_epoch):  # loop over the dataset multiple times
 
         optimizer.step()
         running_loss += loss.item()
-        # if (i+1)%5 == 0:
+        running_loss_inside += loss.item()
+        if (i+1)%20 == 0:
+            print(
+                time.ctime(),
+                "[{0}] \x1b[31m\"LOSS\"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}".format(
+                    epoch + 1, running_loss_inside / (i + 1), time.time() - tstart
+                )
+            ) 
+            running_loss_inside = 0.0
     print(
         time.ctime(),
         "[{0}] \x1b[31m\"LOSS\"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}".format(
             epoch + 1, running_loss / (i + 1), time.time() - tstart
-        )#,"CNNF stats:\n", gtv.cnnf.layer1[0].weight.grad.min(), gtv.cnnf.layer1[0].weight.grad.max(), gtv.cnnf.layer1[0].weight.grad.mean(), gtv.cnnf.layer1[0].weight.grad.median()
-         ) 
+        )
+    ) 
     print('\tCNNF stats: ', gtv.cnnf.layer1[0].weight.grad.mean())
     losshist.append(running_loss / (i + 1))
     pmax = list()
