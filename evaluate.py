@@ -85,9 +85,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324):
     s2 = int(T2.shape[-1])
     dummy=torch.zeros(T2.shape)
     for ii, i in enumerate(range(T2.shape[1])):
-        P = gtv.forward(T2[i, :, :opt.channels, :, :].float()).requires_grad_(False)
-
-
+        P = gtv.forward(T2[i, :, :opt.channels, :, :].float())
         if cuda:
             P = P.cpu()
         if argref:
