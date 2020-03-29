@@ -84,23 +84,24 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324):
 
     s2 = int(T2.shape[-1])
     dummy=torch.zeros(T2.shape)
-    for ii, i in enumerate(range(T2.shape[1])):
-        P = gtv.forward(T2[i, :, :opt.channels, :, :].float())
-        if cuda:
-            P = P.cpu()
-        if argref:
-            img1 = T2r[i, :, :opt.channels, :shape[-1], :shape[-1]].float()
-            img2 = P[:, :opt.channels, :shape[-1], :shape[-1]]
-            psnrs.append(cv2.PSNR(img1.detach().numpy(), img2.detach().numpy()))
-            _tref = img1.detach().numpy()  
-            _d = img2.detach().numpy()
-            for iii in range(_d.shape[0]):
-                (_score2, _) = compare_ssim(_tref[i].transpose(1, 2, 0), _d[i].transpose(1, 2, 0), full=True, multichannel=True)
-                score2.append(_score2)
+    with torch.no_grad():
+        for ii, i in enumerate(range(T2.shape[1])):
+            P = gtv.forward(T2[i, :, :opt.channels, :, :].float())
+            if cuda:
+                P = P.cpu()
+            if argref:
+                img1 = T2r[i, :, :opt.channels, :shape[-1], :shape[-1]].float()
+                img2 = P[:, :opt.channels, :shape[-1], :shape[-1]]
+                psnrs.append(cv2.PSNR(img1.detach().numpy(), img2.detach().numpy()))
+                _tref = img1.detach().numpy()  
+                _d = img2.detach().numpy()
+                for iii in range(_d.shape[0]):
+                    (_score2, _) = compare_ssim(_tref[i].transpose(1, 2, 0), _d[i].transpose(1, 2, 0), full=True, multichannel=True)
+                    score2.append(_score2)
 
-        print("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
-        dummy[i] = P
-        del P
+            print("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
+            dummy[i] = P
+            del P
     print("\nPrediction time: ", time.time() - tstart)
     if argref:
         print("PSNR: ", np.mean(np.array(psnrs)))
