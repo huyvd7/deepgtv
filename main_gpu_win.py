@@ -570,7 +570,7 @@ def printfull(x):
         return x
 
 debug=0
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=1e-4, momentum=0.9, u_max=75, u_min=25)
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=1e-5, momentum=0.9, u_max=75, u_min=25)
 
 xd = None
 cuda = True if torch.cuda.is_available() else False
@@ -639,7 +639,7 @@ for epoch in range(total_epoch):  # loop over the dataset multiple times
         optimizer.step()
         running_loss += loss.item()
         running_loss_inside += loss.item()
-        if (i+1)%20 == 0:
+        if (i+1)%50 == 0:
             print(
                 time.ctime(),
                 "[{0}] \x1b[31m\"LOSS\"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}".format(
