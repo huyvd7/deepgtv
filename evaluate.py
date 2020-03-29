@@ -126,7 +126,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324):
         opath = args.output
     else:
         filename = inp.split("/")[-1]
-        opath = "./{0}_{1}".format("denoised", filename)
+        opath = "./{0}_{1}".format(seed, filename)
         opath = opath[:-3] + "png"
     plt.imsave(opath, d)
     if argref:
@@ -166,78 +166,77 @@ def patch_merge(P, stride=36, shape=None, shapeorg=None):
 
     return (R / Rc)[:, : shapeorg[-1], : shapeorg[-1]]
 
-
-# INITIALIZE
-gtv = GTV(
-    width=36,
-    prox_iter=1,
-    u_max=10,
-    u_min=0.5,
-    lambda_min=0.5,
-    lambda_max=1e9,
-    cuda=cuda,
-    opt=opt,
-)
-width = 36
-supporting_matrix(opt)
-
-optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
-PATH = "GTV.pkl"
-device = torch.device("cuda")
-gtv.load_state_dict(torch.load(PATH))
-optimizer.load_state_dict(torch.load(PATH + "optim"))
-image_path = "..\\all\\all\\"
-imgw = 1080
-print("EVALUATING TRAIN SET")
-
-trainset = ["10", "1", "7", "8", "9"]
-traineva = {"psnr": list(), "ssim": list(), "ssim2": list()}
-for t in trainset:
-    print("image #", t)
-    inp = "{0}/noisy/{1}_n.bmp".format(image_path, t)
-    argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
-    _psnr, _ssim, _ssim2, _ = denoise(inp, gtv, argref, stride=12, width=imgw)
-    traineva["psnr"].append(_psnr)
-    traineva["ssim"].append(_ssim)
-    traineva["ssim2"].append(_ssim2)
-    try:
-        from skimage.metrics import structural_similarity as compare_ssim
-    except Exception:
-        from skimage.measure import compare_ssim
-
-    img1 = cv2.imread(inp)[:, :, : opt.channels]
-    img2 = cv2.imread(argref)[:, :, : opt.channels]
-    (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
-    print("Original ", cv2.PSNR(img1, img2), score)
-print("========================")
-print("MEAN PSNR: ", np.mean(traineva["psnr"]))
-print("MEAN SSIM: ", np.mean(traineva["ssim"]))
-print("MEAN SSIM2 (patch-based SSIM): ", np.mean(traineva["ssim2"]))
-print("========================")
-
-print("EVALUATING TEST SET")
-testset = ["2", "3", "4", "5", "6"]
-testeva = {"psnr": list(), "ssim": list(), "ssim2": list()}
-for t in testset:
-    print("image #", t)
-    inp = "{0}/noisy/{1}_n.bmp".format(image_path, t)
-    argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
-    _psnr, _ssim, _ssim2, _ = denoise(inp, gtv, argref, stride=12, width=imgw)
-    testeva["psnr"].append(_psnr)
-    testeva["ssim"].append(_ssim)
-    testeva["ssim2"].append(_ssim2)
-    try:
-        from skimage.metrics import structural_similarity as compare_ssim
-    except Exception:
-        from skimage.measure import compare_ssim
-
-    img1 = cv2.imread(inp)[:, :, : opt.channels]
-    img2 = cv2.imread(argref)[:, :, : opt.channels]
-    (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
-    print("Original ", cv2.PSNR(img1, img2), score)
-print("========================")
-print("MEAN PSNR: ", np.mean(testeva["psnr"]))
-print("MEAN SSIM: ", np.mean(testeva["ssim"]))
-print("MEAN SSIM2 (patch-based SSIM): ", np.mean(testeva["ssim2"]))
-print("========================")
-
+def main_eva(seed, model_name, trainset, testset, imgw=324):
+    # INITIALIZE
+    gtv = GTV(
+        width=36,
+        prox_iter=1,
+        u_max=10,
+        u_min=0.5,
+        lambda_min=0.5,
+        lambda_max=1e9,
+        cuda=cuda,
+        opt=opt,
+    )
+    width = 36
+    supporting_matrix(opt)
+    PATH = model_name
+    device = torch.device("cuda")
+    gtv.load_state_dict(torch.load(PATH))
+    image_path = "..\\all\\all\\"
+    imgw = imgw
+    print("EVALUATING TRAIN SET")
+    
+    #trainset = ["10", "1", "7", "8", "9"]
+    traineva = {"psnr": list(), "ssim": list(), "ssim2": list()}
+    for t in trainset:
+        print("image #", t)
+        inp = "{0}/noisy/{1}_n.bmp".format(image_path, t)
+        argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
+        _psnr, _ssim, _ssim2, _ = denoise(inp, gtv, argref, stride=12, width=imgw)
+        traineva["psnr"].append(_psnr)
+        traineva["ssim"].append(_ssim)
+        traineva["ssim2"].append(_ssim2)
+        try:
+            from skimage.metrics import structural_similarity as compare_ssim
+        except Exception:
+            from skimage.measure import compare_ssim
+    
+        img1 = cv2.imread(inp)[:, :, : opt.channels]
+        img2 = cv2.imread(argref)[:, :, : opt.channels]
+        (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
+        print("Original ", cv2.PSNR(img1, img2), score)
+    print("========================")
+    print("MEAN PSNR: ", np.mean(traineva["psnr"]))
+    print("MEAN SSIM: ", np.mean(traineva["ssim"]))
+    print("MEAN SSIM2 (patch-based SSIM): ", np.mean(traineva["ssim2"]))
+    print("========================")
+    
+    print("EVALUATING TEST SET")
+    #testset = ["2", "3", "4", "5", "6"]
+    testeva = {"psnr": list(), "ssim": list(), "ssim2": list()}
+    for t in testset:
+        print("image #", t)
+        inp = "{0}/noisy/{1}_n.bmp".format(image_path, t)
+        argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
+        _psnr, _ssim, _ssim2, _ = denoise(inp, gtv, argref, stride=12, width=imgw)
+        testeva["psnr"].append(_psnr)
+        testeva["ssim"].append(_ssim)
+        testeva["ssim2"].append(_ssim2)
+        try:
+            from skimage.metrics import structural_similarity as compare_ssim
+        except Exception:
+            from skimage.measure import compare_ssim
+    
+        img1 = cv2.imread(inp)[:, :, : opt.channels]
+        img2 = cv2.imread(argref)[:, :, : opt.channels]
+        (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
+        print("Original ", cv2.PSNR(img1, img2), score)
+    print("========================")
+    print("MEAN PSNR: ", np.mean(testeva["psnr"]))
+    print("MEAN SSIM: ", np.mean(testeva["ssim"]))
+    print("MEAN SSIM2 (patch-based SSIM): ", np.mean(testeva["ssim2"]))
+    print("========================")
+   
+if __name__=="__main__":
+    main_eva()

@@ -672,7 +672,7 @@ opt = OPT(
     u_min=25,
 )
 
-if __name__ == "__main__":
+def main(seed, model_name, optim_name, subset=None, epoch=100):
     debug = 0
 
     xd = None
@@ -692,9 +692,9 @@ if __name__ == "__main__":
     SAVEPATH = PATH
     batch_size = opt.batch_size
     # _subset = ['10', '1', '3', '5', '9']
-
-    _subset = ["10", "1", "7", "8", "9"]
-    subset = [i + "_" for i in _subset]
+    if not subset:
+        _subset = ["10", "1", "7", "8", "9"]
+        subset = [i + "_" for i in _subset]
     dataset = RENOIR_Dataset(
         # img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv_fullsize\\train'),
         img_dir=os.path.join(
@@ -711,7 +711,7 @@ if __name__ == "__main__":
 
     width = 36
     supporting_matrix(opt)
-    total_epoch = 8000
+    total_epoch = epoch
     print("Dataset: ", len(dataset))
     gtv = GTV(
         width=36,
@@ -801,3 +801,5 @@ if __name__ == "__main__":
     ax.plot(ma_vec)
     fig.savefig("loss.png")
 
+if __name__=="__main__":
+    main()
