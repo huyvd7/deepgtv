@@ -167,7 +167,7 @@ device = torch.device("cuda")
 gtv.load_state_dict(torch.load(PATH))
 optimizer.load_state_dict(torch.load(PATH+'optim'))
 image_path = '..\\all\\all\\'
-imgw=720
+imgw=324
 print("EVALUATING TRAIN SET")
 trainset = ['10', '1', '7', '8', '9']
 traineva = {'psnr':list(), 'ssim':list(), 'ssim2':list()}
