@@ -167,6 +167,7 @@ device = torch.device("cuda")
 gtv.load_state_dict(torch.load(PATH))
 optimizer.load_state_dict(torch.load(PATH+'optim'))
 image_path = '..\\all\\all\\'
+imgw=720
 print("EVALUATING TRAIN SET")
 trainset = ['10', '1', '7', '8', '9']
 traineva = {'psnr':list(), 'ssim':list(), 'ssim2':list()}
@@ -174,7 +175,7 @@ for t in trainset:
     print('image #', t)
     inp = '{0}/noisy/{1}_n.bmp'.format(image_path, t)
     argref = '{0}/ref/{1}_r.bmp'.format(image_path, t)
-    _psnr, _ssim, _ssim2, _ = denoise(inp, gtv, argref, stride=12, width=1080)
+    _psnr, _ssim, _ssim2, _ = denoise(inp, gtv, argref, stride=12, width=imgw)
     traineva['psnr'].append(_psnr)
     traineva['ssim'].append(_ssim)
     traineva['ssim2'].append(_ssim2)
@@ -200,7 +201,7 @@ for t in testset:
     print('image #', t)
     inp = '{0}/noisy/{1}_n.bmp'.format(image_path, t)
     argref = '{0}/ref/{1}_r.bmp'.format(image_path, t)
-    _psnr, _ssim, _ssim2, _ = denoise(inp, gtv, argref, stride=12, width=1080)
+    _psnr, _ssim, _ssim2, _ = denoise(inp, gtv, argref, stride=12, width=imgw)
     testeva['psnr'].append(_psnr)
     testeva['ssim'].append(_ssim)
     testeva['ssim2'].append(_ssim2)
