@@ -598,7 +598,6 @@ dataset = RENOIR_Dataset(
     # transform=transforms.Compose([standardize(normalize=False), ToTensor(), gaussian_noise_(mean=0, stddev=10)]),
     subset=subset
 )
-print(dataset.nimg_name)
 dataloader = DataLoader(
     dataset, batch_size=batch_size, shuffle=True#, pin_memory=True
 )
