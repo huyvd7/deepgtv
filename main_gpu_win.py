@@ -570,7 +570,7 @@ def printfull(x):
         return x
 
 debug=0
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=1e-5, momentum=0.9, u_max=75, u_min=25)
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=125, lr=1e-5, momentum=0.9, u_max=75, u_min=25)
 
 xd = None
 cuda = True if torch.cuda.is_available() else False
