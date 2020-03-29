@@ -33,7 +33,7 @@ class cnnf(nn.Module):
             nn.LeakyReLU(0.05),
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
             # nn.ReLU(),
-            nn.LeakyReLU(0.05)
+            nn.LeakyReLU(0.05),
         )
         self.layer2a = nn.Sequential(
             nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1), nn.ReLU()
@@ -65,7 +65,7 @@ class cnnf(nn.Module):
             nn.LeakyReLU(0.05),
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
             # nn.ReLU(),
-            nn.LeakyReLU(0.05)
+            nn.LeakyReLU(0.05),
         )
         # DECONVO
         self.deconvo2 = nn.Sequential(
@@ -103,7 +103,8 @@ class cnnf(nn.Module):
         del outl1, outl2, outl3
         out = self.layer5(outl4)
         return out
-     
+
+
 class cnnu(nn.Module):
     """
     CNNU of GLR
@@ -129,12 +130,13 @@ class cnnu(nn.Module):
             nn.LeakyReLU(0.05),
             nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
         )
-        
+
         self.u_min = u_min
         self.fc = nn.Sequential(
-            nn.Linear(3 * 3 * 32, 1 * 1 * 32), nn.Linear(1 * 1 * 32, 1),
+            nn.Linear(3 * 3 * 32, 1 * 1 * 32),
+            nn.Linear(1 * 1 * 32, 1),
             # nn.ReLU()
-            nn.LeakyReLU(0.05)
+            nn.LeakyReLU(0.05),
         )
 
     def forward(self, x):
@@ -142,7 +144,7 @@ class cnnu(nn.Module):
         out = out.view(out.shape[0], -1)
         out = self.fc(out)
         return out
- 
+
 
 class cnny(nn.Module):
     """
@@ -169,8 +171,9 @@ class cnny(nn.Module):
         out = self.layer(x)
         out = identity + out
         del identity
-        return out  
-    
+        return out
+
+
 class RENOIR_Dataset(Dataset):
     """
     Dataset loader
@@ -193,7 +196,7 @@ class RENOIR_Dataset(Dataset):
             for i in self.nimg_name
             if i.split(".")[-1].lower() in ["jpeg", "jpg", "png", "bmp"]
         ]
-        
+
         self.rimg_name = [
             i
             for i in self.rimg_name
@@ -207,11 +210,10 @@ class RENOIR_Dataset(Dataset):
                 for j in self.subset:
                     if j in self.nimg_name[i]:
                         nimg_name.append(self.nimg_name[i])
-                    # if j in self.rimg_name[i]:
+                        # if j in self.rimg_name[i]:
                         rimg_name.append(self.rimg_name[i])
             self.nimg_name = sorted(nimg_name)
             self.rimg_name = sorted(rimg_name)
-            
 
         self.transform = transform
 
@@ -267,6 +269,7 @@ class standardize(object):
             rimg = rimg / 255
         return {"nimg": nimg, "rimg": rimg}
 
+
 class gaussian_noise_(object):
     def __init__(self, stddev, mean):
         self.stddev = stddev
@@ -279,6 +282,7 @@ class gaussian_noise_(object):
         nimg = _norm(nimg, 0, 255)
         return {"nimg": nimg, "rimg": rimg}
 
+
 class ToTensor(object):
     """Convert ndarrays in sample to Tensors."""
 
@@ -289,10 +293,12 @@ class ToTensor(object):
         nimg, rimg = sample["nimg"], sample["rimg"]
         nimg = nimg.transpose((2, 0, 1))
         rimg = rimg.transpose((2, 0, 1))
-        return {"nimg": torch.from_numpy(nimg).type(dtype), "rimg": torch.from_numpy(rimg).type(dtype)}
+        return {
+            "nimg": torch.from_numpy(nimg).type(dtype),
+            "rimg": torch.from_numpy(rimg).type(dtype),
+        }
 
 
-    
 def connected_adjacency(image, connect=8, patch_size=(1, 1)):
     """
     Construct 8-connected pixels base graph (0 for not connected, 1 for connected)
@@ -318,12 +324,19 @@ def connected_adjacency(image, connect=8, patch_size=(1, 1)):
         return upper_diags + upper_diags.T
 
 
-
 def get_w(ij, F):
     """
     Compute weights for node i and node j using exemplars F
     """
-    W = w(((F.unsqueeze(-1).repeat(1, 1, 1, 4) - F.unsqueeze(-1).repeat(1, 1, 1, 4).permute(0, 1, 3, 2))**2).sum(axis=1))
+    W = w(
+        (
+            (
+                F.unsqueeze(-1).repeat(1, 1, 1, 4)
+                - F.unsqueeze(-1).repeat(1, 1, 1, 4).permute(0, 1, 3, 2)
+            )
+            ** 2
+        ).sum(axis=1)
+    )
 
     return W.type(dtype)
 
@@ -332,17 +345,19 @@ def gauss(d, epsilon=1):
     """
     Compute (3)
     """
-    
+
     return torch.exp(-d / (2 * epsilon ** 2))
+
 
 def graph_construction(opt, F):
     """
     Construct Laplacian matrix
     """
-#     Fs = F.unsqueeze(-1).repeat(1, 1, 1, F.shape[-1]) 
-    Fs = (opt.H.matmul(F)**2).requires_grad_(True)
+    #     Fs = F.unsqueeze(-1).repeat(1, 1, 1, F.shape[-1])
+    Fs = (opt.H.matmul(F) ** 2).requires_grad_(True)
     W = gauss(Fs.sum(axis=1)).requires_grad_(True)
     return W
+
 
 def weights_init_normal(m):
     """
@@ -352,12 +367,28 @@ def weights_init_normal(m):
     if classname.find("Conv") != -1:
         torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
 
-class OPT():
-    def __init__(self, batch_size=100, width=36, connectivity='8', admm_iter=1, prox_iter=1, delta=1, channels=3, eta=.1,u=1, u_max=100, u_min=10, lr=1e-4, momentum=0.99):
+
+class OPT:
+    def __init__(
+        self,
+        batch_size=100,
+        width=36,
+        connectivity="8",
+        admm_iter=1,
+        prox_iter=1,
+        delta=1,
+        channels=3,
+        eta=0.1,
+        u=1,
+        u_max=100,
+        u_min=10,
+        lr=1e-4,
+        momentum=0.99,
+    ):
         self.batch_size = batch_size
         self.width = width
         self.edges = 0
-        self.nodes = width**2
+        self.nodes = width ** 2
         self.I = None
         self.pairs = None
         self.H = None
@@ -366,65 +397,87 @@ class OPT():
         self.prox_iter = prox_iter
         self.channels = channels
         self.eta = eta
-        self.u=u
+        self.u = u
         self.lr = lr
-        self.delta=delta
-        self.momentum=momentum
-        self.u_max=u_max
-        self.u_min=u_min
-
+        self.delta = delta
+        self.momentum = momentum
+        self.u_max = u_max
+        self.u_min = u_min
 
     def _print(self):
-        print("batch_size =", self.batch_size,     
-        ", width =", self.width,
-        ", admm_iter =", self.admm_iter,
-        ", prox_iter =", self.prox_iter,
-        ", delta =", self.delta,
-        ", channels =", self.channels,
-        ", eta =", self.eta,
-        ", u =", self.u,
-        ", lr =", self.lr,
-        ", momentum =", self.momentum)
+        print(
+            "batch_size =",
+            self.batch_size,
+            ", width =",
+            self.width,
+            ", admm_iter =",
+            self.admm_iter,
+            ", prox_iter =",
+            self.prox_iter,
+            ", delta =",
+            self.delta,
+            ", channels =",
+            self.channels,
+            ", eta =",
+            self.eta,
+            ", u =",
+            self.u,
+            ", lr =",
+            self.lr,
+            ", momentum =",
+            self.momentum,
+        )
+
 
 class GTV(nn.Module):
     """
     GLR network
     """
 
-    def __init__(self, width=36, prox_iter=5, u_min=1e-3, u_max = 1, lambda_min=1e-9, lambda_max=1e9, cuda=False, opt=None):
+    def __init__(
+        self,
+        width=36,
+        prox_iter=5,
+        u_min=1e-3,
+        u_max=1,
+        lambda_min=1e-9,
+        lambda_max=1e9,
+        cuda=False,
+        opt=None,
+    ):
         super(GTV, self).__init__()
         self.cnnf = cnnf()
-        
-        self.opt=opt
+
+        self.opt = opt
         self.wt = width
         self.width = width
         # self.cnnu = cnnu(u_min=u_min)
-        
+
         self.cnny = cnny()
-        
+
         if cuda:
             self.cnnf.cuda()
             # self.cnnu.cuda()
             self.cnny.cuda()
-            
+
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.cnnf.apply(weights_init_normal)
         self.cnny.apply(weights_init_normal)
         # self.cnnu.apply(weights_init_normal)
-        
-    def forward(self, xf, debug=False, Tmod = False): #gtvforward
-        u=opt.u
+
+    def forward(self, xf, debug=False, Tmod=False):  # gtvforward
+        u = opt.u
         # self.u = self.cnnu.forward(xf)
         # u_max = opt.u_max
         # u_min = opt.u_min
-        
+
         # masks = (self.u > u_max).type(dtype)
         # self.u = self.u - (self.u - u_max)*masks
         # masks = (self.u > self.u_min).type(dtype)
         # self.u = self.u - (self.u - self.u_min)*masks
 
         # x = torch.zeros(xf.shape[0], xf.shape[1], opt.width**2, 1).type(dtype).requires_grad_(True)
-        x = xf.view(xf.shape[0], xf.shape[1], opt.width**2, 1).requires_grad_(True)
+        x = xf.view(xf.shape[0], xf.shape[1], opt.width ** 2, 1).requires_grad_(True)
         z = opt.H.matmul(x).requires_grad_(True)
 
         ###################
@@ -433,33 +486,41 @@ class GTV(nn.Module):
         # w = torch.exp(-(Fs.sum(axis=1)) / (2 * 1 ** 2)).requires_grad_(True)
         ###################
         E = self.cnnf.forward(xf)
-        Fs = (opt.H.matmul(E.view(E.shape[0], E.shape[1], opt.width**2, 1))**2).requires_grad_(True)
-        w = torch.exp(-(Fs.sum(axis=1)) / (2 *( 1 ** 2))).requires_grad_(True)
+        Fs = (
+            opt.H.matmul(E.view(E.shape[0], E.shape[1], opt.width ** 2, 1)) ** 2
+        ).requires_grad_(True)
+        w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2))).requires_grad_(True)
         ###################
         if debug:
-            print('\tWEIGHT SUM', w[0, :, :].sum().data)
+            print("\tWEIGHT SUM", w[0, :, :].sum().data)
             hist = list()
         w = w.unsqueeze(1).repeat(1, opt.channels, 1, 1)
         # w.register_hook(printfull)
-        T=opt.admm_iter
-        P=opt.prox_iter
+        T = opt.admm_iter
+        P = opt.prox_iter
         if debug:
             if Tmod:
-                T=Tmod
-        delta=opt.delta
-        eta=opt.eta
+                T = Tmod
+        delta = opt.delta
+        eta = opt.eta
         lagrange = opt.lagrange.requires_grad_(True)
 
         Y = self.cnny.forward(xf).squeeze(0)
-        y = Y.view(xf.shape[0], xf.shape[1], opt.width**2, 1).requires_grad_(True)
+        y = Y.view(xf.shape[0], xf.shape[1], opt.width ** 2, 1).requires_grad_(True)
         # y = xf.view(xf.shape[0], xf.shape[1], opt.width**2, 1).requires_grad_(True)
         I = opt.I.requires_grad_(True)
         H = opt.H.requires_grad_(True)
-        D = torch.inverse(2*opt.I + delta*(opt.H.T.mm(H))).type(dtype).requires_grad_(True)
+        D = (
+            torch.inverse(2 * opt.I + delta * (opt.H.T.mm(H)))
+            .type(dtype)
+            .requires_grad_(True)
+        )
         for i in range(T):
             # STEP 1
-            xhat = D.matmul(2*y - H.T.matmul(lagrange) + delta*H.T.matmul(z)).requires_grad_(True)
-            if i==0:
+            xhat = D.matmul(
+                2 * y - H.T.matmul(lagrange) + delta * H.T.matmul(z)
+            ).requires_grad_(True)
+            if i == 0:
                 z = opt.H.matmul(xhat).requires_grad_(True)
             ##### RECOMPUTE W #####
             # E = self.cnnf.forward(xf)
@@ -469,36 +530,54 @@ class GTV(nn.Module):
             #######################
             # STEP 2
             for j in range(P):
-                grad = (delta*z - lagrange - delta*H.matmul(xhat)).requires_grad_(True)
-                z  = proximal_gradient_descent(x=z, grad=grad, w=w, u=u, eta=eta, debug=debug).requires_grad_(True)
+                grad = (delta * z - lagrange - delta * H.matmul(xhat)).requires_grad_(
+                    True
+                )
+                z = proximal_gradient_descent(
+                    x=z, grad=grad, w=w, u=u, eta=eta, debug=debug
+                ).requires_grad_(True)
                 if debug:
                     # l = ((y-xhat).permute(0, 1, 3, 2).matmul(y-xhat) + (u * w * z.abs()).sum(axis=[1, 2, 3]))
 
                     # hist.append(l[0, 0, :, :])
-                    if debug>1:
-                        print("Left: ", (y-xhat).permute(0, 1, 3, 2).matmul(y-xhat).data[0], "Right: ",(u * w * z.abs()).sum(axis=[1, 2, 3]).data[0])
+                    if debug > 1:
+                        print(
+                            "Left: ",
+                            (y - xhat).permute(0, 1, 3, 2).matmul(y - xhat).data[0],
+                            "Right: ",
+                            (u * w * z.abs()).sum(axis=[1, 2, 3]).data[0],
+                        )
             # STEP 3
 
-            lagrange = (lagrange + delta*(H.matmul(xhat) - z)).requires_grad_(True)
+            lagrange = (lagrange + delta * (H.matmul(xhat) - z)).requires_grad_(True)
             if debug:
-                l =  ((y-xhat).permute(0, 1, 3, 2).matmul(y-xhat) + (u * w * z.abs()).sum(axis=[1, 2, 3]))\
-                + lagrange.permute(0, 1, 3, 2).matmul(H.matmul(xhat) - z) \
-                + (delta/2)*(H.matmul(xhat) - z).permute(0, 1, 3, 2).matmul(H.matmul(xhat) - z)
+                l = (
+                    (
+                        (y - xhat).permute(0, 1, 3, 2).matmul(y - xhat)
+                        + (u * w * z.abs()).sum(axis=[1, 2, 3])
+                    )
+                    + lagrange.permute(0, 1, 3, 2).matmul(H.matmul(xhat) - z)
+                    + (delta / 2)
+                    * (H.matmul(xhat) - z)
+                    .permute(0, 1, 3, 2)
+                    .matmul(H.matmul(xhat) - z)
+                )
                 hist.append(l[:, 0, :, :])
-        
+
         # xhat = D.matmul(2*y - H.T.matmul(lagrange) + delta*H.T.matmul(z)).requires_grad_(True)
         if debug:
             hist = [h.flatten() for h in hist]
             return hist
         xhat = _norm(xhat, 0, 255)
         return xhat.view(xhat.shape[0], opt.channels, opt.width, opt.width)
-    
+
     def predict(self, xf):
         pass
 
+
 def supporting_matrix(opt):
     width = opt.width
-    
+
     pixel_indices = [i for i in range(width * width)]
     pixel_indices = np.reshape(pixel_indices, (width, width))
     A = connected_adjacency(pixel_indices, connect=opt.connectivity)
@@ -507,10 +586,10 @@ def supporting_matrix(opt):
 
     opt.edges = A_pair.shape[0]
     H_dim0 = opt.edges
-    H_dim1 = width**2    
+    H_dim1 = width ** 2
     # unique_A_pair = np.unique(np.sort(A_pair, axis=1), axis=0)
 
-    I = torch.eye(width**2, width**2).type(dtype)
+    I = torch.eye(width ** 2, width ** 2).type(dtype)
     lagrange = torch.zeros(opt.edges, 1).type(dtype)
     A = torch.zeros(width ** 2, width ** 2).type(dtype)
     H = torch.zeros(H_dim0, H_dim1).type(dtype)
@@ -518,62 +597,84 @@ def supporting_matrix(opt):
         H[e, p[0]] = 1
         H[e, p[1]] = -1
         A[p[0], p[1]] = 1
-        
+
     opt.I = I.type(dtype).requires_grad_(True)
     opt.pairs = A_pair
     opt.H = H.type(dtype).requires_grad_(True)
     opt.connectivity = A.requires_grad_(True)
-    opt.connectivity_idx = torch.where(A>0)
+    opt.connectivity_idx = torch.where(A > 0)
     opt.lagrange = lagrange.requires_grad_(True)
     delta = 1
     # opt.D = torch.inverse(2*opt.I + delta*(opt.H.T.mm(H))).type(dtype)
 
 
-
-def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False): 
-    v = x - eta* grad    
-    #v = _norm(v,0,255)
+def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False):
+    v = x - eta * grad
+    # v = _norm(v,0,255)
     # print(v.shape, w.shape)
-    masks1 = ((v.abs() -  (eta*w*u).abs()) > 0).type(dtype).requires_grad_(True)
-    masks2 = ((v.abs() -  (eta*w*u).abs()) <=0).type(dtype).requires_grad_(True)
-    v = v - masks1*eta*w*u*torch.sign(v)
-    v = v - masks2*v
+    masks1 = ((v.abs() - (eta * w * u).abs()) > 0).type(dtype).requires_grad_(True)
+    masks2 = ((v.abs() - (eta * w * u).abs()) <= 0).type(dtype).requires_grad_(True)
+    v = v - masks1 * eta * w * u * torch.sign(v)
+    v = v - masks2 * v
     # v = _norm(v,0,255)
     # w.register_hook(printall)
     # v.register_hook(printfull)
     if debug and 0:
-       print(w.mean(),
-               #u.mean(), 
-             u,
-               eta)
+        print(
+            w.mean(),
+            # u.mean(),
+            u,
+            eta,
+        )
     return v
 
+
 def _norm(x, newmin, newmax):
-    return (x - x.min())*(newmax-newmin) / (x.max() - x.min() + 1e-8) + newmin
+    return (x - x.min()) * (newmax - newmin) / (x.max() - x.min() + 1e-8) + newmin
+
 
 def printmax(x):
     print(x.max().data[0])
+
+
 def printmean(x):
     print(x.mean().data[0])
+
+
 def printall(x):
     print(x.median().data, x.max().data, x.min().data)
+
 
 def check_symmetric(a, rtol=1e-05, atol=1e-08):
     return np.allclose(a, a.T, rtol=rtol, atol=atol)
 
+
 def printfull(x):
     # print(check_symmetric(x[0,0,:].cpu().detach().numpy()))
-    print(x.median().data[0], x.max().data[0], x.min().data[0], end='\r')
-    if debug==1:
+    print(x.median().data[0], x.max().data[0], x.min().data[0], end="\r")
+    if debug == 1:
         global xd
         xd = x.clone()
         return x
 
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=1e-4, momentum=0.9, u_max=75, u_min=25)
 
-if __name__=="__main__":
-    debug=0
-    
+opt = OPT(
+    batch_size=50,
+    admm_iter=4,
+    prox_iter=3,
+    delta=0.1,
+    channels=3,
+    eta=0.3,
+    u=25,
+    lr=1e-4,
+    momentum=0.9,
+    u_max=75,
+    u_min=25,
+)
+
+if __name__ == "__main__":
+    debug = 0
+
     xd = None
     cuda = True if torch.cuda.is_available() else False
     torch.autograd.set_detect_anomaly(True)
@@ -583,109 +684,120 @@ if __name__=="__main__":
         print(torch.cuda.get_device_name(0))
     else:
         dtype = torch.FloatTensor
-        
+
     DST = "./"
     DST = ""
     PATH = os.path.join(DST, "GTV.pkl")
-    #SAVEPATH = '/content/drive/My Drive/data/GTV_realnoise.pkl'
+    # SAVEPATH = '/content/drive/My Drive/data/GTV_realnoise.pkl'
     SAVEPATH = PATH
     batch_size = opt.batch_size
-    #_subset = ['10', '1', '3', '5', '9']
-    
-    _subset = ['10', '1', '7', '8','9']
-    subset = [i + '_' for i in _subset]
+    # _subset = ['10', '1', '3', '5', '9']
+
+    _subset = ["10", "1", "7", "8", "9"]
+    subset = [i + "_" for i in _subset]
     dataset = RENOIR_Dataset(
-        #img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv_fullsize\\train'),
-        img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv\\train'),
+        # img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv_fullsize\\train'),
+        img_dir=os.path.join(
+            "C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv\\train"
+        ),
         # img_dir=os.path.join('./train'),
         transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
         # transform=transforms.Compose([standardize(normalize=False), ToTensor(), gaussian_noise_(mean=0, stddev=10)]),
-        subset=subset
+        subset=subset,
     )
     dataloader = DataLoader(
-        dataset, batch_size=batch_size, shuffle=True#, pin_memory=True
+        dataset, batch_size=batch_size, shuffle=True  # , pin_memory=True
     )
-    
+
     width = 36
     supporting_matrix(opt)
     total_epoch = 8000
-    print("Dataset: " , len(dataset))
-    gtv = GTV(width=36, prox_iter = 1, u_max=10, u_min=.5, lambda_min=.5, lambda_max=1e9, cuda=cuda, opt=opt)
+    print("Dataset: ", len(dataset))
+    gtv = GTV(
+        width=36,
+        prox_iter=1,
+        u_max=10,
+        u_min=0.5,
+        lambda_min=0.5,
+        lambda_max=1e9,
+        cuda=cuda,
+        opt=opt,
+    )
     if cuda:
         gtv.cuda()
     criterion = nn.MSELoss()
     optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
-    
+
     hist = list()
     losshist = list()
     tstart = time.time()
     opt._print()
     for epoch in range(total_epoch):  # loop over the dataset multiple times
-        #running_loss_inside = 0.0
+        # running_loss_inside = 0.0
         running_loss = 0.0
         for i, data in enumerate(dataloader, 0):  # start index at 0
             # get the inputs; data is a list of [inputs, labels]
-            inputs = data['nimg'][:, :opt.channels, :, :].float().type(dtype)
-            labels = data["rimg"][:, :opt.channels, :, :].float().type(dtype)
+            inputs = data["nimg"][:, : opt.channels, :, :].float().type(dtype)
+            labels = data["rimg"][:, : opt.channels, :, :].float().type(dtype)
             # inputs = data['nimg'].float().type(dtype)
             # labels = data["rimg"].float().type(dtype)
-    
+
             # inputs = torch.autograd.Variable(inputs, requires_grad=True)
             # zero the parameter gradients
             optimizer.zero_grad()
             # forward + backward + optimize
             outputs = gtv(inputs, debug=0)
-            loss = criterion(outputs, labels)    
+            loss = criterion(outputs, labels)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(gtv.parameters(), 20)
-    
+
             optimizer.step()
             running_loss += loss.item()
-            #running_loss_inside += loss.item()
-            #if (i+1)%50 == 0:
+            # running_loss_inside += loss.item()
+            # if (i+1)%50 == 0:
             #    print(
             #        time.ctime(),
             #        "[{0}] \x1b[31m\"LOSS\"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}".format(
             #            epoch + 1, running_loss_inside / (i + 1), time.time() - tstart
             #        )
-            #    ) 
+            #    )
             #    running_loss_inside = 0.0
-        if (epoch+1)%5 == 0:
+        if (epoch + 1) % 5 == 0:
             print(
                 time.ctime(),
-                "[{0}] \x1b[31m\"LOSS\"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}".format(
+                '[{0}] \x1b[31m"LOSS"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}'.format(
                     epoch + 1, running_loss / (i + 1), time.time() - tstart
-                )
-            ) 
-            print('\tCNNF stats: ', gtv.cnnf.layer1[0].weight.grad.mean())
+                ),
+            )
+            print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
             pmax = list()
             for p in gtv.parameters():
                 pmax.append(p.grad.max())
-            print('\tmax gradients', max(pmax))
-    
+            print("\tmax gradients", max(pmax))
+
         hist.append(running_loss / (i + 1))
         losshist.append(running_loss / (i + 1))
-    
-        if ((epoch + 1) % 20 == 0) or (epoch+1)==total_epoch:
+
+        if ((epoch + 1) % 20 == 0) or (epoch + 1) == total_epoch:
             print("\tsave @ epoch ", epoch + 1)
             torch.save(gtv.state_dict(), SAVEPATH)
-            torch.save(optimizer.state_dict(), SAVEPATH+'optim')
-            histW = gtv(inputs[:1, :, : , :], debug=1)
+            torch.save(optimizer.state_dict(), SAVEPATH + "optim")
+            histW = gtv(inputs[:1, :, :, :], debug=1)
             histW = [h.cpu().detach().numpy()[0] for h in histW]
-            print('\t', np.argmin(histW), min(histW), histW)
+            print("\t", np.argmin(histW), min(histW), histW)
         elif 0:
-            histW = gtv(inputs[:1, :, : , :], debug=1)
+            histW = gtv(inputs[:1, :, :, :], debug=1)
             histW = [h.cpu().detach().numpy()[0] for h in histW]
-            print('\t', np.argmin(histW), min(histW), histW)
-            
-    
+            print("\t", np.argmin(histW), min(histW), histW)
+
     torch.save(gtv.state_dict(), SAVEPATH)
-    torch.save(optimizer.state_dict(), SAVEPATH+'optim')
+    torch.save(optimizer.state_dict(), SAVEPATH + "optim")
     print("Total running time: {0:.3f}".format(time.time() - tstart))
     fig, ax = plt.subplots(1, 1, figsize=(12, 5))
-    
-    cumsum_vec = np.cumsum(np.insert(losshist, 0, 0)) 
+
+    cumsum_vec = np.cumsum(np.insert(losshist, 0, 0))
     window_width = 50
     ma_vec = (cumsum_vec[window_width:] - cumsum_vec[:-window_width]) / window_width
     ax.plot(ma_vec)
-    fig.savefig('loss.png')
+    fig.savefig("loss.png")
+
