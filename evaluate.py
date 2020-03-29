@@ -158,6 +158,9 @@ def patch_merge(P, stride=36, shape=None, shapeorg=None):
 
 #INITIALIZE
 gtv = GTV(width=36, prox_iter = 1, u_max=10, u_min=.5, lambda_min=.5, lambda_max=1e9, cuda=cuda, opt=opt)
+width = 36
+supporting_matrix(opt)
+
 optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
 PATH = 'GTV.pkl'
 device = torch.device("cuda")
