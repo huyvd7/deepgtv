@@ -570,7 +570,7 @@ def printfull(x):
         return x
 
 debug=0
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=125, lr=1e-5, momentum=0.9, u_max=75, u_min=25)
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=1e-4, momentum=0.9, u_max=75, u_min=25)
 
 xd = None
 cuda = True if torch.cuda.is_available() else False
@@ -591,8 +591,8 @@ batch_size = opt.batch_size
 _subset = ['10', '1', '3', '5', '9']
 subset = [i + '_' for i in _subset]
 dataset = RENOIR_Dataset(
-    img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv_fullsize\\train'),
-    #img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv\\train'),
+    #img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv_fullsize\\train'),
+    img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv\\train'),
     # img_dir=os.path.join('./train'),
     transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
     # transform=transforms.Compose([standardize(normalize=False), ToTensor(), gaussian_noise_(mean=0, stddev=10)]),
@@ -604,13 +604,12 @@ dataloader = DataLoader(
 
 width = 36
 supporting_matrix(opt)
-total_epoch = 400
+total_epoch = 8
 print("Dataset: " , len(dataset))
 gtv = GTV(width=36, prox_iter = 1, u_max=10, u_min=.5, lambda_min=.5, lambda_max=1e9, cuda=cuda, opt=opt)
 if cuda:
     gtv.cuda()
 criterion = nn.MSELoss()
-# optimizer = optim.Adam(gtv.parameters(), lr=lr)
 optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
 
 hist = list()
@@ -618,7 +617,7 @@ losshist = list()
 tstart = time.time()
 opt._print()
 for epoch in range(total_epoch):  # loop over the dataset multiple times
-    running_loss_inside = 0.0
+    #running_loss_inside = 0.0
     running_loss = 0.0
     for i, data in enumerate(dataloader, 0):  # start index at 0
         # get the inputs; data is a list of [inputs, labels]
@@ -638,31 +637,32 @@ for epoch in range(total_epoch):  # loop over the dataset multiple times
 
         optimizer.step()
         running_loss += loss.item()
-        running_loss_inside += loss.item()
-        if (i+1)%50 == 0:
-            print(
-                time.ctime(),
-                "[{0}] \x1b[31m\"LOSS\"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}".format(
-                    epoch + 1, running_loss_inside / (i + 1), time.time() - tstart
-                )
-            ) 
-            running_loss_inside = 0.0
-    print(
-        time.ctime(),
-        "[{0}] \x1b[31m\"LOSS\"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}".format(
-            epoch + 1, running_loss / (i + 1), time.time() - tstart
-        )
-    ) 
-    print('\tCNNF stats: ', gtv.cnnf.layer1[0].weight.grad.mean())
-    losshist.append(running_loss / (i + 1))
-    pmax = list()
-    for p in gtv.parameters():
-        pmax.append(p.grad.max())
-    print('\tmax gradients', max(pmax))
-    # gtv(inputs,debug=1)
-    hist.append(running_loss / (i + 1))
+        #running_loss_inside += loss.item()
+        #if (i+1)%50 == 0:
+        #    print(
+        #        time.ctime(),
+        #        "[{0}] \x1b[31m\"LOSS\"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}".format(
+        #            epoch + 1, running_loss_inside / (i + 1), time.time() - tstart
+        #        )
+        #    ) 
+        #    running_loss_inside = 0.0
+    if (epoch+1)%5 == 0:
+        print(
+            time.ctime(),
+            "[{0}] \x1b[31m\"LOSS\"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}".format(
+                epoch + 1, running_loss / (i + 1), time.time() - tstart
+            )
+        ) 
+        print('\tCNNF stats: ', gtv.cnnf.layer1[0].weight.grad.mean())
+        pmax = list()
+        for p in gtv.parameters():
+            pmax.append(p.grad.max())
+        print('\tmax gradients', max(pmax))
 
-    if ((epoch + 1) % 10 == 0) or (epoch+1)==total_epoch:
+    hist.append(running_loss / (i + 1))
+    losshist.append(running_loss / (i + 1))
+
+    if ((epoch + 1) % 20 == 0) or (epoch+1)==total_epoch:
         print("\tsave @ epoch ", epoch + 1)
         torch.save(gtv.state_dict(), SAVEPATH)
         torch.save(optimizer.state_dict(), SAVEPATH+'optim')
@@ -678,3 +678,10 @@ for epoch in range(total_epoch):  # loop over the dataset multiple times
 torch.save(gtv.state_dict(), SAVEPATH)
 torch.save(optimizer.state_dict(), SAVEPATH+'optim')
 print("Total running time: {0:.3f}".format(time.time() - tstart))
+fig, ax = plt.subplots(1, 1, figsize=(12, 5))
+
+cumsum_vec = np.cumsum(np.insert(losshist, 0, 0)) 
+window_width = 50
+ma_vec = (cumsum_vec[window_width:] - cumsum_vec[:-window_width]) / window_width
+ax.plot(ma_vec)
+fig.savefig('loss.png')
