@@ -671,7 +671,7 @@ for epoch in range(total_epoch):  # loop over the dataset multiple times
         histW = gtv(inputs[:1, :, : , :], debug=1)
         histW = [h.cpu().detach().numpy()[0] for h in histW]
         print('\t', np.argmin(histW), min(histW), histW)
-    elif 1:
+    elif 0:
         histW = gtv(inputs[:1, :, : , :], debug=1)
         histW = [h.cpu().detach().numpy()[0] for h in histW]
         print('\t', np.argmin(histW), min(histW), histW)
