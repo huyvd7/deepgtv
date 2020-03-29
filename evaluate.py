@@ -20,7 +20,7 @@ else:
     dtype = torch.FloatTensor
 
 
-def denoise(inp, gtv, argref, normalize=False, stride=36):
+def denoise(inp, gtv, argref, normalize=False, stride=36, width=324):
     
     try:
         from skimage.metrics import structural_similarity as compare_ssim
@@ -29,7 +29,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36):
 
 
     sample = cv2.imread(inp)
-    width = 324
+    width = width
 
     sample = cv2.resize(sample, (width, width))
     sample = cv2.cvtColor(sample, cv2.COLOR_BGR2RGB)
@@ -174,7 +174,7 @@ for t in trainset:
     print('image #', t)
     inp = '{0}/noisy/{1}_n.bmp'.format(image_path, t)
     argref = '{0}/ref/{1}_r.bmp'.format(image_path, t)
-    _psnr, _ssim, _ssim2, _ = denoise(inp, gtv, argref, stride=12)
+    _psnr, _ssim, _ssim2, _ = denoise(inp, gtv, argref, stride=12, width=1080)
     traineva['psnr'].append(_psnr)
     traineva['ssim'].append(_ssim)
     traineva['ssim2'].append(_ssim2)
@@ -200,7 +200,7 @@ for t in testset:
     print('image #', t)
     inp = '{0}/noisy/{1}_n.bmp'.format(image_path, t)
     argref = '{0}/ref/{1}_r.bmp'.format(image_path, t)
-    _psnr, _ssim, _ssim2, _ = denoise(inp, gtv, argref, stride=12)
+    _psnr, _ssim, _ssim2, _ = denoise(inp, gtv, argref, stride=12, width=1080)
     testeva['psnr'].append(_psnr)
     testeva['ssim'].append(_ssim)
     testeva['ssim2'].append(_ssim2)
