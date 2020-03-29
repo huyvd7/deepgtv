@@ -51,7 +51,6 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324):
         ref = cv2.imread(argref)
         if ref.shape[0] != width or ref.shape[1] != width:
             ref = cv2.resize(ref, (width, width))
-#         print(ref.shape)
         ref = cv2.cvtColor(ref, cv2.COLOR_BGR2RGB)
         tref = ref.copy()
         ref = ref.transpose((2, 0, 1))
@@ -63,11 +62,10 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324):
     T1 = sample
     if argref:
         T1r = ref
-#         print(T1r.shape, T1.shape)
     else:
         print(T1.shape)
+
     m = T1.shape[-1]
-    # dummy = np.zeros(shape=(3, T1.shape[-1], T1.shape[-2]))
     T1= torch.nn.functional.pad(T1, (0, stride, 0, stride), mode='constant', value=0)
     shapex = T1.shape
     T2 = (
@@ -75,6 +73,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324):
         .unfold(0, 36, stride)
         .unfold(1, 36, stride)
     ).type(dtype)
+
     if argref:
         T1r= torch.nn.functional.pad(T1r, (0, stride, 0, stride), mode='constant', value=0)
         T2r = (
@@ -86,7 +85,8 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324):
     s2 = int(T2.shape[-1])
     dummy=torch.zeros(T2.shape)
     for ii, i in enumerate(range(T2.shape[1])):
-        P = gtv.forward(T2[i, :, :opt.channels, :, :].float())
+        P = gtv.forward(T2[i, :, :opt.channels, :, :].float()).requires_grad_(False)
+
 
         if cuda:
             P = P.cpu()
@@ -94,8 +94,6 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324):
             img1 = T2r[i, :, :opt.channels, :shape[-1], :shape[-1]].float()
             img2 = P[:, :opt.channels, :shape[-1], :shape[-1]]
             psnrs.append(cv2.PSNR(img1.detach().numpy(), img2.detach().numpy()))
-
-
             _tref = img1.detach().numpy()  
             _d = img2.detach().numpy()
             for iii in range(_d.shape[0]):
@@ -104,6 +102,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324):
 
         print("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
         dummy[i] = P
+        del P
     print("\nPrediction time: ", time.time() - tstart)
     if argref:
         print("PSNR: ", np.mean(np.array(psnrs)))
