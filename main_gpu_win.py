@@ -569,121 +569,122 @@ def printfull(x):
         xd = x.clone()
         return x
 
-debug=0
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=1e-4, momentum=0.9, u_max=75, u_min=25)
-
-xd = None
-cuda = True if torch.cuda.is_available() else False
-torch.autograd.set_detect_anomaly(True)
-print("CUDA: ", cuda)
-if cuda:
-    dtype = torch.cuda.FloatTensor
-    print(torch.cuda.get_device_name(0))
-else:
-    dtype = torch.FloatTensor
+if __name__=="__main__":
+    debug=0
+    opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=1e-4, momentum=0.9, u_max=75, u_min=25)
     
-DST = "./"
-DST = ""
-PATH = os.path.join(DST, "GTV.pkl")
-#SAVEPATH = '/content/drive/My Drive/data/GTV_realnoise.pkl'
-SAVEPATH = PATH
-batch_size = opt.batch_size
-#_subset = ['10', '1', '3', '5', '9']
-
-_subset = ['10', '1', '7', '8','9']
-subset = [i + '_' for i in _subset]
-dataset = RENOIR_Dataset(
-    #img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv_fullsize\\train'),
-    img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv\\train'),
-    # img_dir=os.path.join('./train'),
-    transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
-    # transform=transforms.Compose([standardize(normalize=False), ToTensor(), gaussian_noise_(mean=0, stddev=10)]),
-    subset=subset
-)
-dataloader = DataLoader(
-    dataset, batch_size=batch_size, shuffle=True#, pin_memory=True
-)
-
-width = 36
-supporting_matrix(opt)
-total_epoch = 8000
-print("Dataset: " , len(dataset))
-gtv = GTV(width=36, prox_iter = 1, u_max=10, u_min=.5, lambda_min=.5, lambda_max=1e9, cuda=cuda, opt=opt)
-if cuda:
-    gtv.cuda()
-criterion = nn.MSELoss()
-optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
-
-hist = list()
-losshist = list()
-tstart = time.time()
-opt._print()
-for epoch in range(total_epoch):  # loop over the dataset multiple times
-    #running_loss_inside = 0.0
-    running_loss = 0.0
-    for i, data in enumerate(dataloader, 0):  # start index at 0
-        # get the inputs; data is a list of [inputs, labels]
-        inputs = data['nimg'][:, :opt.channels, :, :].float().type(dtype)
-        labels = data["rimg"][:, :opt.channels, :, :].float().type(dtype)
-        # inputs = data['nimg'].float().type(dtype)
-        # labels = data["rimg"].float().type(dtype)
-
-        # inputs = torch.autograd.Variable(inputs, requires_grad=True)
-        # zero the parameter gradients
-        optimizer.zero_grad()
-        # forward + backward + optimize
-        outputs = gtv(inputs, debug=0)
-        loss = criterion(outputs, labels)    
-        loss.backward()
-        torch.nn.utils.clip_grad_norm_(gtv.parameters(), 20)
-
-        optimizer.step()
-        running_loss += loss.item()
-        #running_loss_inside += loss.item()
-        #if (i+1)%50 == 0:
-        #    print(
-        #        time.ctime(),
-        #        "[{0}] \x1b[31m\"LOSS\"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}".format(
-        #            epoch + 1, running_loss_inside / (i + 1), time.time() - tstart
-        #        )
-        #    ) 
-        #    running_loss_inside = 0.0
-    if (epoch+1)%5 == 0:
-        print(
-            time.ctime(),
-            "[{0}] \x1b[31m\"LOSS\"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}".format(
-                epoch + 1, running_loss / (i + 1), time.time() - tstart
-            )
-        ) 
-        print('\tCNNF stats: ', gtv.cnnf.layer1[0].weight.grad.mean())
-        pmax = list()
-        for p in gtv.parameters():
-            pmax.append(p.grad.max())
-        print('\tmax gradients', max(pmax))
-
-    hist.append(running_loss / (i + 1))
-    losshist.append(running_loss / (i + 1))
-
-    if ((epoch + 1) % 20 == 0) or (epoch+1)==total_epoch:
-        print("\tsave @ epoch ", epoch + 1)
-        torch.save(gtv.state_dict(), SAVEPATH)
-        torch.save(optimizer.state_dict(), SAVEPATH+'optim')
-        histW = gtv(inputs[:1, :, : , :], debug=1)
-        histW = [h.cpu().detach().numpy()[0] for h in histW]
-        print('\t', np.argmin(histW), min(histW), histW)
-    elif 0:
-        histW = gtv(inputs[:1, :, : , :], debug=1)
-        histW = [h.cpu().detach().numpy()[0] for h in histW]
-        print('\t', np.argmin(histW), min(histW), histW)
+    xd = None
+    cuda = True if torch.cuda.is_available() else False
+    torch.autograd.set_detect_anomaly(True)
+    print("CUDA: ", cuda)
+    if cuda:
+        dtype = torch.cuda.FloatTensor
+        print(torch.cuda.get_device_name(0))
+    else:
+        dtype = torch.FloatTensor
         
-
-torch.save(gtv.state_dict(), SAVEPATH)
-torch.save(optimizer.state_dict(), SAVEPATH+'optim')
-print("Total running time: {0:.3f}".format(time.time() - tstart))
-fig, ax = plt.subplots(1, 1, figsize=(12, 5))
-
-cumsum_vec = np.cumsum(np.insert(losshist, 0, 0)) 
-window_width = 50
-ma_vec = (cumsum_vec[window_width:] - cumsum_vec[:-window_width]) / window_width
-ax.plot(ma_vec)
-fig.savefig('loss.png')
+    DST = "./"
+    DST = ""
+    PATH = os.path.join(DST, "GTV.pkl")
+    #SAVEPATH = '/content/drive/My Drive/data/GTV_realnoise.pkl'
+    SAVEPATH = PATH
+    batch_size = opt.batch_size
+    #_subset = ['10', '1', '3', '5', '9']
+    
+    _subset = ['10', '1', '7', '8','9']
+    subset = [i + '_' for i in _subset]
+    dataset = RENOIR_Dataset(
+        #img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv_fullsize\\train'),
+        img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv\\train'),
+        # img_dir=os.path.join('./train'),
+        transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
+        # transform=transforms.Compose([standardize(normalize=False), ToTensor(), gaussian_noise_(mean=0, stddev=10)]),
+        subset=subset
+    )
+    dataloader = DataLoader(
+        dataset, batch_size=batch_size, shuffle=True#, pin_memory=True
+    )
+    
+    width = 36
+    supporting_matrix(opt)
+    total_epoch = 8000
+    print("Dataset: " , len(dataset))
+    gtv = GTV(width=36, prox_iter = 1, u_max=10, u_min=.5, lambda_min=.5, lambda_max=1e9, cuda=cuda, opt=opt)
+    if cuda:
+        gtv.cuda()
+    criterion = nn.MSELoss()
+    optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
+    
+    hist = list()
+    losshist = list()
+    tstart = time.time()
+    opt._print()
+    for epoch in range(total_epoch):  # loop over the dataset multiple times
+        #running_loss_inside = 0.0
+        running_loss = 0.0
+        for i, data in enumerate(dataloader, 0):  # start index at 0
+            # get the inputs; data is a list of [inputs, labels]
+            inputs = data['nimg'][:, :opt.channels, :, :].float().type(dtype)
+            labels = data["rimg"][:, :opt.channels, :, :].float().type(dtype)
+            # inputs = data['nimg'].float().type(dtype)
+            # labels = data["rimg"].float().type(dtype)
+    
+            # inputs = torch.autograd.Variable(inputs, requires_grad=True)
+            # zero the parameter gradients
+            optimizer.zero_grad()
+            # forward + backward + optimize
+            outputs = gtv(inputs, debug=0)
+            loss = criterion(outputs, labels)    
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(gtv.parameters(), 20)
+    
+            optimizer.step()
+            running_loss += loss.item()
+            #running_loss_inside += loss.item()
+            #if (i+1)%50 == 0:
+            #    print(
+            #        time.ctime(),
+            #        "[{0}] \x1b[31m\"LOSS\"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}".format(
+            #            epoch + 1, running_loss_inside / (i + 1), time.time() - tstart
+            #        )
+            #    ) 
+            #    running_loss_inside = 0.0
+        if (epoch+1)%5 == 0:
+            print(
+                time.ctime(),
+                "[{0}] \x1b[31m\"LOSS\"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}".format(
+                    epoch + 1, running_loss / (i + 1), time.time() - tstart
+                )
+            ) 
+            print('\tCNNF stats: ', gtv.cnnf.layer1[0].weight.grad.mean())
+            pmax = list()
+            for p in gtv.parameters():
+                pmax.append(p.grad.max())
+            print('\tmax gradients', max(pmax))
+    
+        hist.append(running_loss / (i + 1))
+        losshist.append(running_loss / (i + 1))
+    
+        if ((epoch + 1) % 20 == 0) or (epoch+1)==total_epoch:
+            print("\tsave @ epoch ", epoch + 1)
+            torch.save(gtv.state_dict(), SAVEPATH)
+            torch.save(optimizer.state_dict(), SAVEPATH+'optim')
+            histW = gtv(inputs[:1, :, : , :], debug=1)
+            histW = [h.cpu().detach().numpy()[0] for h in histW]
+            print('\t', np.argmin(histW), min(histW), histW)
+        elif 0:
+            histW = gtv(inputs[:1, :, : , :], debug=1)
+            histW = [h.cpu().detach().numpy()[0] for h in histW]
+            print('\t', np.argmin(histW), min(histW), histW)
+            
+    
+    torch.save(gtv.state_dict(), SAVEPATH)
+    torch.save(optimizer.state_dict(), SAVEPATH+'optim')
+    print("Total running time: {0:.3f}".format(time.time() - tstart))
+    fig, ax = plt.subplots(1, 1, figsize=(12, 5))
+    
+    cumsum_vec = np.cumsum(np.insert(losshist, 0, 0)) 
+    window_width = 50
+    ma_vec = (cumsum_vec[window_width:] - cumsum_vec[:-window_width]) / window_width
+    ax.plot(ma_vec)
+    fig.savefig('loss.png')

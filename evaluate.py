@@ -11,6 +11,7 @@ from torchvision.utils import save_image
 import torchvision.transforms as transforms
 import torch.optim as optim
 import matplotlib.pyplot as plt
+from main_gpu_win import *
 
 cuda = True if torch.cuda.is_available() else False
 if cuda:
