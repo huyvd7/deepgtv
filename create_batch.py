@@ -112,7 +112,7 @@ class standardize2(object):
                 'rimg': rimg, 'nn':nn, 'rn':rn}
 def main():
     dataset = RENOIR_Dataset2(img_dir='..\\gauss\\gauss\\',
-                             transform = transforms.Compose([standardize2(),
+                             transform = transforms.Compose([standardize2(w=324),
                                                 ToTensor2()])
                             )
     dataloader = DataLoader(dataset, batch_size=1,
