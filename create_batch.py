@@ -110,38 +110,41 @@ class standardize2(object):
             rimg = rimg / 255
         return {'nimg': nimg,
                 'rimg': rimg, 'nn':nn, 'rn':rn}
+def main():
+    dataset = RENOIR_Dataset2(img_dir='..\\gauss\\gauss\\',
+                             transform = transforms.Compose([standardize2(),
+                                                ToTensor2()])
+                            )
+    dataloader = DataLoader(dataset, batch_size=1,
+                            shuffle=True, num_workers=1)
+    # rm -r gauss_batch
+    # mkdir gauss_batch
+    # mkdir gauss_batch/noisy
+    # mkdir gauss_batch/ref
+    
+    for i_batch, s in enumerate(dataloader):
+        print(i_batch, s['nimg'].size(),
+              s['rimg'].size(), len(s['nimg']), s['nn'], s['rn'])
+        T1 = s['nimg'].unfold(2, 36, 27).unfold(3, 36, 27).reshape(1, 3, -1, 36, 36).squeeze()
+        T2 = s['rimg'].unfold(2, 36, 27).unfold(3, 36, 27).reshape(1, 3, -1, 36, 36).squeeze()
+        nnn = s['nn'][0].split('.')[0]
+        rn = s['rn'][0].split('.')[0]
+        total = 0
+        noisyp = '..\\gauss_batch\\noisy'
+        refp =   '..\\gauss_batch\\ref'
+        for i in range(T1.shape[1]):
+            img = T1[:, i, :, :].cpu().detach().numpy().astype(np.uint8)
+            img = img.transpose(1, 2, 0)
+            plt.imsave('{0}\\{1}_{2}.png'.format(noisyp, nnn,i), img )
+            total += 1
+        for i in range(T2.shape[1]):
+            img = T2[:, i, :, :].cpu().detach().numpy().astype(np.uint8)
+            img = img.transpose(1, 2, 0)
+            plt.imsave('{0}\\{1}_{2}.bmp'.format(refp, rn,i), img )
+            
+        print(total)
+        print(noisyp, refp)
+    print(T1.shape)
 
-dataset = RENOIR_Dataset2(img_dir='..\\gauss\\gauss\\',
-                         transform = transforms.Compose([standardize2(),
-                                            ToTensor2()])
-                        )
-dataloader = DataLoader(dataset, batch_size=1,
-                        shuffle=True, num_workers=1)
-# rm -r gauss_batch
-# mkdir gauss_batch
-# mkdir gauss_batch/noisy
-# mkdir gauss_batch/ref
-
-for i_batch, s in enumerate(dataloader):
-    print(i_batch, s['nimg'].size(),
-          s['rimg'].size(), len(s['nimg']), s['nn'], s['rn'])
-    T1 = s['nimg'].unfold(2, 36, 27).unfold(3, 36, 27).reshape(1, 3, -1, 36, 36).squeeze()
-    T2 = s['rimg'].unfold(2, 36, 27).unfold(3, 36, 27).reshape(1, 3, -1, 36, 36).squeeze()
-    nnn = s['nn'][0].split('.')[0]
-    rn = s['rn'][0].split('.')[0]
-    total = 0
-    noisyp = '..\\gauss_batch\\noisy'
-    refp =   '..\\gauss_batch\\ref'
-    for i in range(T1.shape[1]):
-        img = T1[:, i, :, :].cpu().detach().numpy().astype(np.uint8)
-        img = img.transpose(1, 2, 0)
-        plt.imsave('{0}\\{1}_{2}.png'.format(noisyp, nnn,i), img )
-        total += 1
-    for i in range(T2.shape[1]):
-        img = T2[:, i, :, :].cpu().detach().numpy().astype(np.uint8)
-        img = img.transpose(1, 2, 0)
-        plt.imsave('{0}\\{1}_{2}.bmp'.format(refp, rn,i), img )
-        
-    print(total)
-    print(noisyp, refp)
-print(T1.shape)
+if __name__=="__main__":
+    main()
