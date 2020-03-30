@@ -18,6 +18,7 @@ opt = OPT(
     u_min=25,
 )
 
+supporting_matrix(opt)
 
 for i in range(1, 6):
     random.seed(i)
