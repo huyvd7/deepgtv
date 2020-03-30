@@ -1,4 +1,5 @@
 from proxgtv.proxgtv import *
+import os
 
 class RENOIR_Dataset2(Dataset):
     """
@@ -129,6 +130,8 @@ def main():
     refp =   '..\\gauss_batch\\ref'
     shutil.rmtree(noisyp)
     shutil.rmtree(refp)
+    os.makedirs(noisyp)
+    os.makedirs(refp)
 
     for i_batch, s in enumerate(dataloader):
         print(i_batch, s['nimg'].size(),
