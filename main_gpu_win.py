@@ -601,7 +601,7 @@ def supporting_matrix(opt):
     opt.I = I.type(dtype).requires_grad_(True)
     opt.pairs = A_pair
     opt.H = H.type(dtype).requires_grad_(True)
-    opt.connectivity = A.requires_grad_(True)
+    opt.connectivity_full = A.requires_grad_(True)
     opt.connectivity_idx = torch.where(A > 0)
     opt.lagrange = lagrange.requires_grad_(True)
     delta = 1
