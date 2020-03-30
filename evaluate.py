@@ -138,8 +138,8 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         # print("SSIM: ", np.mean(np.array(score2)))
         psnr2 = cv2.PSNR(tref, d)
         mse = ((tref-d)**2).mean(axis=None)
-        print("SSIM: {.2f}".format(score))
-        print("MSE: {.2f}".format(mse))
+        print("SSIM: {:.2f}".format(score))
+        print("MSE: {:.2f}".format(mse))
     print("Saved ", opath)
     return (
         np.mean(np.array(psnrs)), score, np.mean(np.array(score2)), psnr2 , mse, d
