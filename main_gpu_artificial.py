@@ -749,17 +749,17 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
 
             optimizer.step()
             running_loss += loss.item()
-            print(
-                time.ctime(),
-                '[{0}] \x1b[31m"LOSS"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}'.format(
-                    epoch + 1, running_loss / (i + 1), time.time() - tstart
-                ),
-            )
-            print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
-            pmax = list()
-            for p in gtv.parameters():
-                pmax.append(p.grad.max())
-            print("\tmax gradients", max(pmax))
+        print(
+            time.ctime(),
+            '[{0}] \x1b[31m"LOSS"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}'.format(
+                epoch + 1, running_loss / (i + 1), time.time() - tstart
+            ),
+        )
+        print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
+        pmax = list()
+        for p in gtv.parameters():
+            pmax.append(p.grad.max())
+        print("\tmax gradients", max(pmax))
 
         hist.append(running_loss / (i + 1))
         losshist.append(running_loss / (i + 1))
@@ -771,10 +771,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
             histW = gtv(inputs[:1, :, :, :], debug=1)
             histW = [h.cpu().detach().numpy()[0] for h in histW]
             print("\t", np.argmin(histW), min(histW), histW)
-        elif 0:
-            histW = gtv(inputs[:1, :, :, :], debug=1)
-            histW = [h.cpu().detach().numpy()[0] for h in histW]
-            print("\t", np.argmin(histW), min(histW), histW)
+
 
     torch.save(gtv.state_dict(), SAVEPATH)
     torch.save(optimizer.state_dict(), SAVEPATH + "optim")
