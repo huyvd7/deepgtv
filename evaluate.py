@@ -137,10 +137,12 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
         # print("SSIM: ", np.mean(np.array(score2)))
         psnr2 = cv2.PSNR(tref, d)
+        mse = ((tref-d)**2).mean(axis=None)
         print("SSIM: ", score)
+        print("MSE: ", mse)
     print("Saved ", opath)
     return (
-        np.mean(np.array(psnrs)), score, np.mean(np.array(score2)), psnr2 , d 
+        np.mean(np.array(psnrs)), score, np.mean(np.array(score2)), psnr2 , mse, d
     )  # psnr, ssim, denoised image
 
 
@@ -189,17 +191,18 @@ def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0):
     print("EVALUATING TRAIN SET")
     
     #trainset = ["10", "1", "7", "8", "9"]
-    traineva = {'psnr':list(), 'ssim':list(), 'ssim2':list(), 'psnr2':list()}
+    traineva = {'psnr':list(), 'ssim':list(), 'ssim2':list(), 'psnr2':list(), 'mse':list()}
 
     for t in trainset:
         print("image #", t)
         inp = "{0}/noisy/{1}_n.bmp".format(image_path, t)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
-        _psnr, _ssim, _ssim2, _psnr2, _ = denoise(inp, gtv, argref, stride=12, width=imgw, prefix=seed)
+        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=12, width=imgw, prefix=seed)
         traineva["psnr"].append(_psnr)
         traineva["ssim"].append(_ssim)
         traineva["ssim2"].append(_ssim2)
         traineva['psnr2'].append(_psnr2)
+        traineva['mse'].append(_mse)
         try:
             from skimage.metrics import structural_similarity as compare_ssim
         except Exception:
@@ -214,20 +217,22 @@ def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0):
     print("MEAN SSIM: ", np.mean(traineva["ssim"]))
     print("MEAN SSIM2 (patch-based SSIM): ", np.mean(traineva["ssim2"]))
     print("MEAN PSNR2 (image-based PSNR): ", np.mean(traineva['psnr2']))
+    print("MEAN MSE (image-based MSE): ", np.mean(traineva['mse']))
     print("========================")
     
     print("EVALUATING TEST SET")
     #testset = ["2", "3", "4", "5", "6"]
-    testeva = {'psnr':list(), 'ssim':list(), 'ssim2':list(), 'psnr2':list()}
+    testeva = {'psnr':list(), 'ssim':list(), 'ssim2':list(), 'psnr2':list(), 'mse':list()}
     for t in testset:
         print("image #", t)
         inp = "{0}/noisy/{1}_n.bmp".format(image_path, t)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
-        _psnr, _ssim, _ssim2, psnr2, _ = denoise(inp, gtv, argref, stride=12, width=imgw, prefix=seed)
+        _psnr, _ssim, _ssim2, psnr2, mse, _ = denoise(inp, gtv, argref, stride=12, width=imgw, prefix=seed)
         testeva["psnr"].append(_psnr)
         testeva["ssim"].append(_ssim)
         testeva["ssim2"].append(_ssim2)
         testeva['psnr2'].append(_psnr2)
+        testeva['mse'].append(_mse)
         try:
             from skimage.metrics import structural_similarity as compare_ssim
         except Exception:
@@ -242,6 +247,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0):
     print("MEAN SSIM: ", np.mean(testeva["ssim"]))
     print("MEAN SSIM2 (patch-based SSIM): ", np.mean(testeva["ssim2"]))
     print("MEAN PSNR2 (image-based PSNR): ", np.mean(testeva['psnr2']))
+    print("MEAN MSE (image-based MSE): ", np.mean(testeva['mse']))
     print("========================")
     return np.mean(traineva["psnr"]), np.mean(traineva["ssim"]), np.mean(testeva["psnr"]), np.mean(testeva["ssim"])
 if __name__=="__main__":
