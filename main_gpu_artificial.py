@@ -682,6 +682,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
     # _subset = ['10', '1', '3', '5', '9']
     if not subset:
         _subset = ["10", "1", "7", "8", "9"]
+        print('Train: ', subset)
         subset = [i + "_" for i in _subset]
     else:
         subset = [i + "_" for i in subset]
@@ -723,7 +724,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
                  {'params': base_params},
                  {'params': cnny_params , 'lr': opt.lr*70}
              ], lr=opt.lr, momentum=opt.momentum)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1, last_epoch=-1)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.95, last_epoch=-1)
     
     hist = list()
     losshist = list()
