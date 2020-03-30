@@ -168,6 +168,7 @@ def patch_merge(P, stride=36, shape=None, shapeorg=None):
 def main_eva(seed, model_name, trainset, testset, imgw=324):
     # INITIALIZE
     global opt
+    supporting_matrix(opt)
     gtv = GTV(
         width=36,
         prox_iter=1,
