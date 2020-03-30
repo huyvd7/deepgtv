@@ -110,6 +110,9 @@ class standardize2(object):
             rimg = rimg / 255
         return {'nimg': nimg,
                 'rimg': rimg, 'nn':nn, 'rn':rn}
+
+import shutil
+
 def main():
     dataset = RENOIR_Dataset2(img_dir='..\\gauss\\gauss\\',
                              transform = transforms.Compose([standardize2(w=324),
@@ -122,6 +125,11 @@ def main():
     # mkdir gauss_batch/noisy
     # mkdir gauss_batch/ref
     
+    noisyp = '..\\gauss_batch\\noisy'
+    refp =   '..\\gauss_batch\\ref'
+    shutil.rmtree(noisyp)
+    shutil.rmtree(refp)
+
     for i_batch, s in enumerate(dataloader):
         print(i_batch, s['nimg'].size(),
               s['rimg'].size(), len(s['nimg']), s['nn'], s['rn'])
@@ -130,8 +138,6 @@ def main():
         nnn = s['nn'][0].split('.')[0]
         rn = s['rn'][0].split('.')[0]
         total = 0
-        noisyp = '..\\gauss_batch\\noisy'
-        refp =   '..\\gauss_batch\\ref'
         for i in range(T1.shape[1]):
             img = T1[:, i, :, :].cpu().detach().numpy().astype(np.uint8)
             img = img.transpose(1, 2, 0)
