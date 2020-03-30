@@ -17,6 +17,9 @@ opt = OPT(
     u_max=75,
     u_min=25,
 )
+result = dict({'psnr_train':list(), 'ssim_train':list(),
+                'psnr_test':list(), 'ssim_test':list()})
+
 for i in range(1, 6):
     random.seed(i)
     subset = random.sample(_subset, 5)
@@ -26,4 +29,4 @@ for i in range(1, 6):
     m = '{0}_{1}'.format(i, model_name)
     o = m + 'optim'
     main(seed=i, model_name=m, optim_name = o, subset=subset, epoch=1)
-    main_eva(seed=i, model_name=m, trainset=subset, testset=testset)
+    _psnr_train, _ssim_train, _psnr_test, _ssim_test = main_eva(seed=i, model_name=m, trainset=subset, testset=testset, imgw=1080)

@@ -20,7 +20,7 @@ else:
     dtype = torch.FloatTensor
 
 
-def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_'):
+def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0):
     try:
         from skimage.metrics import structural_similarity as compare_ssim
     except Exception:
@@ -103,8 +103,8 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_')
                         multichannel=True,
                     )
                     score2.append(_score2)
-
-            print("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
+            if verbose>0:
+                print("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
             dummy[i] = P
             del P
     print("\nPrediction time: ", time.time() - tstart)
@@ -165,7 +165,7 @@ def patch_merge(P, stride=36, shape=None, shapeorg=None):
 
     return (R / Rc)[:, : shapeorg[-1], : shapeorg[-1]]
 
-def main_eva(seed, model_name, trainset, testset, imgw=324):
+def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0):
     # INITIALIZE
     global opt
     supporting_matrix(opt)
@@ -237,8 +237,8 @@ def main_eva(seed, model_name, trainset, testset, imgw=324):
     print("MEAN SSIM: ", np.mean(testeva["ssim"]))
     print("MEAN SSIM2 (patch-based SSIM): ", np.mean(testeva["ssim2"]))
     print("========================")
-   
+    return np.mean(traineva["psnr"]), np.mean(traineva["ssim"]), np.mean(testeva["psnr"]), np.mean(testeva["ssim"])
 if __name__=="__main__":
     global opt
     supporting_matrix(opt)
-    main_eva()
+    main_eva(verbose=1)
