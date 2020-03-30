@@ -3,7 +3,6 @@ from evaluate import *
 from main_gpu_win import *
 
 _subset = ['10', '1', '2', '3', '4', '5', '6', '7','8','9']
-_subset = [i + "_" for i in _subset]
 model_name = 'GTV.pkl'
 
 for i in range(1, 6):
