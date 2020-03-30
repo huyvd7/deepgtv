@@ -111,7 +111,7 @@ class standardize2(object):
         return {'nimg': nimg,
                 'rimg': rimg, 'nn':nn, 'rn':rn}
 
-dataset = RENOIR_Dataset2(img_dir='..\\..\\gauss\\',
+dataset = RENOIR_Dataset2(img_dir='..\\gauss\\',
                          transform = transforms.Compose([standardize2(),
                                             ToTensor2()])
                         )
@@ -130,8 +130,8 @@ for i_batch, s in enumerate(dataloader):
     nnn = s['nn'][0].split('.')[0]
     rn = s['rn'][0].split('.')[0]
     total = 0
-    noisyp = '..\\..\\gauss_batch\\noisy'
-    refp = '..\\..\\gauss_batch\\ref'
+    noisyp = '..\\gauss_batch\\noisy'
+    refp =   '..\\gauss_batch\\ref'
     for i in range(T1.shape[1]):
         img = T1[:, i, :, :].cpu().detach().numpy().astype(np.uint8)
         img = img.transpose(1, 2, 0)
