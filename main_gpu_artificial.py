@@ -723,7 +723,8 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
                  {'params': base_params},
                  {'params': cnny_params , 'lr': opt.lr*70}
              ], lr=opt.lr, momentum=opt.momentum)
-
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1, last_epoch=-1)
+    
     hist = list()
     losshist = list()
     tstart = time.time()
@@ -772,7 +773,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
             histW = [h.cpu().detach().numpy()[0] for h in histW]
             print("\t", np.argmin(histW), min(histW), histW)
 
-
+        scheduler.step() 
     torch.save(gtv.state_dict(), SAVEPATH)
     torch.save(optimizer.state_dict(), SAVEPATH + "optim")
     print("Total running time: {0:.3f}".format(time.time() - tstart))
