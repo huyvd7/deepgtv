@@ -772,6 +772,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
             histW = gtv(inputs[:1, :, :, :], debug=1)
             histW = [h.cpu().detach().numpy()[0] for h in histW]
             print("\t", np.argmin(histW), min(histW), histW)
+            print('current lr: ', scheduler.get_lr())
 
         scheduler.step() 
     torch.save(gtv.state_dict(), SAVEPATH)
