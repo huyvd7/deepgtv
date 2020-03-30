@@ -657,20 +657,7 @@ def printfull(x):
         xd = x.clone()
         return x
 
-
-opt = OPT(
-    batch_size=50,
-    admm_iter=4,
-    prox_iter=3,
-    delta=0.1,
-    channels=3,
-    eta=0.3,
-    u=25,
-    lr=1e-4,
-    momentum=0.9,
-    u_max=75,
-    u_min=25,
-)
+opt = OPT(batch_size = 50, admm_iter=2, prox_iter=3, delta=.1, channels=3, eta=.3, u=50, lr=1e-5, momentum=0.9, u_max=75, u_min=25)
 
 def main(seed, model_name, optim_name, subset=None, epoch=100):
     debug = 0
@@ -699,13 +686,10 @@ def main(seed, model_name, optim_name, subset=None, epoch=100):
     else:
         subset = [i + "_" for i in subset]
     dataset = RENOIR_Dataset(
-        # img_dir=os.path.join('C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv_fullsize\\train'),
         img_dir=os.path.join(
-            "C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv\\full"
+            "C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\dgtv\\gauss_batch"
         ),
-        # img_dir=os.path.join('./train'),
         transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
-        # transform=transforms.Compose([standardize(normalize=False), ToTensor(), gaussian_noise_(mean=0, stddev=10)]),
         subset=subset,
     )
     dataloader = DataLoader(
@@ -729,7 +713,11 @@ def main(seed, model_name, optim_name, subset=None, epoch=100):
     if cuda:
         gtv.cuda()
     criterion = nn.MSELoss()
-    optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
+    # optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
+    optimizer = optim.SGD([
+                 {'params': base_params},
+                 {'params': cnny_params , 'lr': opt.lr*70}
+             ], lr=opt.lr, momentum=opt.momentum)
 
     hist = list()
     losshist = list()
@@ -756,16 +744,6 @@ def main(seed, model_name, optim_name, subset=None, epoch=100):
 
             optimizer.step()
             running_loss += loss.item()
-            # running_loss_inside += loss.item()
-            # if (i+1)%50 == 0:
-            #    print(
-            #        time.ctime(),
-            #        "[{0}] \x1b[31m\"LOSS\"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}".format(
-            #            epoch + 1, running_loss_inside / (i + 1), time.time() - tstart
-            #        )
-            #    )
-            #    running_loss_inside = 0.0
-        if (epoch + 1) % 5 == 0:
             print(
                 time.ctime(),
                 '[{0}] \x1b[31m"LOSS"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}'.format(
@@ -805,4 +783,4 @@ def main(seed, model_name, optim_name, subset=None, epoch=100):
     fig.savefig("loss.png")
 
 if __name__=="__main__":
-    main()
+    main(seed=1, model_name='GTV_20.pkl')
