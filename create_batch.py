@@ -128,8 +128,8 @@ def main():
     
     noisyp = '..\\gauss_batch\\noisy'
     refp =   '..\\gauss_batch\\ref'
-    shutil.rmtree(noisyp)
-    shutil.rmtree(refp)
+    shutil.rmtree(noisyp, ignore_errors=True)
+    shutil.rmtree(refp, ignore_errors=True)
     os.makedirs(noisyp)
     os.makedirs(refp)
 
