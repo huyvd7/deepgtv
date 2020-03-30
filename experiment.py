@@ -30,7 +30,7 @@ for i in range(1, 6):
     m = '{0}_{1}'.format(i, model_name)
     o = m + 'optim'
     main(seed=i, model_name=m, optim_name = o, subset=subset, epoch=100)
-    _psnr_train, _ssim_train, _psnr_test, _ssim_test = main_eva(seed=i, model_name=m, trainset=subset, testset=testset, imgw=1080)
+    _psnr_train, _ssim_train, _psnr_test, _ssim_test = main_eva(seed=i, model_name=m, trainset=subset, testset=testset, imgw=324)
     result['psnr_train'].append(_psnr_train)
     result['ssim_train'].append(_ssim_train)
     result['psnr_test'].append(_psnr_test)
