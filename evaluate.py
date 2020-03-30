@@ -112,7 +112,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     else:
         print("Prediction time: ", time.time() - tstart)
     if argref:
-        print("PSNR: ", np.mean(np.array(psnrs)))
+        print("PSNR: {.2f}".format(np.mean(np.array(psnrs))))
 
     dummy = (
         patch_merge(dummy, stride=stride, shape=shapex, shapeorg=shape).detach().numpy()
@@ -138,8 +138,8 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         # print("SSIM: ", np.mean(np.array(score2)))
         psnr2 = cv2.PSNR(tref, d)
         mse = ((tref-d)**2).mean(axis=None)
-        print("SSIM: ", score)
-        print("MSE: ", mse)
+        print("SSIM: {.2f}".format(score))
+        print("MSE: {.2f}".format(mse))
     print("Saved ", opath)
     return (
         np.mean(np.array(psnrs)), score, np.mean(np.array(score2)), psnr2 , mse, d
@@ -213,12 +213,12 @@ def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0):
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
         print("Original ", cv2.PSNR(img1, img2), score)
     print("========================")
-    print("MEAN PSNR: ", np.mean(traineva["psnr"]))
-    print("MEAN SSIM: ", np.mean(traineva["ssim"]))
-    print("MEAN SSIM2 (patch-based SSIM): ", np.mean(traineva["ssim2"]))
-    print("MEAN PSNR2 (image-based PSNR): ", np.mean(traineva['psnr2']))
-    print("MEAN MSE (image-based MSE): ", np.mean(traineva['mse']))
-    print("========================")
+    print("MEAN PSNR: {:.2f}".format(np.mean(traineva["psnr"])))
+    print("MEAN SSIM: {:.2f}".format(np.mean(traineva["ssim"])))
+    print("MEAN SSIM2 (patch-based SSIM): {:.2f}".format(np.mean(traineva["ssim2"])))
+    print("MEAN PSNR2 (image-based PSNR): {:.2f}".format(np.mean(traineva['psnr2'])))
+    print("MEAN MSE (image-based MSE): {:.2f}".format(np.mean(traineva['mse'])))
+   print("========================")
     
     print("EVALUATING TEST SET")
     #testset = ["2", "3", "4", "5", "6"]
@@ -243,11 +243,11 @@ def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0):
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
         print("Original ", cv2.PSNR(img1, img2), score)
     print("========================")
-    print("MEAN PSNR: ", np.mean(testeva["psnr"]))
-    print("MEAN SSIM: ", np.mean(testeva["ssim"]))
-    print("MEAN SSIM2 (patch-based SSIM): ", np.mean(testeva["ssim2"]))
-    print("MEAN PSNR2 (image-based PSNR): ", np.mean(testeva['psnr2']))
-    print("MEAN MSE (image-based MSE): ", np.mean(testeva['mse']))
+    print("MEAN PSNR: {:.2f}".format(np.mean(testeva["psnr"])))
+    print("MEAN SSIM: {:.2f}".format(np.mean(testeva["ssim"])))
+    print("MEAN SSIM2 (patch-based SSIM): {:.2f}".format(np.mean(testeva["ssim2"])))
+    print("MEAN PSNR2 (image-based PSNR): {:.2f}".format(np.mean(testeva['psnr2'])))
+    print("MEAN MSE (image-based MSE): {:.2f}".format(np.mean(testeva['mse'])))
     print("========================")
     return np.mean(traineva["psnr"]), np.mean(traineva["ssim"]), np.mean(testeva["psnr"]), np.mean(testeva["ssim"])
 if __name__=="__main__":
