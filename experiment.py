@@ -1,6 +1,7 @@
 import random
 from evaluate import *
-from main_gpu_win import *
+#from main_gpu_win import *
+from main_gpu_artificial import *
 
 _subset = ['10', '1', '2', '3', '4', '5', '6', '7','8','9']
 model_name = 'GTV.pkl'
@@ -28,7 +29,7 @@ for i in range(1, 6):
     print("Test: ", testset)
     m = '{0}_{1}'.format(i, model_name)
     o = m + 'optim'
-    main(seed=i, model_name=m, optim_name = o, subset=subset, epoch=1000)
+    main(seed=i, model_name=m, optim_name = o, subset=subset, epoch=100)
     _psnr_train, _ssim_train, _psnr_test, _ssim_test = main_eva(seed=i, model_name=m, trainset=subset, testset=testset, imgw=1080)
     result['psnr_train'].append(_psnr_train)
     result['ssim_train'].append(_ssim_train)
