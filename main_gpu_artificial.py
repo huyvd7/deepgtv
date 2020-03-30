@@ -714,6 +714,11 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
         gtv.cuda()
     criterion = nn.MSELoss()
     # optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
+    
+    cnny_params = list(filter(lambda kv: 'cnnf' in kv[0] , gtv.named_parameters()))
+    cnny_params = [i[1] for i in cnny_params]
+    base_params = list(filter(lambda kv: 'cnnf' not in kv[0], gtv.named_parameters()))
+    base_params = [i[1] for i in base_params]
     optimizer = optim.SGD([
                  {'params': base_params},
                  {'params': cnny_params , 'lr': opt.lr*70}
