@@ -166,7 +166,7 @@ def patch_merge(P, stride=36, shape=None, shapeorg=None):
 
     return (R / Rc)[:, : shapeorg[-1], : shapeorg[-1]]
 
-def main_eva(seed, model_name, trainset, testset, imgw=324):
+def main_eva(seed, model_name, trainset, testset, imgw=324, opt=None):
     # INITIALIZE
     gtv = GTV(
         width=36,
@@ -239,4 +239,4 @@ def main_eva(seed, model_name, trainset, testset, imgw=324):
     print("========================")
    
 if __name__=="__main__":
-    main_eva()
+    main_eva(opt=opt)

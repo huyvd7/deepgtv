@@ -672,7 +672,7 @@ opt = OPT(
     u_min=25,
 )
 
-def main(seed, model_name, optim_name, subset=None, epoch=100):
+def main(seed, model_name, optim_name, subset=None, epoch=100, opt=None):
     debug = 0
 
     xd = None
@@ -802,4 +802,4 @@ def main(seed, model_name, optim_name, subset=None, epoch=100):
     fig.savefig("loss.png")
 
 if __name__=="__main__":
-    main()
+    main(opt=opt)
