@@ -218,7 +218,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0):
     print("MEAN SSIM2 (patch-based SSIM): {:.2f}".format(np.mean(traineva["ssim2"])))
     print("MEAN PSNR2 (image-based PSNR): {:.2f}".format(np.mean(traineva['psnr2'])))
     print("MEAN MSE (image-based MSE): {:.2f}".format(np.mean(traineva['mse'])))
-   print("========================")
+    print("========================")
     
     print("EVALUATING TEST SET")
     #testset = ["2", "3", "4", "5", "6"]
