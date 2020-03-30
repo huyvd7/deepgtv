@@ -112,7 +112,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     else:
         print("Prediction time: ", time.time() - tstart)
     if argref:
-        print("PSNR: {.2f}".format(np.mean(np.array(psnrs))))
+        print("PSNR: {:.2f}".format(np.mean(np.array(psnrs))))
 
     dummy = (
         patch_merge(dummy, stride=stride, shape=shapex, shapeorg=shape).detach().numpy()
