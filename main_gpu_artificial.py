@@ -724,7 +724,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
                  {'params': base_params},
                  {'params': cnny_params , 'lr': opt.lr*70}
              ], lr=opt.lr, momentum=opt.momentum)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.95, last_epoch=-1)
+    #scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.95, last_epoch=-1)
     
     hist = list()
     losshist = list()
@@ -766,16 +766,18 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
         hist.append(running_loss / (i + 1))
         losshist.append(running_loss / (i + 1))
 
-        if ((epoch + 1) % 20 == 0) or (epoch + 1) == total_epoch:
+        if ((epoch + 1) % 10 == 0) or (epoch + 1) == total_epoch:
             print("\tsave @ epoch ", epoch + 1)
             torch.save(gtv.state_dict(), SAVEPATH)
             torch.save(optimizer.state_dict(), SAVEPATH + "optim")
             histW = gtv(inputs[:1, :, :, :], debug=1)
             histW = [h.cpu().detach().numpy()[0] for h in histW]
             print("\t", np.argmin(histW), min(histW), histW)
-            print('current lr: ', scheduler.get_lr())
 
-        scheduler.step() 
+        #scheduler.step() 
+        if (epoch+1)==50:
+            print("CHANGE LR")
+            optimizer = optim.SGD(gtv.parameters(), lr=opt.lr/10, momentum=opt.momentum)
     torch.save(gtv.state_dict(), SAVEPATH)
     torch.save(optimizer.state_dict(), SAVEPATH + "optim")
     print("Total running time: {0:.3f}".format(time.time() - tstart))
