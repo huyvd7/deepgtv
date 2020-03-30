@@ -1,4 +1,4 @@
-from proxgtv import *
+from proxgtv.proxgtv import *
 
 class RENOIR_Dataset2(Dataset):
     """
