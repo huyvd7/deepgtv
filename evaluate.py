@@ -107,7 +107,10 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
                 print("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
             dummy[i] = P
             del P
-    print("\nPrediction time: ", time.time() - tstart)
+    if verbose:
+        print("\nPrediction time: ", time.time() - tstart)
+    else:
+        print("Prediction time: ", time.time() - tstart)
     if argref:
         print("PSNR: ", np.mean(np.array(psnrs)))
 
