@@ -21,7 +21,7 @@ else:
 
 
 def denoise(inp, gtv, argref, normalize=False, stride=36, width=324):
-
+    global seed
     try:
         from skimage.metrics import structural_similarity as compare_ssim
     except Exception:
