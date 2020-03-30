@@ -111,7 +111,7 @@ class standardize2(object):
         return {'nimg': nimg,
                 'rimg': rimg, 'nn':nn, 'rn':rn}
 
-dataset = RENOIR_Dataset2(img_dir='..\\gauss\\',
+dataset = RENOIR_Dataset2(img_dir='..\\gauss\\gauss\\',
                          transform = transforms.Compose([standardize2(),
                                             ToTensor2()])
                         )
