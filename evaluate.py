@@ -180,7 +180,6 @@ def main_eva(seed, model_name, trainset, testset, imgw=324):
         opt=opt,
     )
     width = 36
-    supporting_matrix(opt)
     PATH = model_name
     device = torch.device("cuda")
     gtv.load_state_dict(torch.load(PATH))
@@ -240,4 +239,6 @@ def main_eva(seed, model_name, trainset, testset, imgw=324):
     print("========================")
    
 if __name__=="__main__":
+    global opt
+    supporting_matrix(opt)
     main_eva()
