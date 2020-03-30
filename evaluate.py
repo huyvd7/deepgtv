@@ -20,8 +20,7 @@ else:
     dtype = torch.FloatTensor
 
 
-def denoise(inp, gtv, argref, normalize=False, stride=36, width=324):
-    global seed
+def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_'):
     try:
         from skimage.metrics import structural_similarity as compare_ssim
     except Exception:
@@ -126,7 +125,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324):
         opath = args.output
     else:
         filename = inp.split("/")[-1]
-        opath = "./{0}_{1}".format(seed, filename)
+        opath = "./{0}_{1}".format(prefix, filename)
         opath = opath[:-3] + "png"
     plt.imsave(opath, d)
     if argref:
@@ -193,7 +192,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=324):
         print("image #", t)
         inp = "{0}/noisy/{1}_n.bmp".format(image_path, t)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
-        _psnr, _ssim, _ssim2, _ = denoise(inp, gtv, argref, stride=12, width=imgw)
+        _psnr, _ssim, _ssim2, _ = denoise(inp, gtv, argref, stride=12, width=imgw, prefix=seed)
         traineva["psnr"].append(_psnr)
         traineva["ssim"].append(_ssim)
         traineva["ssim2"].append(_ssim2)
@@ -219,7 +218,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=324):
         print("image #", t)
         inp = "{0}/noisy/{1}_n.bmp".format(image_path, t)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
-        _psnr, _ssim, _ssim2, _ = denoise(inp, gtv, argref, stride=12, width=imgw)
+        _psnr, _ssim, _ssim2, _ = denoise(inp, gtv, argref, stride=12, width=imgw, prefix=seed)
         testeva["psnr"].append(_psnr)
         testeva["ssim"].append(_ssim)
         testeva["ssim2"].append(_ssim2)
