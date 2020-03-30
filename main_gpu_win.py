@@ -687,7 +687,8 @@ def main(seed, model_name, optim_name, subset=None, epoch=100):
 
     DST = "./"
     DST = ""
-    PATH = os.path.join(DST, "GTV.pkl")
+    #PATH = os.path.join(DST, "GTV.pkl")
+    PATH = os.path.join(DST, model_name)
     # SAVEPATH = '/content/drive/My Drive/data/GTV_realnoise.pkl'
     SAVEPATH = PATH
     batch_size = opt.batch_size
