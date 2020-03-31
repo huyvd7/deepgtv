@@ -136,16 +136,17 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         d = cv2.imread(opath)
         d = cv2.cvtColor(d, cv2.COLOR_BGR2RGB)
         (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
-        # print("SSIM: ", np.mean(np.array(score2)))
         psnr2 = cv2.PSNR(tref, d)
         mse = ((tref-d)**2).mean(axis=None)
         print("SSIM: {:.2f}".format(score))
         print("PSNR: {:.2f}".format(psnr2))
         print("MSE: {:.2f}".format(mse))
     print("Saved ", opath)
-    return (
-        np.mean(np.array(psnrs)), score, np.mean(np.array(score2)), psnr2 , mse, d
-    )  # psnr, ssim, denoised image
+    if argref:
+        return (
+            np.mean(np.array(psnrs)), score, np.mean(np.array(score2)), psnr2 , mse, d
+        )  # psnr, ssim, denoised image
+    return d
 
 
 def patch_merge(P, stride=36, shape=None, shapeorg=None):
@@ -188,8 +189,13 @@ def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0):
     PATH = model_name
     device = torch.device("cuda")
     gtv.load_state_dict(torch.load(PATH))
-    image_path = "..\\all\\all\\"
-    imgw = imgw
+    if not image_path:
+        image_path = "..\\all\\all\\"
+    if noise_type=='gauss':
+        npref = '_g'
+    else:
+        npref ='_n'
+
     print("EVALUATING TRAIN SET")
     
     #trainset = ["10", "1", "7", "8", "9"]
@@ -197,7 +203,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0):
 
     for t in trainset:
         print("image #", t)
-        inp = "{0}/noisy/{1}_n.bmp".format(image_path, t)
+        inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
         _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=12, width=imgw, prefix=seed)
         traineva["psnr"].append(_psnr)
@@ -227,7 +233,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0):
     testeva = {'psnr':list(), 'ssim':list(), 'ssim2':list(), 'psnr2':list(), 'mse':list()}
     for t in testset:
         print("image #", t)
-        inp = "{0}/noisy/{1}_n.bmp".format(image_path, t)
+        inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
         _psnr, _ssim, _ssim2, psnr2, mse, _ = denoise(inp, gtv, argref, stride=12, width=imgw, prefix=seed)
         testeva["psnr"].append(_psnr)
