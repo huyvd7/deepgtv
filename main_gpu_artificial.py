@@ -568,7 +568,7 @@ class GTV(nn.Module):
         if debug:
             hist = [h.flatten() for h in hist]
             return hist
-        xhat = _norm(xhat, 0, 255)
+        #xhat = _norm(xhat, 0, 255)
         return xhat.view(xhat.shape[0], opt.channels, opt.width, opt.width)
 
     def predict(self, xf):
@@ -747,7 +747,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
             outputs = gtv(inputs, debug=0)
             loss = criterion(outputs, labels)
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(gtv.parameters(), 2000)
+            torch.nn.utils.clip_grad_norm_(gtv.parameters(), 1e4)
 
             optimizer.step()
             running_loss += loss.item()
