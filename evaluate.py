@@ -171,7 +171,7 @@ def patch_merge(P, stride=36, shape=None, shapeorg=None):
 
     return (R / Rc)[:, : shapeorg[-1], : shapeorg[-1]]
 
-def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0):
+def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0, image_path=None, noise_type='gauss'):
     # INITIALIZE
     global opt
     supporting_matrix(opt)
@@ -261,5 +261,5 @@ def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0):
 if __name__=="__main__":
     global opt
     supporting_matrix(opt)
-    _, test_eva = main_eva(seed='_', model_name='GTV_20.pkl', trainset=['10','1','7','8','9'], testset=['2','3','4','5','6'],imgw=324, verbose=1)
+    _, test_eva = main_eva(seed='_', model_name='GTV_20.pkl', trainset=['10','1','7','8','9'], testset=['2','3','4','5','6'],imgw=324, verbose=1, image_path='..\gauss\gauss', noise_type='gauss')
     print(test_eva)
