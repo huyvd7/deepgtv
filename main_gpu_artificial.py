@@ -741,17 +741,13 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
             # get the inputs; data is a list of [inputs, labels]
             inputs = data["nimg"][:, : opt.channels, :, :].float().type(dtype)
             labels = data["rimg"][:, : opt.channels, :, :].float().type(dtype)
-            # inputs = data['nimg'].float().type(dtype)
-            # labels = data["rimg"].float().type(dtype)
-
-            # inputs = torch.autograd.Variable(inputs, requires_grad=True)
             # zero the parameter gradients
             optimizer.zero_grad()
             # forward + backward + optimize
             outputs = gtv(inputs, debug=0)
             loss = criterion(outputs, labels)
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(gtv.parameters(), 20)
+            torch.nn.utils.clip_grad_norm_(gtv.parameters(), 2000)
 
             optimizer.step()
             running_loss += loss.item()
