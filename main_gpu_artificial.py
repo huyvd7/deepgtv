@@ -659,7 +659,7 @@ def printfull(x):
 # STD = 20
 # opt = OPT(batch_size = 50, admm_iter=2, prox_iter=3, delta=.1, channels=3, eta=.3, u=50, lr=1e-5, momentum=0.9, u_max=75, u_min=25)
 # STD = 50
-opt = OPT(batch_size = 50, admm_iter=5, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=6e-4, momentum=0.9, u_max=75, u_min=25)
+opt = OPT(batch_size = 50, admm_iter=5, prox_iter=3, delta=.1, channels=3, eta=.3, u=55, lr=6e-4, momentum=0.9, u_max=75, u_min=25)
 
 def main(seed, model_name, optim_name=None, subset=None, epoch=100):
     debug = 0
@@ -792,4 +792,4 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
     fig.savefig("loss.png")
 
 if __name__=="__main__":
-    main(seed=1, model_name='GTV_20.pkl', epoch=1000)
+    main(seed=1, model_name='GTV_20.pkl', epoch=100)
