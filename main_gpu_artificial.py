@@ -659,7 +659,7 @@ def printfull(x):
 # STD = 20
 # opt = OPT(batch_size = 50, admm_iter=2, prox_iter=3, delta=.1, channels=3, eta=.3, u=50, lr=1e-5, momentum=0.9, u_max=75, u_min=25)
 # STD = 50
-opt = OPT(batch_size = 50, admm_iter=3, prox_iter=3, delta=.1, channels=3, eta=.3, u=50, lr=1e-4, momentum=0.9, u_max=75, u_min=25)
+opt = OPT(batch_size = 50, admm_iter=2, prox_iter=3, delta=.1, channels=3, eta=.3, u=50, lr=1e-4, momentum=0.9, u_max=75, u_min=25)
 
 def main(seed, model_name, optim_name=None, subset=None, epoch=100):
     debug = 0
@@ -733,6 +733,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
     losshist = list()
     tstart = time.time()
     opt._print()
+    ld = len(dataset)
     for epoch in range(total_epoch):  # loop over the dataset multiple times
         # running_loss_inside = 0.0
         running_loss = 0.0
@@ -757,7 +758,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
         print(
             time.ctime(),
             '[{0}] \x1b[31m"LOSS"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}'.format(
-                epoch + 1, running_loss / (i + 1), time.time() - tstart
+                epoch + 1, running_loss / ld, time.time() - tstart
             ),
         )
         print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
@@ -766,8 +767,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
             pmax.append(p.grad.max())
         print("\tmax gradients", max(pmax))
 
-        hist.append(running_loss / (i + 1))
-        losshist.append(running_loss / (i + 1))
+        losshist.append(running_loss / ld)
 
         if ((epoch + 1) % 10 == 0) or (epoch + 1) == total_epoch:
             print("\tsave @ epoch ", epoch + 1)
