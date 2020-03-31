@@ -249,7 +249,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0):
     print("MEAN PSNR2 (image-based PSNR): {:.2f}".format(np.mean(testeva['psnr2'])))
     print("MEAN MSE (image-based MSE): {:.2f}".format(np.mean(testeva['mse'])))
     print("========================")
-    return np.mean(traineva["psnr"]), np.mean(traineva["ssim"]), np.mean(testeva["psnr"]), np.mean(testeva["ssim"])
+    return traineva, testeva
 if __name__=="__main__":
     global opt
     supporting_matrix(opt)
