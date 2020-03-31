@@ -682,7 +682,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
     # _subset = ['10', '1', '3', '5', '9']
     if not subset:
         _subset = ["10", "1", "7", "8", "9"]
-        print('Train: ', subset)
+        print('Train: ', _subset)
         subset = [i + "_" for i in _subset]
     else:
         subset = [i + "_" for i in subset]
@@ -775,7 +775,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
             print("\t", np.argmin(histW), min(histW), histW)
 
         #scheduler.step() 
-        if (epoch+1) in [50, 100, 150]:
+        if (epoch+1) in [50, 100, 150, 300, 500, 800]:
             print("CHANGE LR")
             optimizer = optim.SGD(gtv.parameters(), lr=opt.lr/10, momentum=opt.momentum)
     torch.save(gtv.state_dict(), SAVEPATH)
@@ -790,4 +790,4 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
     fig.savefig("loss.png")
 
 if __name__=="__main__":
-    main(seed=1, model_name='GTV_20.pkl', epoch=200)
+    main(seed=1, model_name='GTV_20.pkl', epoch=1000)
