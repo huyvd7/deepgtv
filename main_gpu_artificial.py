@@ -727,7 +727,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
                  {'params': base_params},
                  {'params': cnny_params , 'lr': opt.lr*70}
              ], lr=opt.lr, momentum=opt.momentum)
-    #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
+    optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
      
     hist = list()
     losshist = list()
@@ -778,7 +778,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
             print("\t", np.argmin(histW), min(histW), histW)
 
         #scheduler.step() 
-        if (epoch+1) in [50, 100, 150, 300, 500, 800]:
+        if (epoch+1) in [10, 20, 40, 70, 90]:
             print("CHANGE LR")
             optimizer = optim.SGD(gtv.parameters(), lr=opt.lr/10, momentum=opt.momentum)
     torch.save(gtv.state_dict(), SAVEPATH)
