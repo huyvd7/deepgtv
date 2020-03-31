@@ -112,7 +112,8 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     else:
         print("Prediction time: ", time.time() - tstart)
     if argref:
-        print("PSNR: {:.2f}".format(np.mean(np.array(psnrs))))
+        #print("PSNR: {:.2f}".format(np.mean(np.array(psnrs))))
+        pass
 
     dummy = (
         patch_merge(dummy, stride=stride, shape=shapex, shapeorg=shape).detach().numpy()
@@ -139,6 +140,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         psnr2 = cv2.PSNR(tref, d)
         mse = ((tref-d)**2).mean(axis=None)
         print("SSIM: {:.2f}".format(score))
+        print("PSNR: {:.2f}".format(psnr2))
         print("MSE: {:.2f}".format(mse))
     print("Saved ", opath)
     return (
