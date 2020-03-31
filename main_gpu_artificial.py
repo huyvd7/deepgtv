@@ -725,9 +725,9 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
     base_params = [i[1] for i in base_params]
     optimizer = optim.SGD([
                  {'params': base_params},
-                 {'params': cnny_params , 'lr': opt.lr*70}
+                 {'params': cnny_params , 'lr': opt.lr*50}
              ], lr=opt.lr, momentum=opt.momentum)
-    optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
+    #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
      
     hist = list()
     losshist = list()
