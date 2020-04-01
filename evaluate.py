@@ -141,9 +141,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         d = cv2.cvtColor(d, cv2.COLOR_BGR2RGB)
         (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
         psnr2 = cv2.PSNR(tref, d)
-        from sklearn.metrics import mean_squared_error
-        #mse = ((tref-d)**2).mean(axis=None)
-        mse = mean_squared_error(tref, d)
+        mse = np.mean(np.square(tref-d))
         print("SSIM: {:.2f}".format(score))
         print("PSNR: {:.2f}".format(psnr2))
         print("MSE: {:.2f}".format(mse))
@@ -206,12 +204,12 @@ def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0, image_pat
     
     #trainset = ["10", "1", "7", "8", "9"]
     traineva = {'psnr':list(), 'ssim':list(), 'ssim2':list(), 'psnr2':list(), 'mse':list()}
-
+    stride=9
     for t in trainset:
         print("image #", t)
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
-        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=12, width=imgw, prefix=seed)
+        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed)
         traineva["psnr"].append(_psnr)
         traineva["ssim"].append(_ssim)
         traineva["ssim2"].append(_ssim2)
@@ -241,7 +239,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0, image_pat
         print("image #", t)
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
-        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=12, width=imgw, prefix=seed)
+        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed)
         testeva["psnr"].append(_psnr)
         testeva["ssim"].append(_ssim)
         testeva["ssim2"].append(_ssim2)
