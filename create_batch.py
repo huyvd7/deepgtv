@@ -1,5 +1,6 @@
 from proxgtv.proxgtv import *
 import os
+import argparse
 
 class RENOIR_Dataset2(Dataset):
     """
@@ -205,4 +206,16 @@ def main(imgw=324):
     print(T1.shape)
 
 if __name__=="__main__":
-    main(imgw=1080)
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument(
+        "-w", "--width", help="Resize image to a square image with given width"
+    )
+
+    args = parser.parse_args()
+    if args.width:
+        imgw = int(args.width)
+    else:
+        imgw = None
+
+    main(imgw=imgw)
