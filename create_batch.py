@@ -165,7 +165,7 @@ def main():
         plt.imsave('{0}{1}_r.bmp'.format(refp, testset[i]), img )
 
     dataset = RENOIR_Dataset2(img_dir='..\\gauss\\',
-                             transform = transforms.Compose([standardize2(w=324),
+                             transform = transforms.Compose([standardize2(),
                                                 ToTensor2()])
                             )
     dataloader = DataLoader(dataset, batch_size=1,
