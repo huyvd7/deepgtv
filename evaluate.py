@@ -127,7 +127,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         _d = d
         new_d.append(_d)
     print("RANGE: ", d.min(), d.max(), d.shape)
-    d = np.array(new_d).transpose(1, 2, 0
+    d = np.array(new_d).transpose(1, 2, 0)
     d = d.astype(np.int)
     if 0:
         opath = args.output
