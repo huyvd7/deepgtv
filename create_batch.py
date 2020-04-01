@@ -113,9 +113,41 @@ class standardize2(object):
                 'rimg': rimg, 'nn':nn, 'rn':rn}
 
 import shutil
-
+import torchvision
 def main():
-    dataset = RENOIR_Dataset2(img_dir='..\\gauss\\gauss\\',
+    trainp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\train' 
+    testset = ['10', '1', '2', '3', '4', '5', '6', '7','8','9']
+    dataset = RENOIR_Dataset(
+        img_dir=os.path.join(trainp),
+        transform=transforms.Compose([standardize(w=324), ToTensor(), gaussian_noise_(mean=0, stddev=25)]),
+    )
+    
+    dataloader = DataLoader(
+        dataset, batch_size=1, shuffle=False#, pin_memory=True
+    )
+    gaussp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
+    noisyp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\noisy\\'
+    refp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\ref\\'
+
+    shutil.rmtree(gaussp, ignore_errors=True)
+    shutil.rmtree(noisyp, ignore_errors=True)
+    shutil.rmtree(refp, ignore_errors=True)
+    os.makedirs(gaussp)
+    os.makedirs(noisyp)
+    os.makedirs(refp)
+
+    for i, data in enumerate(dataloader, 0): 
+        print(data['rn'])
+        inputs = data['nimg'].float().type(dtype).squeeze(0)
+        img = inputs.cpu().detach().numpy().astype(np.uint8)
+        img = img.transpose(1, 2, 0)
+        plt.imsave('{0}{1}_g.bmp'.format(noisyp, testset[i]), img )
+        inputs = data['rimg'].float().type(dtype).squeeze(0)
+        img = inputs.cpu().detach().numpy().astype(np.uint8)
+        img = img.transpose(1, 2, 0)
+        plt.imsave('{0}{1}_r.bmp'.format(refp, testset[i]), img )
+
+    dataset = RENOIR_Dataset2(img_dir='..\\gauss\\',
                              transform = transforms.Compose([standardize2(w=324),
                                                 ToTensor2()])
                             )
