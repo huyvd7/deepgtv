@@ -272,7 +272,7 @@ if __name__=="__main__":
 
     args = parser.parse_args()
     if args.width:
-        imgw = args.width
+        imgw = int(args.width)
     else:
         imgw = None
     supporting_matrix(opt)
