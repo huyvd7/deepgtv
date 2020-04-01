@@ -125,6 +125,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     for d in ds:
         #_d = (d - d.min()) * (1 / (d.max() - d.min()))
         #_d = d/255
+        _d  = d
         new_d.append(_d)
     print("RANGE: ", d.min(), d.max(), d.shape)
     d = np.array(new_d).transpose(1, 2, 0)
