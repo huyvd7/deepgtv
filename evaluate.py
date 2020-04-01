@@ -124,12 +124,10 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     new_d = list()
     for d in ds:
         #_d = (d - d.min()) * (1 / (d.max() - d.min()))
-        #_d = d/255
-        _d  = d
+        _d = d/255
         new_d.append(_d)
     print("RANGE: ", d.min(), d.max(), d.shape)
     d = np.array(new_d).transpose(1, 2, 0)
-    d = d.astype(np.uint8)
     if 0:
         opath = args.output
     else:
@@ -138,12 +136,9 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         opath = opath[:-3] + "png"
     plt.imsave(opath, d)
     if argref:
-        #d = cv2.imread(opath)
-        #d = cv2.cvtColor(d, cv2.COLOR_BGR2RGB)
+        d = cv2.imread(opath)
+        d = cv2.cvtColor(d, cv2.COLOR_BGR2RGB)
         (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
-        #d = d.astype(np.int)
-        #tref = tref.astype(np.int)
-
         psnr2 = cv2.PSNR(tref, d)
         mse = ((tref-d)**2).mean(axis=None)
         print("SSIM: {:.2f}".format(score))
