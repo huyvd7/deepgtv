@@ -566,9 +566,10 @@ class GTV(nn.Module):
 
         # xhat = D.matmul(2*y - H.T.matmul(lagrange) + delta*H.T.matmul(z)).requires_grad_(True)
         if debug:
+            print("min - max xhat: ", xhat.min(), xhat.max())
             hist = [h.flatten() for h in hist]
             return hist
-        xhat = _norm(xhat, 0, 255)
+        #xhat = _norm(xhat, 0, 255)
         return xhat.view(xhat.shape[0], opt.channels, opt.width, opt.width)
 
     def predict(self, xf):
@@ -656,4 +657,137 @@ def printfull(x):
         global xd
         xd = x.clone()
         return x
+# STD = 20
+# opt = OPT(batch_size = 50, admm_iter=2, prox_iter=3, delta=.1, channels=3, eta=.3, u=50, lr=1e-5, momentum=0.9, u_max=75, u_min=25)
+# STD = 50
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=1e-5, momentum=0.9, u_max=75, u_min=25)
 
+def main(seed, model_name, optim_name=None, subset=None, epoch=100):
+    debug = 0
+
+    xd = None
+    cuda = True if torch.cuda.is_available() else False
+    torch.autograd.set_detect_anomaly(True)
+    print("CUDA: ", cuda)
+    if cuda:
+        dtype = torch.cuda.FloatTensor
+        print(torch.cuda.get_device_name(0))
+    else:
+        dtype = torch.FloatTensor
+
+    DST = "./"
+    DST = ""
+    #PATH = os.path.join(DST, "GTV.pkl")
+    PATH = os.path.join(DST, model_name)
+    # SAVEPATH = '/content/drive/My Drive/data/GTV_realnoise.pkl'
+    SAVEPATH = PATH
+    batch_size = opt.batch_size
+    # _subset = ['10', '1', '3', '5', '9']
+    if not subset:
+        _subset = ["10", "1", "7", "8", "9"]
+        #_subset = ["1", "3", "5", "7", "9"]
+        print('Train: ', _subset)
+        subset = [i + "_" for i in _subset]
+    else:
+        subset = [i + "_" for i in subset]
+    dataset = RENOIR_Dataset(
+        img_dir=os.path.join(
+            "C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss_batch"
+        ),
+        transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
+        subset=subset,
+    )
+    dataloader = DataLoader(
+        dataset, batch_size=batch_size, shuffle=True  # , pin_memory=True
+    )
+
+    width = 36
+    supporting_matrix(opt)
+    total_epoch = epoch
+    print("Dataset: ", len(dataset))
+    gtv = GTV(
+        width=36,
+        prox_iter=1,
+        u_max=10,
+        u_min=0.5,
+        lambda_min=0.5,
+        lambda_max=1e9,
+        cuda=cuda,
+        opt=opt,
+    )
+    if cuda:
+        gtv.cuda()
+    criterion = nn.MSELoss()
+    # optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
+    
+    cnny_params = list(filter(lambda kv: 'cnnf' in kv[0] , gtv.named_parameters()))
+    cnny_params = [i[1] for i in cnny_params]
+    base_params = list(filter(lambda kv: 'cnnf' not in kv[0], gtv.named_parameters()))
+    base_params = [i[1] for i in base_params]
+    optimizer = optim.SGD([
+                 {'params': base_params},
+                 {'params': cnny_params , 'lr': opt.lr*50}
+             ], lr=opt.lr, momentum=opt.momentum)
+    #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
+     
+    hist = list()
+    losshist = list()
+    tstart = time.time()
+    opt._print()
+    ld = len(dataset)
+    for epoch in range(total_epoch):  # loop over the dataset multiple times
+        # running_loss_inside = 0.0
+        running_loss = 0.0
+        for i, data in enumerate(dataloader, 0):  # start index at 0
+            # get the inputs; data is a list of [inputs, labels]
+            inputs = data["nimg"][:, : opt.channels, :, :].float().type(dtype)
+            labels = data["rimg"][:, : opt.channels, :, :].float().type(dtype)
+            # zero the parameter gradients
+            optimizer.zero_grad()
+            # forward + backward + optimize
+            outputs = gtv(inputs, debug=0)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(gtv.parameters(), 1e4)
+
+            optimizer.step()
+            running_loss += loss.item()
+        print(
+            time.ctime(),
+            '[{0}] \x1b[31m"LOSS"\x1b[0m: {1:.3f}, time elapsed: {2:.1f} secs'.format(
+                epoch + 1, running_loss / ld, time.time() - tstart
+            ),
+        )
+        print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
+        pmax = list()
+        for p in gtv.parameters():
+            pmax.append(p.grad.max())
+        print("\tmax gradients", max(pmax))
+
+        losshist.append(running_loss / ld)
+
+        if ((epoch + 1) % 10 == 0) or (epoch + 1) == total_epoch:
+            print("\tsave @ epoch ", epoch + 1)
+            torch.save(gtv.state_dict(), SAVEPATH)
+            torch.save(optimizer.state_dict(), SAVEPATH + "optim")
+            histW = gtv(inputs[:1, :, :, :], debug=1)
+            histW = [h.cpu().detach().numpy()[0] for h in histW]
+            print("\t", np.argmin(histW), min(histW), histW)
+
+        #scheduler.step() 
+        if (epoch+1) in [10, 20, 50, 80]:
+            print("CHANGE LR")
+            optimizer = optim.SGD(gtv.parameters(), lr=opt.lr/10, momentum=opt.momentum)
+    torch.save(gtv.state_dict(), SAVEPATH)
+    torch.save(optimizer.state_dict(), SAVEPATH + "optim")
+    print("Total running time: {0:.3f}".format(time.time() - tstart))
+    fig, ax = plt.subplots(1, 1, figsize=(12, 5))
+
+    cumsum_vec = np.cumsum(np.insert(losshist, 0, 0))
+    window_width = 30
+    ma_vec = (cumsum_vec[window_width:] - cumsum_vec[:-window_width]) / window_width
+    ax.plot(ma_vec)
+    fig.savefig("loss.png")
+
+if __name__=="__main__":
+    main(seed=1, model_name='GTV_20.pkl', epoch=100)
