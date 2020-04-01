@@ -717,7 +717,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
     )
     if cuda:
         gtv.cuda()
-    criterion = nn.MSELoss(reduce=False)
+    criterion = nn.MSELoss()
     # optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
     
     cnny_params = list(filter(lambda kv: 'cnnf' in kv[0] , gtv.named_parameters()))
@@ -746,10 +746,10 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
             optimizer.zero_grad()
             # forward + backward + optimize
             outputs = gtv(inputs, debug=0)
-            loss = criterion(outputs, labels).sum()/inputs.numel()
+            loss = criterion(outputs, labels)
             #loss = ((labels-inputs)**2).mean()
             #out = loss(x, t).sum() / batch_size
-            print(loss, ((labels - inputs)**2).mean(axis=0).mean())
+            print(loss, ((labels - outputs)**2).mean(axis=0).mean())
             loss.backward()
             torch.nn.utils.clip_grad_norm_(gtv.parameters(), 1e4)
 
