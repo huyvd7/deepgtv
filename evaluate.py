@@ -141,7 +141,9 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         d = cv2.cvtColor(d, cv2.COLOR_BGR2RGB)
         (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
         psnr2 = cv2.PSNR(tref, d)
-        mse = ((tref-d)**2).mean(axis=None)
+        from sklearn.metrics import mean_squared_error
+        #mse = ((tref-d)**2).mean(axis=None)
+        mse = mean_squared_error(tref, d)
         print("SSIM: {:.2f}".format(score))
         print("PSNR: {:.2f}".format(psnr2))
         print("MSE: {:.2f}".format(mse))
@@ -276,4 +278,4 @@ if __name__=="__main__":
     else:
         imgw = None
     supporting_matrix(opt)
-    _, _ = main_eva(seed='_', model_name='GTV_20.pkl', trainset=['10','1','7','8','9'], testset=['2','3','4','5','6'],imgw=imgw, verbose=1, image_path='..\\gauss', noise_type='gauss')
+    _, _ = main_eva(seed='gauss', model_name='GTV_20.pkl', trainset=['10','1','7','8','9'], testset=['2','3','4','5','6'],imgw=imgw, verbose=1, image_path='..\\gauss', noise_type='gauss')
