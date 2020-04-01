@@ -747,6 +747,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
             # forward + backward + optimize
             outputs = gtv(inputs, debug=0)
             loss = criterion(outputs, labels)
+            print(loss, ((labels - inputs)**2).mean())
             loss.backward()
             torch.nn.utils.clip_grad_norm_(gtv.parameters(), 1e4)
 
