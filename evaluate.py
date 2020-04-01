@@ -133,12 +133,13 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         opath = "./{0}_{1}".format(prefix, filename)
         opath = opath[:-3] + "png"
     plt.imsave(opath, d)
+    print("RANGE: ", d.min(), d.max(), d.shape)
     if argref:
         #d = cv2.imread(opath)
         #d = cv2.cvtColor(d, cv2.COLOR_BGR2RGB)
+        (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
         d = d.astype(np.int)
         tref = tref.astype(np.int)
-        (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
         psnr2 = cv2.PSNR(tref, d)
         mse = ((tref-d)**2).mean(axis=None)
         print("SSIM: {:.2f}".format(score))
