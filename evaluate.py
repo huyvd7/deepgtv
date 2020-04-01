@@ -27,9 +27,10 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         from skimage.measure import compare_ssim
 
     sample = cv2.imread(inp)
-    width = width
-
-    sample = cv2.resize(sample, (width, width))
+    if width==None:
+        width = sample.shape[0]
+    else:
+        sample = cv2.resize(sample, (width, width))
     sample = cv2.cvtColor(sample, cv2.COLOR_BGR2RGB)
     sample = sample.transpose((2, 0, 1))
     shape = sample.shape
@@ -261,4 +262,4 @@ def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0, image_pat
 if __name__=="__main__":
     global opt
     supporting_matrix(opt)
-    _, _ = main_eva(seed='_', model_name='GTV_20.pkl', trainset=['10','1','7','8','9'], testset=['2','3','4','5','6'],imgw=324, verbose=1, image_path='..\\gauss', noise_type='gauss')
+    _, _ = main_eva(seed='_', model_name='GTV_20.pkl', trainset=['10','1','7','8','9'], testset=['2','3','4','5','6'],imgw=None, verbose=1, image_path='..\\gauss', noise_type='gauss')
