@@ -133,7 +133,7 @@ import torchvision
 def main():
     trainp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\train' 
     testset = ['10', '1', '2', '3', '4', '5', '6', '7','8','9']
-    dataset = RENOIR_Dataset(
+    dataset = RENOIR_Dataset2(
         img_dir=os.path.join(trainp),
         transform=transforms.Compose([standardize(w=324), ToTensor(), gaussian_noise_(mean=0, stddev=25)]),
     )
