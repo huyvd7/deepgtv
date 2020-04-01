@@ -136,7 +136,8 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     if argref:
         #d = cv2.imread(opath)
         #d = cv2.cvtColor(d, cv2.COLOR_BGR2RGB)
-        d = d.astype(np.uint8)
+        d = d.astype(np.int)
+        tref = tref.astype(np.int)
         (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
         psnr2 = cv2.PSNR(tref, d)
         mse = ((tref-d)**2).mean(axis=None)
