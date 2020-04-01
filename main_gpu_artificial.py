@@ -790,4 +790,4 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
     fig.savefig("loss.png")
 
 if __name__=="__main__":
-    main(seed=1, model_name='GTV_20.pkl', epoch=100)
+    main(seed=1, model_name='GTV_20.pkl', epoch=40)
