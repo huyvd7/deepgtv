@@ -746,7 +746,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
             optimizer.zero_grad()
             # forward + backward + optimize
             outputs = gtv(inputs, debug=0)
-            loss = criterion(outputs, labels).sum()/batch_size
+            loss = criterion(outputs, labels).sum()/inputs.numel()
             #loss = ((labels-inputs)**2).mean()
             #out = loss(x, t).sum() / batch_size
             print(loss, ((labels - inputs)**2).mean(axis=0).mean())
