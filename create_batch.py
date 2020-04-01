@@ -113,6 +113,7 @@ class standardize2(object):
                 'rimg': rimg, 'nn':nn, 'rn':rn}
 dtype=torch.FloatTensor
 from torch.autograd import Variable
+
 class gaussian_noise_(object):
     def __init__(self, stddev, mean):
         self.stddev = stddev
@@ -135,7 +136,7 @@ def main():
     testset = ['10', '1', '2', '3', '4', '5', '6', '7','8','9']
     dataset = RENOIR_Dataset2(
         img_dir=os.path.join(trainp),
-        transform=transforms.Compose([standardize(w=324), ToTensor(), gaussian_noise_(mean=0, stddev=25)]),
+        transform=transforms.Compose([standardize2(w=324), ToTensor2(), gaussian_noise_(mean=0, stddev=25)]),
     )
     
     dataloader = DataLoader(
