@@ -111,6 +111,22 @@ class standardize2(object):
             rimg = rimg / 255
         return {'nimg': nimg,
                 'rimg': rimg, 'nn':nn, 'rn':rn}
+dtype=torch.FloatTensor
+from torch.autograd import Variable
+class gaussian_noise_(object):
+    def __init__(self, stddev, mean):
+        self.stddev = stddev
+        self.mean = mean
+
+    def __call__(self, sample):
+        nimg, rimg = sample["rimg"].type(torch.FloatTensor), sample["rimg"]
+        noise = self.stddev*Variable(torch.zeros(nimg.shape)).normal_()
+        nimg = nimg + noise
+        masks = (nimg>255).type(dtype)
+        nimg = nimg - (nimg - 255)*masks
+        masks = (nimg<0).type(dtype)
+        nimg = nimg - (nimg)*masks
+        return {"nimg": nimg, "rimg": rimg, 'rn':sample['rn']}
 
 import shutil
 import torchvision
