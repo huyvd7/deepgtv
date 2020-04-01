@@ -263,5 +263,16 @@ def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0, image_pat
     return traineva, testeva
 if __name__=="__main__":
     global opt
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument(
+        "-w", "--width", help="Resize image to a square image with given width"
+    )
+
+    args = parser.parse_args()
+    if args.width:
+        imgw = args.width
+    else:
+        imgw = None
     supporting_matrix(opt)
-    _, _ = main_eva(seed='_', model_name='GTV_20.pkl', trainset=['10','1','7','8','9'], testset=['2','3','4','5','6'],imgw=None, verbose=1, image_path='..\\gauss', noise_type='gauss')
+    _, _ = main_eva(seed='_', model_name='GTV_20.pkl', trainset=['10','1','7','8','9'], testset=['2','3','4','5','6'],imgw=imgw, verbose=1, image_path='..\\gauss', noise_type='gauss')
