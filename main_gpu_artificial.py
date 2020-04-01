@@ -754,7 +754,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
             running_loss += loss.item()
         print(
             time.ctime(),
-            '[{0}] \x1b[31m"LOSS"\x1b[0m: {1:.3f}, time elapsed: {2:.3f}'.format(
+            '[{0}] \x1b[31m"LOSS"\x1b[0m: {1:.3f}, time elapsed: {2:.1f} secs'.format(
                 epoch + 1, running_loss / ld, time.time() - tstart
             ),
         )
@@ -784,7 +784,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
     fig, ax = plt.subplots(1, 1, figsize=(12, 5))
 
     cumsum_vec = np.cumsum(np.insert(losshist, 0, 0))
-    window_width = 50
+    window_width = 30
     ma_vec = (cumsum_vec[window_width:] - cumsum_vec[:-window_width]) / window_width
     ax.plot(ma_vec)
     fig.savefig("loss.png")

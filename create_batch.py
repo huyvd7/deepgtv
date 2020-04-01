@@ -205,4 +205,4 @@ def main(imgw=324):
     print(T1.shape)
 
 if __name__=="__main__":
-    main(imgw=720)
+    main(imgw=1080)
