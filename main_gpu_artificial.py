@@ -468,10 +468,10 @@ class GTV(nn.Module):
 
     def forward(self, xf, debug=False, Tmod=False):  # gtvforward
         #u = opt.u
-        self.u = self.cnnu.forward(xf)
+        u = self.cnnu.forward(xf)
         u_max = opt.u_max
         u_min = opt.u_min
-        self.u = torch.clamp(u, u_min, u_max)
+        u = torch.clamp(u, u_min, u_max)
 
         # masks = (self.u > u_max).type(dtype)
         # self.u = self.u - (self.u - u_max)*masks
