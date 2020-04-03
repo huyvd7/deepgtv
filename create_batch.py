@@ -75,6 +75,19 @@ def main(t):
     mse = ((y_est - y)**2).mean()*255
     print("MSE:", mse)
     plt.imsave(imagepath+ 'noisy\\' + t + '_g.bmp', z_rang)
+
+    # TEST CV2 PSNR
+    import cv2
+    opath = 't.bmp'
+    argref = imagename
+    d = cv2.imread(opath)
+    tref = cv2.imread(argref)
+    (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
+    psnr2 = cv2.PSNR(tref, d)
+    print('#######################') 
+    print('CV2 PSNR, SSIM: {:.2f}, {:.2f}'format( psnr2, score))
+    print('#######################') 
+    print('')
     #plt.title("y, z, y_est")
     #plt.imshow(np.concatenate((y, np.squeeze(z_rang), y_est), axis=1))
     #plt.show()
