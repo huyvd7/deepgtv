@@ -1,6 +1,9 @@
 from proxgtv.proxgtv import *
 import os
 import argparse
+import sys
+sys.path.insert(0, " C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\bm3d_python_package_3.0.6\\bm3d-3.0.6\\examples\\")
+from bm3d_demo_rgb import *
 
 class RENOIR_Dataset2(Dataset):
     """
@@ -132,7 +135,7 @@ class gaussian_noise_(object):
 
 import shutil
 import torchvision
-def main(imgw=324):
+def _main(imgw=324):
     trainp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\train' 
     testset = ['10', '1', '2', '3', '4', '5', '6', '7','8','9']
     dataset = RENOIR_Dataset2(
@@ -164,6 +167,9 @@ def main(imgw=324):
         img = inputs.cpu().detach().numpy().astype(np.uint8)
         img = img.transpose(1, 2, 0)
         plt.imsave('{0}{1}_r.bmp'.format(refp, testset[i]), img )
+
+    for t in ['10', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
+    	main(t)
 
     dataset = RENOIR_Dataset2(img_dir='..\\gauss\\',
                              transform = transforms.Compose([standardize2(),
@@ -218,4 +224,4 @@ if __name__=="__main__":
     else:
         imgw = None
 
-    main(imgw=imgw)
+    _main(imgw=imgw)
