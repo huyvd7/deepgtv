@@ -467,10 +467,11 @@ class GTV(nn.Module):
         # self.cnnu.apply(weights_init_normal)
 
     def forward(self, xf, debug=False, Tmod=False):  # gtvforward
-        u = opt.u
-        # self.u = self.cnnu.forward(xf)
-        # u_max = opt.u_max
-        # u_min = opt.u_min
+        #u = opt.u
+        self.u = self.cnnu.forward(xf)
+        u_max = opt.u_max
+        u_min = opt.u_min
+        self.u = torch.clamp(u, u_min, u_max)
 
         # masks = (self.u > u_max).type(dtype)
         # self.u = self.u - (self.u - u_max)*masks
@@ -796,7 +797,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     ax.plot(ma_vec)
     fig.savefig("loss.png")
 
-opt = OPT(batch_size = 50, admm_iter=9, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=3e-9, momentum=0.9, u_max=75, u_min=25)
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=3e-9, momentum=0.9, u_max=75, u_min=25)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
