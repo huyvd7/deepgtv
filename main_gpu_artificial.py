@@ -717,6 +717,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     )
     if cont:
         gtv.load_state_dict(torch.load(cont))
+        print("LOAD PREVIOUS GTV:", cont)
     if cuda:
         gtv.cuda()
     criterion = nn.MSELoss()
