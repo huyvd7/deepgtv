@@ -19,7 +19,7 @@ def main(t):
     # Possible noise types to be generated 'gw', 'g1', 'g2', 'g3', 'g4', 'g1w',
     # 'g2w', 'g3w', 'g4w'.
     noise_type = 'gw'
-    noise_var = 0.0096  # Noise variance
+    noise_var = 0.0096  # Noise variance 25 std
     seed = 0  # seed for pseudorandom noise realization
 
     # Generate noise with given PSD
