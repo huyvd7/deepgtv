@@ -245,7 +245,7 @@ def _main(imgw=324):
         _psnr, _mse = main(t)
         bm3d_res['psnr'].append(_psnr)
         bm3d_res['mse'].append(_mse)
-    print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['psnr'])
+    print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['psnr']))
 
     dataset = RENOIR_Dataset2(img_dir='..\\gauss\\',
                              transform = transforms.Compose([standardize2(),
