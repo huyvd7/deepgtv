@@ -85,7 +85,7 @@ def main(t):
     (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
     psnr2 = cv2.PSNR(tref, d)
     print('#######################') 
-    print('CV2 PSNR, SSIM: {:.2f}, {:.2f}'format( psnr2, score))
+    print('CV2 PSNR, SSIM: {:.2f}, {:.2f}'.format( psnr2, score))
     print('#######################') 
     print('')
     #plt.title("y, z, y_est")
