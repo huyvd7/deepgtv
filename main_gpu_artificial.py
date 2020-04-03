@@ -474,7 +474,7 @@ class GTV(nn.Module):
         u = torch.clamp(u, u_min, u_max)
         u = u.unsqueeze(1).unsqueeze(1)
         if debug:
-            self.u=u.copy()
+            self.u=u.clone()
         # masks = (self.u > u_max).type(dtype)
         # self.u = self.u - (self.u - u_max)*masks
         # masks = (self.u > self.u_min).type(dtype)
