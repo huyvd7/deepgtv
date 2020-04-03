@@ -749,9 +749,9 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
             loss = criterion(outputs, labels)
             #loss = ((labels-inputs)**2).mean()
             #out = loss(x, t).sum() / batch_size
-            print(loss, ((labels - outputs)**2).mean(axis=0).mean())
+            #print(loss, ((labels - outputs)**2).mean(axis=0).mean())
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(gtv.parameters(), 1e4)
+            torch.nn.utils.clip_grad_norm_(gtv.parameters(), 1e5)
 
             optimizer.step()
             running_loss += loss.item()
@@ -761,15 +761,16 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
                 epoch + 1, running_loss / ld, time.time() - tstart
             ),
         )
-        print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
-        pmax = list()
-        for p in gtv.parameters():
-            pmax.append(p.grad.max())
-        print("\tmax gradients", max(pmax))
-
+        
         losshist.append(running_loss / ld)
 
-        if ((epoch + 1) % 10 == 0) or (epoch + 1) == total_epoch:
+        if ((epoch + 1) % 2 == 0) or (epoch + 1) == total_epoch:
+            print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
+            pmax = list()
+            for p in gtv.parameters():
+                pmax.append(p.grad.max())
+            print("\tmax gradients", max(pmax))
+
             print("\tsave @ epoch ", epoch + 1)
             torch.save(gtv.state_dict(), SAVEPATH)
             torch.save(optimizer.state_dict(), SAVEPATH + "optim")
