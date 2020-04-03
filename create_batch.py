@@ -69,11 +69,13 @@ def main(t):
     z_rang = np.minimum(np.maximum(z, 0), 1)
     psnr = get_psnr(y, y_est)
     print("PSNR 2:", psnr)
-    print("MSE:", ((y_est - y)**2).mean()*255)
+    mse = ((y_est - y)**2).mean()*255
+    print("MSE:", mse)
     plt.imsave(imagepath+ 'noisy\\' + t + '_g.bmp', z_rang)
     #plt.title("y, z, y_est")
     #plt.imshow(np.concatenate((y, np.squeeze(z_rang), y_est), axis=1))
     #plt.show()
+    return psnr, mse
 
 class RENOIR_Dataset2(Dataset):
     """
@@ -237,9 +239,13 @@ def _main(imgw=324):
         img = inputs.cpu().detach().numpy().astype(np.uint8)
         img = img.transpose(1, 2, 0)
         plt.imsave('{0}{1}_r.bmp'.format(refp, testset[i]), img )
-
+    
+    bm3d_res = {'psnr':list(), 'mse':list()}
     for t in ['10', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
-    	main(t)
+    	_psnr, _mse = main(t)
+        bm3d_res['psnr'].append(_psnr)
+        bm3d_res['mse'].append(_mse)
+    print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['psnr'])
 
     dataset = RENOIR_Dataset2(img_dir='..\\gauss\\',
                              transform = transforms.Compose([standardize2(),
