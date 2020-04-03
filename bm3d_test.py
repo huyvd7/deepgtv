@@ -19,3 +19,11 @@ def bm3d_denoise(inp, argref, width=None):
     psnr2 = cv2.PSNR(ref, denoised_image)
     print(psnr2)
 
+image_path='..\\gauss'
+npref = '_g'
+t= 1
+inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
+argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
+
+bm3d_denoise(inp, argref)
+
