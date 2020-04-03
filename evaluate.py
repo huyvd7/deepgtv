@@ -276,4 +276,4 @@ if __name__=="__main__":
     else:
         imgw = None
     supporting_matrix(opt)
-    _, _ = main_eva(seed='gauss', model_name='GTV_20.pkl', trainset=['10','1','7','8','9'], testset=['2','3','4','5','6'],imgw=imgw, verbose=1, image_path='..\\gauss', noise_type='gauss')
+    _, _ = main_eva(seed='gauss', model_name='GTV_20.pkl', trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path='..\\gauss', noise_type='gauss')
