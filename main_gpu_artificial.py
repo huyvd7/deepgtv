@@ -472,7 +472,7 @@ class GTV(nn.Module):
         u_max = opt.u_max
         u_min = opt.u_min
         u = torch.clamp(u, u_min, u_max)
-
+        u = u.unsqueeze(1).unsqueeze(1)
         # masks = (self.u > u_max).type(dtype)
         # self.u = self.u - (self.u - u_max)*masks
         # masks = (self.u > self.u_min).type(dtype)
