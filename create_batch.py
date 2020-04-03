@@ -67,6 +67,9 @@ def main(t):
     # Ignore values outside range for display (or plt gives an error for multichannel input)
     y_est = np.minimum(np.maximum(y_est, 0), 1)
     z_rang = np.minimum(np.maximum(z, 0), 1)
+    plt.imsave('t.bmp', y_est)
+    y_est = np.array(Image.open('t.bmp')) / 255
+
     psnr = get_psnr(y, y_est)
     print("PSNR 2:", psnr)
     mse = ((y_est - y)**2).mean()*255
@@ -245,7 +248,7 @@ def _main(imgw=324):
         _psnr, _mse = main(t)
         bm3d_res['psnr'].append(_psnr)
         bm3d_res['mse'].append(_mse)
-    print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['psnr']))
+    print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
 
     dataset = RENOIR_Dataset2(img_dir='..\\gauss\\',
                              transform = transforms.Compose([standardize2(),
