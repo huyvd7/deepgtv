@@ -661,7 +661,6 @@ def printfull(x):
 # STD = 20
 # opt = OPT(batch_size = 50, admm_iter=2, prox_iter=3, delta=.1, channels=3, eta=.3, u=50, lr=1e-5, momentum=0.9, u_max=75, u_min=25)
 # STD = 50
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=1e-5, momentum=0.9, u_max=75, u_min=25)
 
 def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     debug = 0
@@ -795,6 +794,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     ma_vec = (cumsum_vec[window_width:] - cumsum_vec[:-window_width]) / window_width
     ax.plot(ma_vec)
     fig.savefig("loss.png")
+
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=3e-8, momentum=0.9, u_max=75, u_min=25)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
