@@ -452,19 +452,19 @@ class GTV(nn.Module):
         self.opt = opt
         self.wt = width
         self.width = width
-        # self.cnnu = cnnu(u_min=u_min)
+        self.cnnu = cnnu(u_min=u_min)
 
         self.cnny = cnny()
 
         if cuda:
             self.cnnf.cuda()
-            # self.cnnu.cuda()
+            self.cnnu.cuda()
             self.cnny.cuda()
 
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.cnnf.apply(weights_init_normal)
         self.cnny.apply(weights_init_normal)
-        # self.cnnu.apply(weights_init_normal)
+        self.cnnu.apply(weights_init_normal)
 
     def forward(self, xf, debug=False, Tmod=False):  # gtvforward
         #u = opt.u
