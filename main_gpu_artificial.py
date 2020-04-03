@@ -764,7 +764,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
         
         losshist.append(running_loss / ld)
 
-        if ((epoch + 1) % 2 == 0) or (epoch + 1) == total_epoch:
+        if ((epoch + 1) % 5 == 0) or (epoch + 1) == total_epoch:
             print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
             pmax = list()
             for p in gtv.parameters():
@@ -779,7 +779,7 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
             print("\t", np.argmin(histW), min(histW), histW)
 
         #scheduler.step() 
-        if (epoch+1) in [10, 20, 50, 80]:
+        if (epoch+1) in [100, 500, 1500, 1700]:
             print("CHANGE LR")
             optimizer = optim.SGD(gtv.parameters(), lr=opt.lr/10, momentum=opt.momentum)
     torch.save(gtv.state_dict(), SAVEPATH)
@@ -794,4 +794,4 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
     fig.savefig("loss.png")
 
 if __name__=="__main__":
-    main(seed=1, model_name='GTV_20.pkl', epoch=40, subset=['1', '3', '5', '7', '9'])
+    main(seed=1, model_name='GTV_20.pkl', epoch=2000, subset=['1', '3', '5', '7', '9'])
