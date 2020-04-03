@@ -473,6 +473,8 @@ class GTV(nn.Module):
         u_min = opt.u_min
         u = torch.clamp(u, u_min, u_max)
         u = u.unsqueeze(1).unsqueeze(1)
+        if debug:
+            self.u=u.copy()
         # masks = (self.u > u_max).type(dtype)
         # self.u = self.u - (self.u - u_max)*masks
         # masks = (self.u > self.u_min).type(dtype)
@@ -769,8 +771,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         losshist.append(running_loss / ld)
 
         if ((epoch + 1) % 2 == 0) or (epoch + 1) == total_epoch:
+            histW = gtv(inputs[:1, :, :, :], debug=1)
             print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
-            print("\tCNNU stats: ", gtv.cnnu(inputs).mean().data)
+            print("\tCNNU stats: ", gtv.u.mean().data)
             pmax = list()
             for p in gtv.parameters():
                 pmax.append(p.grad.max())
@@ -779,7 +782,6 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             print("\tsave @ epoch ", epoch + 1)
             torch.save(gtv.state_dict(), SAVEPATH)
             torch.save(optimizer.state_dict(), SAVEPATH + "optim")
-            histW = gtv(inputs[:1, :, :, :], debug=1)
             histW = [h.cpu().detach().numpy()[0] for h in histW]
             print("\t", np.argmin(histW), min(histW), histW)
 
