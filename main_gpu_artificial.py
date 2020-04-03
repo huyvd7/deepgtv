@@ -662,7 +662,7 @@ def printfull(x):
 # STD = 50
 opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=1e-5, momentum=0.9, u_max=75, u_min=25)
 
-def main(seed, model_name, optim_name=None, subset=None, epoch=100):
+def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     debug = 0
 
     xd = None
@@ -715,6 +715,8 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
         cuda=cuda,
         opt=opt,
     )
+    if cont:
+        gtv.load_state_dict(torch.load(cont))
     if cuda:
         gtv.cuda()
     criterion = nn.MSELoss()
@@ -794,4 +796,16 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
     fig.savefig("loss.png")
 
 if __name__=="__main__":
-    main(seed=1, model_name='GTV_20.pkl', epoch=1000, subset=['1', '3', '5', '7', '9'])
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument(
+        "-c", "--cont"
+    )
+
+    args = parser.parse_args()
+    if args.cont:
+        cont = args.cont
+    else:
+        cont = None
+
+    main(seed=1, model_name='GTV.pkl', cont=cont, epoch=1000, subset=['1', '3', '5', '7', '9'])
