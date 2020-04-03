@@ -64,7 +64,7 @@ def main(t):
     z_rang = np.minimum(np.maximum(z, 0), 1)
     psnr = get_psnr(y, y_est)
     print("PSNR 2:", psnr)
-    print("MSE:", ((y_est - y)**2).mean())
+    print("MSE:", ((y_est - y)**2).mean()*255)
     plt.imsave(imagepath+ 'noisy\\' + t + '_g.bmp', z_rang)
     #plt.title("y, z, y_est")
     #plt.imshow(np.concatenate((y, np.squeeze(z_rang), y_est), axis=1))
