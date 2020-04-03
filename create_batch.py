@@ -77,6 +77,10 @@ def main(t):
     plt.imsave(imagepath+ 'noisy\\' + t + '_g.bmp', z_rang)
 
     # TEST CV2 PSNR
+    try:
+        from skimage.metrics import structural_similarity as compare_ssim
+    except Exception:
+        from skimage.measure import compare_ssim
     import cv2
     opath = 't.bmp'
     argref = imagename
