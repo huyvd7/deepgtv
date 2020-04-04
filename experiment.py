@@ -76,6 +76,6 @@ print("+++++++++++ DETAILS +++++++++++")
 #    print("#{0}: {1:.5f} | ".format(i, v), end=' ')
 import pandas as pd
 from tabulate import tabulate
-df = pd.DataFrame([result])
+df = pd.DataFrame.from_dict(result)
 print(tabulate(df, headers='keys', floatfmt=".5f"))
 print("+++++++++++++++++++++++++++++++")
