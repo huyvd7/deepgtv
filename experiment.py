@@ -19,7 +19,8 @@ opt = OPT(
     u_min=50,
 )
 result = dict({'psnr_train':list(), 'ssim_train':list(),
-                'psnr_test':list(), 'ssim_test':list()})
+                'psnr_test':list(), 'ssim_test':list(),
+                'mse_train':list(), 'mse_test':list()})
 
 for i in range(1, 6):
     random.seed(i)
@@ -38,6 +39,8 @@ for i in range(1, 6):
     result['ssim_train'].append(traineva['ssim'])
     result['psnr_test'].append(testeva['psnr2'])
     result['ssim_test'].append(testeva['ssim'])
+    result['mse_train'].append(traineva['mse'])
+    result['mse_test'].append(testeva['mse'])
 
 print("+++++++++++++++++++++++++++++++")
 print("+++ FINAL EVALUATION RESULT +++")
@@ -46,4 +49,26 @@ print("PSNR Train: ", np.mean(result['psnr_train']))
 print("SSIM Train: ", np.mean(result['ssim_train']))
 print("PSNR Test: ", np.mean(result['psnr_test']))
 print("SSIM Test: ", np.mean(result['ssim_test']))
+print("+++++++++++++++++++++++++++++++")
+print("+++++++++++ DETAILS +++++++++++")
+print("PSNR TRAIN: ")
+for i, v in enumerate(result['psnr_train']):
+    print("#{0}: {:.5f} | ".format(i, v))
+print("PSNR TEST: ")
+for i, v in enumerate(result['psnr_test']):
+    print("#{0}: {:.5f} | ".format(i, v))
+
+print("MSE TRAIN: ")
+for i, v in enumerate(result['mse_train']):
+    print("#{0}: {:.5f} | ".format(i, v))
+print("MSE TEST: ")
+for i, v in enumerate(result['mse_test']):
+    print("#{0}: {:.5f} | ".format(i, v))
+
+print("SSIM TRAIN: ")
+for i, v in enumerate(result['ssim_train']):
+    print("#{0}: {:.5f} | ".format(i, v))
+print("SSIM TEST: ")
+for i, v in enumerate(result['ssim_test']):
+    print("#{0}: {:.5f} | ".format(i, v))
 print("+++++++++++++++++++++++++++++++")
