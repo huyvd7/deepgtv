@@ -267,7 +267,8 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser()
     
     parser.add_argument(
-        "-w", "--width", help="Resize image to a square image with given width"
+        "-w", "--width", help="Resize image to a square image with given width",
+        "-m", "--model"
     )
 
     args = parser.parse_args()
@@ -276,4 +277,8 @@ if __name__=="__main__":
     else:
         imgw = None
     supporting_matrix(opt)
-    _, _ = main_eva(seed='gauss', model_name='GTV_20.pkl', trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path='..\\gauss', noise_type='gauss')
+    if args.model:
+        model_name = args.model
+    else:
+        model_name = 'GTV_20.pkl'
+    _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path='..\\gauss', noise_type='gauss')
