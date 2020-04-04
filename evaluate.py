@@ -136,7 +136,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         opath = "./{0}_{1}".format(prefix, filename)
         opath = opath[:-3] + "png"
     if argref:
-        print(tref.min(), tref/max())
+        print(tref.min(), tref.max())
         mse = ((d-(tref/255.0))**2).mean()
         print("MSE: {:.2f}".format(mse))
     d = np.minimum(np.maximum(d, 0), 1)
