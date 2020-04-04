@@ -195,7 +195,7 @@ class RENOIR_Dataset(Dataset):
         self.nimg_name = [
             i
             for i in self.nimg_name
-            if i.split(".")[-1].lower() in ["jpeg", "jpg", "png", "bmp"]
+            if i.split(".")[-1].lower() in ["jpeg", "jpg", "png", "bmp", "tif"]
         ]
 
         self.rimg_name = [
