@@ -267,11 +267,14 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser()
     
     parser.add_argument(
-        "-w", "--width", help="Resize image to a square image with given width",
+        "-w", "--width", help="Resize image to a square image with given width"
+    )
+    parser.add_argument(
         "-m", "--model"
     )
 
-    args = parser.parse_args()
+
+            args = parser.parse_args()
     if args.width:
         imgw = int(args.width)
     else:
