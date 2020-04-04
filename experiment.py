@@ -53,22 +53,25 @@ print("+++++++++++++++++++++++++++++++")
 print("+++++++++++ DETAILS +++++++++++")
 print("PSNR TRAIN: ")
 for i, v in enumerate(result['psnr_train']):
-    print("#{0}: {:.5f} | ".format(i, v))
+    print("#{0}: {1:.5f} | ".format(i, v), end=' ')
+print()
 print("PSNR TEST: ")
 for i, v in enumerate(result['psnr_test']):
-    print("#{0}: {:.5f} | ".format(i, v))
-
+    print("#{0}: {1:.5f} | ".format(i, v), end=' ')
+print()
 print("MSE TRAIN: ")
 for i, v in enumerate(result['mse_train']):
-    print("#{0}: {:.5f} | ".format(i, v))
+    print("#{0}: {1:.5f} | ".format(i, v), end=' ')
+print()
 print("MSE TEST: ")
 for i, v in enumerate(result['mse_test']):
-    print("#{0}: {:.5f} | ".format(i, v))
-
+    print("#{0}: {1:.5f} | ".format(i, v), end=' ')
+print()
 print("SSIM TRAIN: ")
 for i, v in enumerate(result['ssim_train']):
-    print("#{0}: {:.5f} | ".format(i, v))
+    print("#{0}: {1:.5f} | ".format(i, v), end=' ')
+print()
 print("SSIM TEST: ")
 for i, v in enumerate(result['ssim_test']):
-    print("#{0}: {:.5f} | ".format(i, v))
+    print("#{0}: {1:.5f} | ".format(i, v), end=' ')
 print("+++++++++++++++++++++++++++++++")
