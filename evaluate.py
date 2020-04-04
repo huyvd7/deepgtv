@@ -11,7 +11,8 @@ from torchvision.utils import save_image
 import torchvision.transforms as transforms
 import torch.optim as optim
 import matplotlib.pyplot as plt
-from main_gpu_win import *
+import argparse
+from main_gpu_artificial import *
 
 cuda = True if torch.cuda.is_available() else False
 if cuda:
@@ -123,8 +124,10 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     ds = np.array(dummy).copy()
     new_d = list()
     for d in ds:
-        _d = (d - d.min()) * (1 / (d.max() - d.min()))
+        #_d = (d - d.min()) * (1 / (d.max() - d.min()))
+        _d = d/255
         new_d.append(_d)
+    print("RANGE: ", d.min(), d.max(), d.shape)
     d = np.array(new_d).transpose(1, 2, 0)
     if 0:
         opath = args.output
@@ -132,16 +135,18 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         filename = inp.split("/")[-1]
         opath = "./{0}_{1}".format(prefix, filename)
         opath = opath[:-3] + "png"
+    if argref:
+        mse = ((d-(tref/255.0))**2).mean()*255
+        print("MSE: {:.6f}".format(mse))
+    d = np.minimum(np.maximum(d, 0), 1)
     plt.imsave(opath, d)
     if argref:
-        #d = cv2.imread(opath)
-        #d = cv2.cvtColor(d, cv2.COLOR_BGR2RGB)
+        d = cv2.imread(opath)
+        d = cv2.cvtColor(d, cv2.COLOR_BGR2RGB)
         (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
         psnr2 = cv2.PSNR(tref, d)
-        mse = ((tref-d)**2).mean(axis=None)
-        print("SSIM: {:.2f}".format(score))
-        print("PSNR: {:.2f}".format(psnr2))
-        print("MSE: {:.2f}".format(mse))
+        print("SSIM: {:.5f}".format(score))
+        print("PSNR: {:.5f}".format(psnr2))
     print("Saved ", opath)
     if argref:
         return (
@@ -172,7 +177,7 @@ def patch_merge(P, stride=36, shape=None, shapeorg=None):
 
     return (R / Rc)[:, : shapeorg[-1], : shapeorg[-1]]
 
-def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0, image_path=None, noise_type='gauss'):
+def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_path=None, noise_type='gauss'):
     # INITIALIZE
     global opt
     supporting_matrix(opt)
@@ -201,12 +206,12 @@ def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0, image_pat
     
     #trainset = ["10", "1", "7", "8", "9"]
     traineva = {'psnr':list(), 'ssim':list(), 'ssim2':list(), 'psnr2':list(), 'mse':list()}
-
+    stride=9
     for t in trainset:
         print("image #", t)
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
-        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=12, width=imgw, prefix=seed)
+        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed)
         traineva["psnr"].append(_psnr)
         traineva["ssim"].append(_ssim)
         traineva["ssim2"].append(_ssim2)
@@ -236,7 +241,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0, image_pat
         print("image #", t)
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
-        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=12, width=imgw, prefix=seed)
+        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed)
         testeva["psnr"].append(_psnr)
         testeva["ssim"].append(_ssim)
         testeva["ssim2"].append(_ssim2)
@@ -261,5 +266,24 @@ def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0, image_pat
     return traineva, testeva
 if __name__=="__main__":
     global opt
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument(
+        "-w", "--width", help="Resize image to a square image with given width"
+    )
+    parser.add_argument(
+        "-m", "--model"
+    )
+
+
+    args = parser.parse_args()
+    if args.width:
+        imgw = int(args.width)
+    else:
+        imgw = None
     supporting_matrix(opt)
-    _, _ = main_eva(seed='_', model_name='GTV_20.pkl', trainset=['10','1','7','8','9'], testset=['2','3','4','5','6'],imgw=None, verbose=1, image_path='..\\gauss', noise_type='gauss')
+    if args.model:
+        model_name = args.model
+    else:
+        model_name = 'GTV_20.pkl'
+    _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path='..\\gauss', noise_type='gauss')

@@ -1,4 +1,5 @@
 import scipy.sparse as ss
+import argparse
 import torch
 import numpy as np
 import os
@@ -194,7 +195,7 @@ class RENOIR_Dataset(Dataset):
         self.nimg_name = [
             i
             for i in self.nimg_name
-            if i.split(".")[-1].lower() in ["jpeg", "jpg", "png", "bmp"]
+            if i.split(".")[-1].lower() in ["jpeg", "jpg", "png", "bmp", "tif"]
         ]
 
         self.rimg_name = [
@@ -451,26 +452,29 @@ class GTV(nn.Module):
         self.opt = opt
         self.wt = width
         self.width = width
-        # self.cnnu = cnnu(u_min=u_min)
+        self.cnnu = cnnu(u_min=u_min)
 
         self.cnny = cnny()
 
         if cuda:
             self.cnnf.cuda()
-            # self.cnnu.cuda()
+            self.cnnu.cuda()
             self.cnny.cuda()
 
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.cnnf.apply(weights_init_normal)
         self.cnny.apply(weights_init_normal)
-        # self.cnnu.apply(weights_init_normal)
+        self.cnnu.apply(weights_init_normal)
 
     def forward(self, xf, debug=False, Tmod=False):  # gtvforward
-        u = opt.u
-        # self.u = self.cnnu.forward(xf)
-        # u_max = opt.u_max
-        # u_min = opt.u_min
-
+        #u = opt.u
+        u = self.cnnu.forward(xf)
+        u_max = opt.u_max
+        u_min = opt.u_min
+        u = torch.clamp(u, u_min, u_max)
+        u = u.unsqueeze(1).unsqueeze(1)
+        if debug:
+            self.u=u.clone()
         # masks = (self.u > u_max).type(dtype)
         # self.u = self.u - (self.u - u_max)*masks
         # masks = (self.u > self.u_min).type(dtype)
@@ -660,9 +664,8 @@ def printfull(x):
 # STD = 20
 # opt = OPT(batch_size = 50, admm_iter=2, prox_iter=3, delta=.1, channels=3, eta=.3, u=50, lr=1e-5, momentum=0.9, u_max=75, u_min=25)
 # STD = 50
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=1e-5, momentum=0.9, u_max=75, u_min=25)
 
-def main(seed, model_name, optim_name=None, subset=None, epoch=100):
+def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     debug = 0
 
     xd = None
@@ -715,6 +718,9 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
         cuda=cuda,
         opt=opt,
     )
+    if cont:
+        gtv.load_state_dict(torch.load(cont))
+        print("LOAD PREVIOUS GTV:", cont)
     if cuda:
         gtv.cuda()
     criterion = nn.MSELoss()
@@ -747,35 +753,40 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
             # forward + backward + optimize
             outputs = gtv(inputs, debug=0)
             loss = criterion(outputs, labels)
+            #loss = ((labels-inputs)**2).mean()
+            #out = loss(x, t).sum() / batch_size
+            #print(loss, ((labels - outputs)**2).mean(axis=0).mean())
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(gtv.parameters(), 1e4)
+            torch.nn.utils.clip_grad_norm_(gtv.parameters(), 1e5)
 
             optimizer.step()
             running_loss += loss.item()
         print(
             time.ctime(),
-            '[{0}] \x1b[31m"LOSS"\x1b[0m: {1:.3f}, time elapsed: {2:.1f} secs'.format(
+            '[{0}] \x1b[31mLOSS\x1b[0m: {1:.3f}, time elapsed: {2:.1f} secs'.format(
                 epoch + 1, running_loss / ld, time.time() - tstart
             ),
         )
-        print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
-        pmax = list()
-        for p in gtv.parameters():
-            pmax.append(p.grad.max())
-        print("\tmax gradients", max(pmax))
-
+        
         losshist.append(running_loss / ld)
 
-        if ((epoch + 1) % 10 == 0) or (epoch + 1) == total_epoch:
+        if ((epoch + 1) % 2 == 0) or (epoch + 1) == total_epoch:
+            histW = gtv(inputs[:1, :, :, :], debug=1)
+            print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
+            print("\tCNNU stats: ", gtv.u.mean().data)
+            pmax = list()
+            for p in gtv.parameters():
+                pmax.append(p.grad.max())
+            print("\tmax gradients", max(pmax))
+
             print("\tsave @ epoch ", epoch + 1)
             torch.save(gtv.state_dict(), SAVEPATH)
             torch.save(optimizer.state_dict(), SAVEPATH + "optim")
-            histW = gtv(inputs[:1, :, :, :], debug=1)
             histW = [h.cpu().detach().numpy()[0] for h in histW]
             print("\t", np.argmin(histW), min(histW), histW)
 
         #scheduler.step() 
-        if (epoch+1) in [10, 20, 50, 80]:
+        if (epoch+1) in [100, 400, 600, 800]:
             print("CHANGE LR")
             optimizer = optim.SGD(gtv.parameters(), lr=opt.lr/10, momentum=opt.momentum)
     torch.save(gtv.state_dict(), SAVEPATH)
@@ -789,5 +800,19 @@ def main(seed, model_name, optim_name=None, subset=None, epoch=100):
     ax.plot(ma_vec)
     fig.savefig("loss.png")
 
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=1e-5, momentum=0.9, u_max=65, u_min=50)
+
 if __name__=="__main__":
-    main(seed=1, model_name='GTV_20.pkl', epoch=100)
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument(
+        "-c", "--cont"
+    )
+
+    args = parser.parse_args()
+    if args.cont:
+        cont = args.cont
+    else:
+        cont = None
+
+    main(seed=1, model_name='GTV.pkl', cont=cont, epoch=1000, subset=['1', '3', '5', '7', '9'])
