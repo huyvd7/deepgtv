@@ -75,6 +75,7 @@ print("+++++++++++ DETAILS +++++++++++")
 #for i, v in enumerate(result['ssim_test']):
 #    print("#{0}: {1:.5f} | ".format(i, v), end=' ')
 import pandas as pd
+from tabulate import tabulate
 df = pd.DataFrame(result)
-df.style
+print(tabulate(df, headers='keys', tablefmt='psql'))
 print("+++++++++++++++++++++++++++++++")
