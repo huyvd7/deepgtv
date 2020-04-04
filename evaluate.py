@@ -143,10 +143,11 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     if argref:
         d = cv2.imread(opath)
         tref = cv2.imread(argref)
+        print(tref.shape, d.shape)
         (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
         psnr2 = cv2.PSNR(tref, d)
-        print("SSIM: {:.2f}".format(score))
-        print("PSNR: {:.2f}".format(psnr2))
+        print("SSIM: {:.5f}".format(score))
+        print("PSNR: {:.5f}".format(psnr2))
     print("Saved ", opath)
     if argref:
         return (
