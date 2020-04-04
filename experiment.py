@@ -75,7 +75,10 @@ print("+++++++++++ DETAILS +++++++++++")
 #    print("#{0}: {1:.5f} | ".format(i, v), end=' ')
 import pandas as pd
 from tabulate import tabulate
-df = pd.DataFrame.from_dict(result)
-print(df)
+newd = dict()
+for i,v in result.items():
+    print(i, v)
+    newd[i] = [np.mean(j) for j in v]
+df = pd.DataFrame.from_dict(newd)
 print(tabulate(df, headers='keys', floatfmt=".5f"))
 print("+++++++++++++++++++++++++++++++")
