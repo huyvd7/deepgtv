@@ -77,5 +77,5 @@ print("+++++++++++ DETAILS +++++++++++")
 import pandas as pd
 from tabulate import tabulate
 df = pd.DataFrame(result)
-print(tabulate(df, headers='keys', tablefmt='psql', floatfmt=".5f"))
+print(tabulate(df, headers='keys', floatfmt=".5f"))
 print("+++++++++++++++++++++++++++++++")
