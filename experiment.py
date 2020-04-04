@@ -32,7 +32,8 @@ for i in range(1, 6):
     cont=None
     #main(seed=i, model_name=m, optim_name = o, subset=subset, epoch=100)
     main(seed=i, model_name=m, cont=cont, epoch=1, subset=subset)
-    traineva, testeva = main_eva(seed=i, model_name=m, trainset=subset, testset=testset)
+    #traineva, testeva = main_eva(seed=i, model_name=m, trainset=subset, testset=testset)
+    traineva, testeva = main_eva(seed=i, model_name=m, trainset=subset, testset=testset, verbose=1, image_path='..\\gauss', noise_type='gauss')
     result['psnr_train'].append(traineva['psnr2'])
     result['ssim_train'].append(traineva['ssim'])
     result['psnr_test'].append(testeva['psnr2'])
