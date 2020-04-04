@@ -177,7 +177,7 @@ def patch_merge(P, stride=36, shape=None, shapeorg=None):
 
     return (R / Rc)[:, : shapeorg[-1], : shapeorg[-1]]
 
-def main_eva(seed, model_name, trainset, testset, imgw=324, verbose=0, image_path=None, noise_type='gauss'):
+def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_path=None, noise_type='gauss'):
     # INITIALIZE
     global opt
     supporting_matrix(opt)
