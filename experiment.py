@@ -48,6 +48,8 @@ print("PSNR Train: ", np.mean(result['psnr_train']))
 print("SSIM Train: ", np.mean(result['ssim_train']))
 print("PSNR Test: ", np.mean(result['psnr_test']))
 print("SSIM Test: ", np.mean(result['ssim_test']))
+print("MSE Train: ", np.mean(result['mse_train']))
+print("MSE Test: ", np.mean(result['mse_test']))
 print("+++++++++++++++++++++++++++++++")
 print("+++++++++++ DETAILS +++++++++++")
 #print("PSNR TRAIN: ")
@@ -77,7 +79,6 @@ import pandas as pd
 from tabulate import tabulate
 newd = dict()
 for i,v in result.items():
-    print(i, v)
     newd[i] = [np.mean(j) for j in v]
 df = pd.DataFrame.from_dict(newd)
 print(tabulate(df, headers='keys', floatfmt=".5f"))
