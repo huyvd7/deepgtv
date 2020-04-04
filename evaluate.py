@@ -135,6 +135,8 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         filename = inp.split("/")[-1]
         opath = "./{0}_{1}".format(prefix, filename)
         opath = opath[:-3] + "png"
+    if argref:
+        mse = ((d-tref)**2).mean()
     d = np.minimum(np.maximum(d, 0), 1)
     plt.imsave(opath, d)
     if argref:
@@ -142,7 +144,6 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         tref = cv2.imread(argref)
         (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
         psnr2 = cv2.PSNR(tref, d)
-        mse = np.mean(np.square(tref-d))
         print("SSIM: {:.2f}".format(score))
         print("PSNR: {:.2f}".format(psnr2))
         print("MSE: {:.2f}".format(mse))
