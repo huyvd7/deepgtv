@@ -762,17 +762,17 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 
             optimizer.step()
             running_loss += loss.item()
-        print(
-            time.ctime(),
-            '[{0}] \x1b[31mLOSS\x1b[0m: {1:.3f}, time elapsed: {2:.1f} secs'.format(
-                epoch + 1, running_loss / ld, time.time() - tstart
-            ),
-        )
         
-        losshist.append(running_loss / ld)
+        
 
             #if ((epoch + 1) % 2 == 0) or (epoch + 1) == total_epoch:
-            if ((i_batch + 1) % 10 == 0) or (epoch + 1) == total_epoch:
+            if ((i + 1) % 10 == 0):
+                print(
+                    time.ctime(),
+                    '[{0}] \x1b[31mLOSS\x1b[0m: {1:.3f}, time elapsed: {2:.1f} secs'.format(
+                        epoch + 1, running_loss / (10*opt.batch_size), time.time() - tstart
+                    ),
+                )
                 with torch.no_grad():
                     histW = gtv(inputs[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 4)
                 print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
@@ -788,6 +788,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 histW = [h.cpu().detach().numpy()[0] for h in histW]
                 print("\t", np.argmin(histW), min(histW), histW)
 
+        losshist.append(running_loss / ld)
         #scheduler.step() 
         if (epoch+1) in [80, 400, 900]:
             print("CHANGE LR")
