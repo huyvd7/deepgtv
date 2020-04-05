@@ -758,40 +758,37 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             #out = loss(x, t).sum() / batch_size
             #print(loss, ((labels - outputs)**2).mean(axis=0).mean())
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(gtv.parameters(), 1e4)
+            torch.nn.utils.clip_grad_norm_(gtv.parameters(), 1e5)
 
             optimizer.step()
             running_loss += loss.item()
+        print(
+            time.ctime(),
+            '[{0}] \x1b[31mLOSS\x1b[0m: {1:.3f}, time elapsed: {2:.1f} secs'.format(
+                epoch + 1, running_loss / ld, time.time() - tstart
+            ),
+        )
         
-        
+        losshist.append(running_loss / ld)
 
-            #if ((epoch + 1) % 2 == 0) or (epoch + 1) == total_epoch:
-            if ((i + 1) % 50 == 0):
-                print(
-                    time.ctime(),
-                    '[{0}] \x1b[31mLOSS\x1b[0m: {1:.3f}, time elapsed: {2:.1f} secs'.format(
-                        epoch + 1, running_loss / (50*opt.batch_size), time.time() - tstart
-                    ),
-                )
-                with torch.no_grad():
-                    histW = gtv(inputs[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 4)
-                print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
-                print("\tCNNU stats: ", gtv.u.mean().data)
-                pmax = list()
-                for p in gtv.parameters():
-                    pmax.append(p.grad.max())
-                print("\tmax gradients", max(pmax))
+        if ((epoch + 1) % 2 == 0) or (epoch + 1) == total_epoch:
+            with torch.no_grad():
+                histW = gtv(inputs[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 4)
+            print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
+            print("\tCNNU stats: ", gtv.u.mean().data)
+            pmax = list()
+            for p in gtv.parameters():
+                pmax.append(p.grad.max())
+            print("\tmax gradients", max(pmax))
 
-                print("\tsave @ epoch ", epoch + 1)
-                torch.save(gtv.state_dict(), SAVEPATH)
-                torch.save(optimizer.state_dict(), SAVEPATH + "optim")
-                histW = [h.cpu().detach().numpy()[0] for h in histW]
-                print("\t", np.argmin(histW), min(histW), histW)
+            print("\tsave @ epoch ", epoch + 1)
+            torch.save(gtv.state_dict(), SAVEPATH)
+            torch.save(optimizer.state_dict(), SAVEPATH + "optim")
+            histW = [h.cpu().detach().numpy()[0] for h in histW]
+            print("\t", np.argmin(histW), min(histW), histW)
 
-                losshist.append(running_loss / (50*opt.batch_size))
-                running_loss = 0.0
         #scheduler.step() 
-        if (epoch+1) in [80, 400, 900]:
+        if (epoch+1) in [80, 120]:
             print("CHANGE LR")
             current_lr /= 5
             optimizer = optim.SGD(gtv.parameters(), lr=current_lr, momentum=opt.momentum)
@@ -809,7 +806,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     ax.plot(ma_vec)
     fig.savefig("loss.png")
 
-opt = OPT(batch_size = 2, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=7e-8, momentum=0.9, u_max=65, u_min=50)
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=65, u_min=50)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
@@ -824,4 +821,4 @@ if __name__=="__main__":
     else:
         cont = None
 
-    main(seed=1, model_name='GTV.pkl', cont=cont, epoch=20, subset=['1', '3', '5', '7', '9'])
+    main(seed=1, model_name='GTV.pkl', cont=cont, epoch=200, subset=['1', '3', '5', '7', '9'])
