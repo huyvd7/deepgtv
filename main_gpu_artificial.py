@@ -766,11 +766,11 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         
 
             #if ((epoch + 1) % 2 == 0) or (epoch + 1) == total_epoch:
-            if ((i + 1) % 10 == 0):
+            if ((i + 1) % 50 == 0):
                 print(
                     time.ctime(),
                     '[{0}] \x1b[31mLOSS\x1b[0m: {1:.3f}, time elapsed: {2:.1f} secs'.format(
-                        epoch + 1, running_loss / (10*opt.batch_size), time.time() - tstart
+                        epoch + 1, running_loss / (50*opt.batch_size), time.time() - tstart
                     ),
                 )
                 with torch.no_grad():
@@ -788,7 +788,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 histW = [h.cpu().detach().numpy()[0] for h in histW]
                 print("\t", np.argmin(histW), min(histW), histW)
 
-        losshist.append(running_loss / ld)
+                losshist.append(running_loss / (50*opt.batch_size))
+                running_loss = 0.0
         #scheduler.step() 
         if (epoch+1) in [80, 400, 900]:
             print("CHANGE LR")
@@ -808,7 +809,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     ax.plot(ma_vec)
     fig.savefig("loss.png")
 
-opt = OPT(batch_size = 4, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=65, u_min=50)
+opt = OPT(batch_size = 4, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=1e-6, momentum=0.9, u_max=65, u_min=50)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
