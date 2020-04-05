@@ -790,7 +790,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         #scheduler.step() 
         if (epoch+1) in [80, 120]:
             print("CHANGE LR")
-            optimizer = optim.SGD(gtv.parameters(), lr=current_lr/10, momentum=opt.momentum)
+            optimizer = optim.SGD(gtv.parameters(), lr=current_lr/5, momentum=opt.momentum)
 #            optimizer = optim.SGD([
 #                    {'params': base_params},
 #                    {'params': cnny_params , 'lr': opt.lr*50}], lr=opt.lr, momentum=opt.momentum)
@@ -805,7 +805,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     ax.plot(ma_vec)
     fig.savefig("loss.png")
 
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=1e-5, momentum=0.9, u_max=65, u_min=50)
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=5e-6, momentum=0.9, u_max=65, u_min=50)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
