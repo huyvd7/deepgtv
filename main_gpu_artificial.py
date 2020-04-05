@@ -735,6 +735,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                  {'params': cnny_params , 'lr': opt.lr*50}
              ], lr=opt.lr, momentum=opt.momentum)
     #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
+    if cont:
+        optimizer.load_state_dict(torch.load(cont+'optim'))
+        print("LOAD PREVIOUS OPTIMIZER:", cont)
     current_lr = opt.lr
 
     hist = list()
