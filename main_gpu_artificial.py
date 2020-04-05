@@ -788,7 +788,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             print("\t", np.argmin(histW), min(histW), histW)
 
         #scheduler.step() 
-        if (epoch+1) in [80, 200, 350]:
+        if (epoch+1) in [100000]:
             print("CHANGE LR")
             current_lr /= 5
             optimizer = optim.SGD(gtv.parameters(), lr=current_lr, momentum=opt.momentum)
@@ -806,7 +806,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     ax.plot(ma_vec)
     fig.savefig("loss.png")
 
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=5e-6, momentum=0.9, u_max=65, u_min=55)
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=65, u_min=55)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
@@ -821,4 +821,4 @@ if __name__=="__main__":
     else:
         cont = None
 
-    main(seed=1, model_name='GTV.pkl', cont=cont, epoch=400, subset=['1', '3', '5', '7', '9'])
+    main(seed=1, model_name='GTV.pkl', cont=cont, epoch=800, subset=['1', '3', '5', '7', '9'])
