@@ -786,7 +786,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             print("\t", np.argmin(histW), min(histW), histW)
 
         #scheduler.step() 
-        if (epoch+1) in [100, 400, 600, 800]:
+        if (epoch+1) in [10, 30, 60, 90]:
             print("CHANGE LR")
             optimizer = optim.SGD(gtv.parameters(), lr=opt.lr/10, momentum=opt.momentum)
     torch.save(gtv.state_dict(), SAVEPATH)
@@ -815,4 +815,4 @@ if __name__=="__main__":
     else:
         cont = None
 
-    main(seed=1, model_name='GTV.pkl', cont=cont, epoch=1000, subset=['1', '3', '5', '7', '9'])
+    main(seed=1, model_name='GTV.pkl', cont=cont, epoch=100, subset=['1', '3', '5', '7', '9'])
