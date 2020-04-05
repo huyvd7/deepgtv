@@ -790,10 +790,11 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         #scheduler.step() 
         if (epoch+1) in [80, 120]:
             print("CHANGE LR")
-            optimizer = optim.SGD(gtv.parameters(), lr=current_lr/5, momentum=opt.momentum)
+            current_lr /= 5
+            optimizer = optim.SGD(gtv.parameters(), lr=current_lr, momentum=opt.momentum)
 #            optimizer = optim.SGD([
 #                    {'params': base_params},
-#                    {'params': cnny_params , 'lr': opt.lr*50}], lr=opt.lr, momentum=opt.momentum)
+#                    {'params': cnny_params , 'lr': current_lr*50}], lr=current_lr, momentum=opt.momentum)
     torch.save(gtv.state_dict(), SAVEPATH)
     torch.save(optimizer.state_dict(), SAVEPATH + "optim")
     print("Total running time: {0:.3f}".format(time.time() - tstart))
@@ -820,4 +821,4 @@ if __name__=="__main__":
     else:
         cont = None
 
-    main(seed=1, model_name='GTV.pkl', cont=cont, epoch=100, subset=['1', '3', '5', '7', '9'])
+    main(seed=1, model_name='GTV.pkl', cont=cont, epoch=200, subset=['1', '3', '5', '7', '9'])

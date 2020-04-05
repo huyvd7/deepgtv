@@ -74,7 +74,7 @@ def main(t):
     print("PSNR 2:", psnr)
     mse = ((y_est - y)**2).mean()*255
     print("MSE:", mse)
-    plt.imsave(imagepath+ 'noisy\\' + t + '_g.bmp', z_rang)
+    #plt.imsave(imagepath+ 'noisy\\' + t + '_g.bmp', z_rang)
 
     # TEST CV2 PSNR
     try:
@@ -254,7 +254,7 @@ def _main(imgw=324):
         inputs = data['nimg'].float().type(dtype).squeeze(0)
         img = inputs.cpu().detach().numpy().astype(np.uint8)
         img = img.transpose(1, 2, 0)
-        plt.imsave('{0}{1}_g.bmp'.format(noisyp, testset[i]), img )
+        #plt.imsave('{0}{1}_g.bmp'.format(noisyp, testset[i]), img )
         inputs = data['rimg'].float().type(dtype).squeeze(0)
         img = inputs.cpu().detach().numpy().astype(np.uint8)
         img = img.transpose(1, 2, 0)
@@ -272,7 +272,7 @@ def _main(imgw=324):
                                                 ToTensor2()])
                             )
     dataloader = DataLoader(dataset, batch_size=1,
-                            shuffle=True, num_workers=1)
+                            shuffle=False, num_workers=1)
     # rm -r gauss_batch
     # mkdir gauss_batch
     # mkdir gauss_batch/noisy
