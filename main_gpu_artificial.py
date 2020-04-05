@@ -758,7 +758,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             #out = loss(x, t).sum() / batch_size
             #print(loss, ((labels - outputs)**2).mean(axis=0).mean())
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(gtv.parameters(), 1e5)
+            torch.nn.utils.clip_grad_norm_(gtv.parameters(), 1e4)
 
             optimizer.step()
             running_loss += loss.item()
@@ -809,7 +809,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     ax.plot(ma_vec)
     fig.savefig("loss.png")
 
-opt = OPT(batch_size = 2, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=1e-6, momentum=0.9, u_max=65, u_min=50)
+opt = OPT(batch_size = 2, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=1e-3, momentum=0.9, u_max=65, u_min=50)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
