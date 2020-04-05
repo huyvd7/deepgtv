@@ -735,7 +735,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                  {'params': cnny_params , 'lr': opt.lr*50}
              ], lr=opt.lr, momentum=opt.momentum)
     #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
-     
+    current_lr = opt.lr
+
     hist = list()
     losshist = list()
     tstart = time.time()
@@ -771,7 +772,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         losshist.append(running_loss / ld)
 
         if ((epoch + 1) % 2 == 0) or (epoch + 1) == total_epoch:
-            histW = gtv(inputs[:1, :, :, :], debug=1)
+            with torch.no_grad():
+                histW = gtv(inputs[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 4)
             print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
             print("\tCNNU stats: ", gtv.u.mean().data)
             pmax = list()
@@ -786,9 +788,12 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             print("\t", np.argmin(histW), min(histW), histW)
 
         #scheduler.step() 
-        if (epoch+1) in [10, 30, 60, 90]:
+        if (epoch+1) in [80, 120]:
             print("CHANGE LR")
-            optimizer = optim.SGD(gtv.parameters(), lr=opt.lr/10, momentum=opt.momentum)
+            optimizer = optim.SGD(gtv.parameters(), lr=current_lr/10, momentum=opt.momentum)
+#            optimizer = optim.SGD([
+#                    {'params': base_params},
+#                    {'params': cnny_params , 'lr': opt.lr*50}], lr=opt.lr, momentum=opt.momentum)
     torch.save(gtv.state_dict(), SAVEPATH)
     torch.save(optimizer.state_dict(), SAVEPATH + "optim")
     print("Total running time: {0:.3f}".format(time.time() - tstart))
