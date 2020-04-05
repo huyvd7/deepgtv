@@ -141,12 +141,14 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     d = np.minimum(np.maximum(d, 0), 1)
     plt.imsave(opath, d)
     if argref:
+        mse = ((d-(tref/255.0))**2).mean()*255
+        print("MSE: {:.5f}".format(mse))
         d = cv2.imread(opath)
         d = cv2.cvtColor(d, cv2.COLOR_BGR2RGB)
-        (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
-        psnr2 = cv2.PSNR(tref, d)
-        print("SSIM: {:.5f}".format(score))
+        psnr2 = cv2.PSNR(tref,d)
         print("PSNR: {:.5f}".format(psnr2))
+        (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
+        print("SSIM: {:.5f}".format(score))
     print("Saved ", opath)
     if argref:
         return (
