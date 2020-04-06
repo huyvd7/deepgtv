@@ -12,7 +12,7 @@ result = dict({'psnr_train':list(), 'ssim_train':list(),
                 'psnr_test':list(), 'ssim_test':list(),
                 'mse_train':list(), 'mse_test':list()})
 
-for i in range(1, 3):
+for i in range(1, 2):
     random.seed(i)
     subset = random.sample(_subset, 5)
     testset = [i for i in _subset if i not in subset]
