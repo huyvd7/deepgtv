@@ -182,6 +182,7 @@ def patch_merge(P, stride=36, shape=None, shapeorg=None):
 def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_path=None, noise_type='gauss'):
     # INITIALIZE
     global opt
+    opt._print()
     supporting_matrix(opt)
     gtv = GTV(
         width=36,
@@ -268,7 +269,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     return traineva, testeva
 if __name__=="__main__":
     global opt
-    print(opt)
+    
     parser = argparse.ArgumentParser()
     
     parser.add_argument(
@@ -297,4 +298,6 @@ if __name__=="__main__":
         image_path = '..\\gauss'
 
     channels=int(args.channels)
+    opt.channels=channels
+    
     _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss')
