@@ -235,6 +235,8 @@ def _main(imgw=324, trainp=None, gaussp=None):
         img_dir=trainp,
         transform=transforms.Compose([standardize2(w=imgw), ToTensor2(), gaussian_noise_(mean=0, stddev=25)]),
     )
+
+    print(dataset.rimg_name)
     
     dataloader = DataLoader(
         dataset, batch_size=1, shuffle=False#, pin_memory=True
