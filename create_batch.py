@@ -230,8 +230,9 @@ def _main(imgw=324, trainp=None, gaussp=None):
     if not trainp:
         trainp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\train' 
     testset = ['10', '1', '2', '3', '4', '5', '6', '7','8','9']
+    print(trainp)
     dataset = RENOIR_Dataset2(
-        img_dir=os.path.join(trainp),
+        img_dir=trainp,
         transform=transforms.Compose([standardize2(w=imgw), ToTensor2(), gaussian_noise_(mean=0, stddev=25)]),
     )
     
