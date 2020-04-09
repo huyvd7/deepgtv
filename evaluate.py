@@ -148,7 +148,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     #    print("MSE: {:.6f}".format(mse))
     d = np.minimum(np.maximum(d, 0), 1)
     print(d.shape, tref.shape)
-    plt.imsave(opath, d)
+    plt.imsave(opath, d, cmap='gray')
     if argref:
         mse = ((d-(tref/255.0))**2).mean()*255
         print("MSE: {:.5f}".format(mse))
