@@ -8,7 +8,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 
-def main(t, imagepath = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'):
+def main(t, imagepath = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\', sigma=25):
     # Experiment specifications
     #imagename = 'image_Lena512rgb.png'
     imagename = os.path.join(imagepath, 'ref'  , t + '_r.bmp')
@@ -18,7 +18,7 @@ def main(t, imagepath = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGr
     # Possible noise types to be generated 'gw', 'g1', 'g2', 'g3', 'g4', 'g1w',
     # 'g2w', 'g3w', 'g4w'.
     noise_type = 'gw'
-    noise_var = (15/255)**2  # Noise variance 25 std
+    noise_var = (sigma/255)**2  # Noise variance 25 std
     seed = 0  # seed for pseudorandom noise realization
 
     # Generate noise with given PSD
@@ -226,7 +226,7 @@ class gaussian_noise_(object):
 
 import shutil
 import torchvision
-def _main(imgw=324, trainp=None, gaussp=None):
+def _main(imgw=324, trainp=None, gaussp=None, sigma=25):
     if not trainp:
         trainp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\train' 
     testset = ['10', '1', '2', '3', '4', '5', '6', '7','8','9']
@@ -263,7 +263,7 @@ def _main(imgw=324, trainp=None, gaussp=None):
     
     bm3d_res = {'psnr':list(), 'mse':list()}
     for t in ['10', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
-        _psnr, _mse = main(t, imagepath=gaussp)
+        _psnr, _mse = main(t, imagepath=gaussp, sigma=sigma)
         bm3d_res['psnr'].append(_psnr)
         bm3d_res['mse'].append(_mse)
     print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
@@ -329,6 +329,9 @@ if __name__=="__main__":
     parser.add_argument(
         "--channels", default=3
     )
+    parser.add_argument(
+        "--sigma", default=25
+    )
 
     args = parser.parse_args()
     if args.width:
@@ -336,7 +339,8 @@ if __name__=="__main__":
     else:
         imgw = None
     channels=int(args.channels)
+    sigma = int(args.sigma)
     opt = OPT(train_path = args.train_path, batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=channels, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=65, u_min=55)
     opt._print()
 
-    _main(imgw=imgw, trainp=args.train_path, gaussp=args.gauss_path)
+    _main(imgw=imgw, trainp=args.train_path, gaussp=args.gauss_path, sigma=sigma)
