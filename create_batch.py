@@ -226,7 +226,7 @@ class gaussian_noise_(object):
 
 import shutil
 import torchvision
-def _main(imgw=324, trainp=None, gaussp=None, sigma=25, opt=opt):
+def _main(imgw=324, trainp=None, gaussp=None, sigma=25):
     if not trainp:
         trainp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\train' 
     testset = ['10', '1', '2', '3', '4', '5', '6', '7','8','9']
@@ -344,4 +344,4 @@ if __name__=="__main__":
     opt.channels=channels
     opt._update()
     opt._print()
-    _main(imgw=imgw, trainp=args.train_path, gaussp=args.gauss_path, sigma=sigma, opt=opt)
+    _main(imgw=imgw, trainp=args.train_path, gaussp=args.gauss_path, sigma=sigma)
