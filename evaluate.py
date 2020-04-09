@@ -36,13 +36,16 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         width = sample.shape[0]
     else:
         sample = cv2.resize(sample, (width, width))
-    sample = cv2.cvtColor(sample, cv2.COLOR_BGR2RGB)
-    sample = sample.transpose((2, 0, 1))
+    if rgb:
+        sample = cv2.cvtColor(sample, cv2.COLOR_BGR2RGB)
+        sample = sample.transpose((2, 0, 1))
     shape = sample.shape
 
     if normalize:
         sample = _norm(sample, newmin=0, newmax=1)
     sample = torch.from_numpy(sample)
+    if not rgb:
+        sample = sample.unsqueeze(0)
 
     cuda = True if torch.cuda.is_available() else False
 
@@ -55,10 +58,14 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         ref = cv2.imread(argref, rgb)
         if ref.shape[0] != width or ref.shape[1] != width:
             ref = cv2.resize(ref, (width, width))
-        ref = cv2.cvtColor(ref, cv2.COLOR_BGR2RGB)
+        if rgb:
+            ref = cv2.cvtColor(ref, cv2.COLOR_BGR2RGB)
         tref = ref.copy()
-        ref = ref.transpose((2, 0, 1))
+        if rgb:
+            ref = ref.transpose((2, 0, 1))
         ref = torch.from_numpy(ref)
+        if not rgb:
+            ref = ref.unsqueeze(0)
         if normalize:
             ref = _norm(ref, newmin=0, newmax=1)
 
