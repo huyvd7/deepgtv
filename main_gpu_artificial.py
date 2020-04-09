@@ -774,13 +774,16 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     ax.plot(ma_vec)
     fig.savefig("loss.png")
 
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=1, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=65, u_min=1)
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=1, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=100, u_min=1)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
     
     parser.add_argument(
         "-m", "--model"
+    )
+    parser.add_argument(
+        "--umin", default=55
     )
     parser.add_argument(
         "-c", "--cont"
@@ -815,4 +818,5 @@ if __name__=="__main__":
     opt.train_path = args.train_path
     opt.lr = float(args.lr)
     opt.batch_size=int(args.batch)
+    opt.u_min = float(args.umin)
     main(seed=1, model_name=model_name, cont=cont, epoch=epoch, subset=['1', '3', '5', '7', '9'])
