@@ -802,6 +802,9 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser()
     
     parser.add_argument(
+        "-m", "--model"
+    )
+    parser.add_argument(
         "-c", "--cont"
     )
 
@@ -810,5 +813,8 @@ if __name__=="__main__":
         cont = args.cont
     else:
         cont = None
-
-    main(seed=1, model_name='GTV.pkl', cont=cont, epoch=1600, subset=['1', '3', '5', '7', '9'])
+    if args.model:
+        model_name = args.model
+    else:
+        model_name='GTV.pkl'
+    main(seed=1, model_name=model_name', cont=cont, epoch=1600, subset=['1', '3', '5', '7', '9'])
