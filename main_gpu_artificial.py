@@ -388,6 +388,7 @@ class OPT:
         u_min=10,
         lr=1e-4,
         momentum=0.99,
+        train_path = './'
     ):
         self.batch_size = batch_size
         self.width = width
@@ -408,6 +409,7 @@ class OPT:
         self.u_max = u_max
         self.u_min = u_min
         self.rgb = 0 if channels==1 else 1
+        self.train_path = train_path
 
     def _print(self):
         print(
@@ -658,8 +660,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         subset = [i + "_" for i in subset]
     dataset = RENOIR_Dataset(
         img_dir=os.path.join(
-            "C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss_batch"
-        ),
+            opt.train_path),
         transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
         subset=subset,
     )
@@ -786,7 +787,9 @@ if __name__=="__main__":
     parser.add_argument(
         "--channels", default=3
     )
-
+    parser.add_argument(
+        "--train_path", default=os.path.join('~/gauss/_batch')
+    )
     args = parser.parse_args()
     if args.cont:
         cont = args.cont
@@ -798,5 +801,5 @@ if __name__=="__main__":
         model_name='GTV.pkl'
     channels=int(args.channels)
     
-    opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=channels, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=65, u_min=55)
+    opt = OPT(train_path = args.train_path, batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=channels, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=65, u_min=55)
     main(seed=1, model_name=model_name, cont=cont, epoch=600, subset=['1', '3', '5', '7', '9'])
