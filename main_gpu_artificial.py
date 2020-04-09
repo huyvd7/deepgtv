@@ -788,7 +788,7 @@ if __name__=="__main__":
         "--channels", default=3
     )
     parser.add_argument(
-        "--train_path", default=os.path.join('~/gauss/_batch')
+        "--train_path", default=os.path.join('../gauss/_batch')
     )
     args = parser.parse_args()
     if args.cont:
