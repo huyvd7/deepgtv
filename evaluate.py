@@ -30,7 +30,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         rgb=0
     else:
         rgb=1
-
+    print(rgb)
     sample = cv2.imread(inp, rgb)
     if width==None:
         width = sample.shape[0]
