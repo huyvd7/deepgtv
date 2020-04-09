@@ -499,7 +499,6 @@ class GTV(nn.Module):
             print("\tWEIGHT SUM", w[0, :, :].sum().data)
             hist = list()
         w = w.unsqueeze(1).repeat(1, opt.channels, 1, 1)
-        # w.register_hook(printfull)
         T = opt.admm_iter
         P = opt.prox_iter
         if debug:
@@ -615,22 +614,10 @@ def supporting_matrix(opt):
 
 def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False):
     v = x - eta * grad
-    # v = _norm(v,0,255)
-    # print(v.shape, w.shape)
     masks1 = ((v.abs() - (eta * w * u).abs()) > 0).type(dtype).requires_grad_(True)
     masks2 = ((v.abs() - (eta * w * u).abs()) <= 0).type(dtype).requires_grad_(True)
     v = v - masks1 * eta * w * u * torch.sign(v)
     v = v - masks2 * v
-    # v = _norm(v,0,255)
-    # w.register_hook(printall)
-    # v.register_hook(printfull)
-    if debug and 0:
-        print(
-            w.mean(),
-            # u.mean(),
-            u,
-            eta,
-        )
     return v
 
 
