@@ -817,4 +817,4 @@ if __name__=="__main__":
         model_name = args.model
     else:
         model_name='GTV.pkl'
-    main(seed=1, model_name=model_name', cont=cont, epoch=1600, subset=['1', '3', '5', '7', '9'])
+    main(seed=1, model_name=model_name, cont=cont, epoch=1600, subset=['1', '3', '5', '7', '9'])
