@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 def main(t, imagepath = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'):
     # Experiment specifications
     #imagename = 'image_Lena512rgb.png'
-    imagename = imagepath+ 'ref\\' + t + '_r.bmp'
+    imagename = os.path.join(imagepath, 'ref'  , t + '_r.bmp')
     # Load noise-free image
     y = np.array(Image.open(imagename)) / 255
 
@@ -33,7 +33,7 @@ def main(t, imagepath = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGr
     z = np.atleast_3d(y) + np.atleast_3d(noise)
 
     z_rang = np.minimum(np.maximum(z, 0), 1)
-    noisyimagename=imagepath+ 'noisy\\' + t + '_g.bmp'
+    noisyimagename=os.path.join(imagepath, 'noisy' , t + '_g.bmp')
     plt.imsave(noisyimagename, z_rang)
     z = np.array(Image.open(noisyimagename)) / 255
     # Call BM3D With the default settings.
