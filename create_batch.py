@@ -315,6 +315,7 @@ def _main(imgw=324, trainp=None, gaussp=None, sigma=25):
     print(T1.shape)
 
 if __name__=="__main__":
+    global opt
     parser = argparse.ArgumentParser()
     
     parser.add_argument(
@@ -340,7 +341,7 @@ if __name__=="__main__":
         imgw = None
     channels=int(args.channels)
     sigma = int(args.sigma)
-    opt = OPT(train_path = args.train_path, batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=channels, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=65, u_min=55)
+    opt.channels=channels
+    opt._update()
     opt._print()
-
-    _main(imgw=imgw, trainp=args.train_path, gaussp=args.gauss_path, sigma=sigma)
+    _main(imgw=imgw, trainp=args.train_path, gaussp=args.gauss_path, sigma=sigma, opt=opt)

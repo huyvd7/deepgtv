@@ -410,7 +410,8 @@ class OPT:
         self.u_min = u_min
         self.rgb = 0 if channels==1 else 1
         self.train_path = train_path
-
+    def _update(self):
+        self.rgb = 0 if self.channels==1 else 1
     def _print(self):
         print(
             "batch_size =",
@@ -773,7 +774,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     ax.plot(ma_vec)
     fig.savefig("loss.png")
 
-#opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=65, u_min=55)
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=1, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=65, u_min=55)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
@@ -800,6 +801,6 @@ if __name__=="__main__":
     else:
         model_name='GTV.pkl'
     channels=int(args.channels)
-    
-    opt = OPT(train_path = args.train_path, batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=channels, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=65, u_min=55)
+    opt.channels = channels
+
     main(seed=1, model_name=model_name, cont=cont, epoch=600, subset=['1', '3', '5', '7', '9'])
