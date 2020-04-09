@@ -147,10 +147,10 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     #    mse = ((d-(tref/255.0))**2).mean()*255
     #    print("MSE: {:.6f}".format(mse))
     d = np.minimum(np.maximum(d, 0), 1)
+    print(d.shape, tref.shape)
     plt.imsave(opath, d)
     if argref:
         mse = ((d-(tref/255.0))**2).mean()*255
-        print(d.shape, tref.shape)
         print("MSE: {:.5f}".format(mse))
         d = cv2.imread(opath, rgb)
         d = cv2.cvtColor(d, cv2.COLOR_BGR2RGB)
