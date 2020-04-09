@@ -794,6 +794,9 @@ if __name__=="__main__":
     parser.add_argument(
         "--epoch", default=500
     )
+    parser.add_argument(
+        "--lr", default=8e-6
+    )
     args = parser.parse_args()
     if args.cont:
         cont = args.cont
@@ -807,4 +810,5 @@ if __name__=="__main__":
     epoch=int(args.epoch)
     opt.channels = channels
     opt.train_path = args.train_path
+    opt.lr = float(args.lr)
     main(seed=1, model_name=model_name, cont=cont, epoch=epoch, subset=['1', '3', '5', '7', '9'])
