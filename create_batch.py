@@ -281,9 +281,17 @@ def _main(imgw=324, trainp=None, gaussp=None):
     # mkdir gauss_batch
     # mkdir gauss_batch/noisy
     # mkdir gauss_batch/ref
-    
-    noisyp = '..\\gauss_batch\\noisy'
-    refp =   '..\\gauss_batch\\ref'
+    gaussp2 = gaussp + '_batch'
+    noisyp = os.path.join(gaussp2, 'noisy')
+    refp = os.path.join(gaussp2, 'ref')
+    print(gaussp2, noisyp, refp)
+    shutil.rmtree(gaussp2, ignore_errors=True)
+    shutil.rmtree(noisyp, ignore_errors=True)
+    shutil.rmtree(refp, ignore_errors=True)
+    os.makedirs(gaussp2)
+    os.makedirs(noisyp)
+    os.makedirs(refp)
+
     shutil.rmtree(noisyp, ignore_errors=True)
     shutil.rmtree(refp, ignore_errors=True)
     os.makedirs(noisyp)
