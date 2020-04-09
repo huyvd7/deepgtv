@@ -659,6 +659,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         subset = [i + "_" for i in _subset]
     else:
         subset = [i + "_" for i in subset]
+    print(opt.train_path)
     dataset = RENOIR_Dataset(
         img_dir=os.path.join(
             opt.train_path),
