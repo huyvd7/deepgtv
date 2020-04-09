@@ -659,7 +659,6 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         subset = [i + "_" for i in _subset]
     else:
         subset = [i + "_" for i in subset]
-    print(opt.train_path)
     dataset = RENOIR_Dataset(
         img_dir=os.path.join(
             opt.train_path),
@@ -803,5 +802,5 @@ if __name__=="__main__":
         model_name='GTV.pkl'
     channels=int(args.channels)
     opt.channels = channels
-
+    opt.train_path = args.train_path
     main(seed=1, model_name=model_name, cont=cont, epoch=600, subset=['1', '3', '5', '7', '9'])
