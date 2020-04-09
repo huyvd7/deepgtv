@@ -232,8 +232,8 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         except Exception:
             from skimage.measure import compare_ssim
     
-        img1 = cv2.imread(inp, rgb)[:, :, : opt.channels]
-        img2 = cv2.imread(argref, rgb)[:, :, : opt.channels]
+        img1 = cv2.imread(inp, rgb)
+        img2 = cv2.imread(argref, rgb)
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
         print("Original ", cv2.PSNR(img1, img2), score)
     print("========================")
@@ -262,8 +262,8 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         except Exception:
             from skimage.measure import compare_ssim
     
-        img1 = cv2.imread(inp, rgb)[:, :, : opt.channels]
-        img2 = cv2.imread(argref, rgb)[:, :, : opt.channels]
+        img1 = cv2.imread(inp, rgb)
+        img2 = cv2.imread(argref, rgb)
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
         print("Original ", cv2.PSNR(img1, img2), score)
     print("========================")
