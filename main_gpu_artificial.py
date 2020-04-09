@@ -797,6 +797,9 @@ if __name__=="__main__":
     parser.add_argument(
         "--lr", default=8e-6
     )
+    parser.add_argument(
+        "--batch", default=50
+    )
     args = parser.parse_args()
     if args.cont:
         cont = args.cont
@@ -811,4 +814,5 @@ if __name__=="__main__":
     opt.channels = channels
     opt.train_path = args.train_path
     opt.lr = float(args.lr)
+    opt.batch_size=int(args.batch)
     main(seed=1, model_name=model_name, cont=cont, epoch=epoch, subset=['1', '3', '5', '7', '9'])
