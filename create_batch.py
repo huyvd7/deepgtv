@@ -238,6 +238,7 @@ def _main(imgw=324, trainp=None, gaussp=None):
     dataloader = DataLoader(
         dataset, batch_size=1, shuffle=False#, pin_memory=True
     )
+    if not gaussp:
         gaussp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
     noisyp = os.path.join(gaussp, 'noisy')
     refp = os.path.join(gaussp, 'ref')
@@ -262,12 +263,12 @@ def _main(imgw=324, trainp=None, gaussp=None):
     
     bm3d_res = {'psnr':list(), 'mse':list()}
     for t in ['10', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
-        _psnr, _mse = main(t)
+        _psnr, _mse = main(t, imagepath=gaussp)
         bm3d_res['psnr'].append(_psnr)
         bm3d_res['mse'].append(_mse)
     print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
 
-    dataset = RENOIR_Dataset2(img_dir='..\\gauss\\',
+    dataset = RENOIR_Dataset2(img_dir=gaussp,
                              transform = transforms.Compose([standardize2(),
                                                 ToTensor2()])
                             )
