@@ -215,7 +215,10 @@ class RENOIR_Dataset(Dataset):
                         rimg_name.append(self.rimg_name[i])
             self.nimg_name = sorted(nimg_name)
             self.rimg_name = sorted(rimg_name)
-
+        if opt.channels==1:
+            self.rgb=0
+        else:
+            self.rgb=1
         self.transform = transform
 
     def __len__(self):
@@ -226,9 +229,9 @@ class RENOIR_Dataset(Dataset):
             idx = idx.tolist()
 
         nimg_name = os.path.join(self.npath, self.nimg_name[idx])
-        nimg = cv2.imread(nimg_name)
+        nimg = cv2.imread(nimg_name, self.rgb)
         rimg_name = os.path.join(self.rpath, self.rimg_name[idx])
-        rimg = cv2.imread(rimg_name)
+        rimg = cv2.imread(rimg_name, self.rgb)
 
         sample = {"nimg": nimg, "rimg": rimg}
 
