@@ -262,7 +262,7 @@ def _main(imgw=324, trainp=None, gaussp=None):
         inputs = data['rimg'].float().type(dtype).squeeze(0)
         img = inputs.cpu().detach().numpy().astype(np.uint8)
         img = img.transpose(1, 2, 0)
-        plt.imsave(os.path.join(refp, '{0}_r.bmp'.format(testset[i]), img ))
+        plt.imsave(os.path.join(refp, '{0}_r.bmp'.format(testset[i])), img )
     
     bm3d_res = {'psnr':list(), 'mse':list()}
     for t in ['10', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
