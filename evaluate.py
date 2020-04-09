@@ -27,11 +27,11 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     except Exception:
         from skimage.measure import compare_ssim
     if opt.channels==1:
-        self.rgb=0
+        rgb=0
     else:
-        self.rgb=1
+        rgb=1
 
-    sample = cv2.imread(inp)
+    sample = cv2.imread(inp, rgb)
     if width==None:
         width = sample.shape[0]
     else:
@@ -52,7 +52,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     psnrs = list()
     score2 = list()
     if argref:
-        ref = cv2.imread(argref)
+        ref = cv2.imread(argref, rgb)
         if ref.shape[0] != width or ref.shape[1] != width:
             ref = cv2.resize(ref, (width, width))
         ref = cv2.cvtColor(ref, cv2.COLOR_BGR2RGB)
@@ -117,9 +117,6 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         print("\nPrediction time: ", time.time() - tstart)
     else:
         print("Prediction time: ", time.time() - tstart)
-    if argref:
-        #print("PSNR: {:.2f}".format(np.mean(np.array(psnrs))))
-        pass
 
     dummy = (
         patch_merge(dummy, stride=stride, shape=shapex, shapeorg=shape).detach().numpy()
@@ -147,7 +144,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     if argref:
         mse = ((d-(tref/255.0))**2).mean()*255
         print("MSE: {:.5f}".format(mse))
-        d = cv2.imread(opath)
+        d = cv2.imread(opath, rgb)
         d = cv2.cvtColor(d, cv2.COLOR_BGR2RGB)
         psnr2 = cv2.PSNR(tref,d)
         print("PSNR: {:.5f}".format(psnr2))
@@ -197,7 +194,13 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         lambda_max=1e9,
         cuda=cuda,
         opt=opt,
-    )
+    )    
+    if opt.channels==1:
+        rgb=0
+    else:
+        rgb=1
+
+
     width = 36
     PATH = model_name
     device = torch.device("cuda") if cuda else torch.device("cpu")
@@ -229,8 +232,8 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         except Exception:
             from skimage.measure import compare_ssim
     
-        img1 = cv2.imread(inp)[:, :, : opt.channels]
-        img2 = cv2.imread(argref)[:, :, : opt.channels]
+        img1 = cv2.imread(inp, rgb)[:, :, : opt.channels]
+        img2 = cv2.imread(argref, rgb)[:, :, : opt.channels]
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
         print("Original ", cv2.PSNR(img1, img2), score)
     print("========================")
@@ -259,8 +262,8 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         except Exception:
             from skimage.measure import compare_ssim
     
-        img1 = cv2.imread(inp)[:, :, : opt.channels]
-        img2 = cv2.imread(argref)[:, :, : opt.channels]
+        img1 = cv2.imread(inp, rgb)[:, :, : opt.channels]
+        img2 = cv2.imread(argref, rgb)[:, :, : opt.channels]
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
         print("Original ", cv2.PSNR(img1, img2), score)
     print("========================")
