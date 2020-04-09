@@ -8,10 +8,10 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 
-def main(t):
+def main(t, imagepath = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'):
     # Experiment specifications
     #imagename = 'image_Lena512rgb.png'
-    imagepath = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
+    imagepath =     
     imagename = imagepath+ 'ref\\' + t + '_r.bmp'
     # Load noise-free image
     y = np.array(Image.open(imagename)) / 255
@@ -239,7 +239,6 @@ def _main(imgw=324, trainp=None, gaussp=None):
     dataloader = DataLoader(
         dataset, batch_size=1, shuffle=False#, pin_memory=True
     )
-    if not gaussp:
         gaussp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
     noisyp = os.path.join(gaussp, 'noisy')
     refp = os.path.join(gaussp, 'ref')
