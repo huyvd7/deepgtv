@@ -227,8 +227,9 @@ class gaussian_noise_(object):
 
 import shutil
 import torchvision
-def _main(imgw=324):
-    trainp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\train' 
+def _main(imgw=324, trainp=None, gaussp=None):
+    if not trainp:
+        trainp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\train' 
     testset = ['10', '1', '2', '3', '4', '5', '6', '7','8','9']
     dataset = RENOIR_Dataset2(
         img_dir=os.path.join(trainp),
@@ -238,9 +239,10 @@ def _main(imgw=324):
     dataloader = DataLoader(
         dataset, batch_size=1, shuffle=False#, pin_memory=True
     )
-    gaussp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
-    noisyp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\noisy\\'
-    refp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\ref\\'
+    if not gaussp:
+        gaussp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
+    noisyp = os.path.join(gaussp, 'noisy')
+    refp = os.path.join(gaussp, 'ref')
 
     shutil.rmtree(gaussp, ignore_errors=True)
     shutil.rmtree(noisyp, ignore_errors=True)
@@ -311,6 +313,12 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser()
     
     parser.add_argument(
+        "-tp", "--train_path"
+    )
+    parser.add_argument(
+        "-gp", "--gauss_path"
+    )
+    parser.add_argument(
         "-w", "--width", help="Resize image to a square image with given width"
     )
 
@@ -320,4 +328,5 @@ if __name__=="__main__":
     else:
         imgw = None
 
-    _main(imgw=imgw)
+
+    _main(imgw=imgw, trainp=args.train_path, gaussp=args.gauss_path)
