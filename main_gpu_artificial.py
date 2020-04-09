@@ -407,6 +407,7 @@ class OPT:
         self.momentum = momentum
         self.u_max = u_max
         self.u_min = u_min
+        self.rgb = 0 if channels==1 else 1
 
     def _print(self):
         print(

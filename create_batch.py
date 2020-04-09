@@ -1,4 +1,4 @@
-from proxgtv.proxgtv import *
+from main_gpu_artificial import *
 import os
 import argparse
 import numpy as np
@@ -83,8 +83,8 @@ def main(t, imagepath = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGr
     import cv2
     opath = 't.bmp'
     argref = imagename
-    d = cv2.imread(opath)
-    tref = cv2.imread(argref)
+    d = cv2.imread(opath, opt.rgb)
+    tref = cv2.imread(argref, opt.rgb)
     (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
     psnr2 = cv2.PSNR(tref, d)
     print('#######################') 
@@ -148,9 +148,9 @@ class RENOIR_Dataset2(Dataset):
             idx = idx.tolist()
 
         nimg_name = os.path.join(self.npath, self.nimg_name[idx])
-        nimg = cv2.imread(nimg_name)
+        nimg = cv2.imread(nimg_name, opt.rgb)
         rimg_name = os.path.join(self.rpath, self.rimg_name[idx])
-        rimg = cv2.imread(rimg_name)
+        rimg = cv2.imread(rimg_name, opt.rgb)
 
         
         sample = {'nimg': nimg, 'rimg': rimg, 'nn':self.nimg_name[idx], 'rn':self.rimg_name[idx]}
@@ -320,6 +320,7 @@ def _main(imgw=324, trainp=None, gaussp=None):
     print(T1.shape)
 
 if __name__=="__main__":
+    global opt
     parser = argparse.ArgumentParser()
     
     parser.add_argument(
