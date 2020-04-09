@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 def main(t, imagepath = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'):
     # Experiment specifications
     #imagename = 'image_Lena512rgb.png'
-    imagepath =     
     imagename = imagepath+ 'ref\\' + t + '_r.bmp'
     # Load noise-free image
     y = np.array(Image.open(imagename)) / 255
