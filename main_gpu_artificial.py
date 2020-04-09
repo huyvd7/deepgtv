@@ -774,7 +774,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     ax.plot(ma_vec)
     fig.savefig("loss.png")
 
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=1, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=65, u_min=55)
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=1, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=65, u_min=1)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
@@ -791,6 +791,9 @@ if __name__=="__main__":
     parser.add_argument(
         "--train_path", default=os.path.join('../gauss/_batch')
     )
+    parser.add_argument(
+        "--epoch", default=500
+    )
     args = parser.parse_args()
     if args.cont:
         cont = args.cont
@@ -801,6 +804,7 @@ if __name__=="__main__":
     else:
         model_name='GTV.pkl'
     channels=int(args.channels)
+    epoch=int(args.epoch)
     opt.channels = channels
     opt.train_path = args.train_path
-    main(seed=1, model_name=model_name, cont=cont, epoch=600, subset=['1', '3', '5', '7', '9'])
+    main(seed=1, model_name=model_name, cont=cont, epoch=epoch, subset=['1', '3', '5', '7', '9'])
