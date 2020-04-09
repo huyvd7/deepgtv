@@ -332,12 +332,17 @@ if __name__=="__main__":
     parser.add_argument(
         "-w", "--width", help="Resize image to a square image with given width"
     )
+    parser.add_argument(
+        "--channels", default=3
+    )
 
     args = parser.parse_args()
     if args.width:
         imgw = int(args.width)
     else:
         imgw = None
+    channels=int(args.channels)
+    opt.channels=channels
 
 
     _main(imgw=imgw, trainp=args.train_path, gaussp=args.gauss_path)
