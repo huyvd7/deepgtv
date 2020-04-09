@@ -475,19 +475,9 @@ class GTV(nn.Module):
         u = u.unsqueeze(1).unsqueeze(1)
         if debug:
             self.u=u.clone()
-        # masks = (self.u > u_max).type(dtype)
-        # self.u = self.u - (self.u - u_max)*masks
-        # masks = (self.u > self.u_min).type(dtype)
-        # self.u = self.u - (self.u - self.u_min)*masks
-
-        # x = torch.zeros(xf.shape[0], xf.shape[1], opt.width**2, 1).type(dtype).requires_grad_(True)
         x = xf.view(xf.shape[0], xf.shape[1], opt.width ** 2, 1).requires_grad_(True)
         z = opt.H.matmul(x).requires_grad_(True)
 
-        ###################
-        # E = xf
-        # Fs = (opt.H.matmul(E.view(E.shape[0], E.shape[1], opt.width**2, 1))**2)
-        # w = torch.exp(-(Fs.sum(axis=1)) / (2 * 1 ** 2)).requires_grad_(True)
         ###################
         E = self.cnnf.forward(xf)
         Fs = (
@@ -510,7 +500,6 @@ class GTV(nn.Module):
 
         Y = self.cnny.forward(xf).squeeze(0)
         y = Y.view(xf.shape[0], xf.shape[1], opt.width ** 2, 1).requires_grad_(True)
-        # y = xf.view(xf.shape[0], xf.shape[1], opt.width**2, 1).requires_grad_(True)
         I = opt.I.requires_grad_(True)
         H = opt.H.requires_grad_(True)
         D = (
@@ -525,12 +514,7 @@ class GTV(nn.Module):
             ).requires_grad_(True)
             if i == 0:
                 z = opt.H.matmul(xhat).requires_grad_(True)
-            ##### RECOMPUTE W #####
-            # E = self.cnnf.forward(xf)
-            # Fs = (opt.H.matmul(E.view(E.shape[0], E.shape[1], opt.width**2, 1))**2)
-            # w = torch.exp(-(Fs.sum(axis=1)) / (2 * 1 ** 2)).requires_grad_(True)
-            # w = w.unsqueeze(1).repeat(1, opt.channels, 1, 1)
-            #######################
+            
             # STEP 2
             for j in range(P):
                 grad = (delta * z - lagrange - delta * H.matmul(xhat)).requires_grad_(
@@ -539,19 +523,8 @@ class GTV(nn.Module):
                 z = proximal_gradient_descent(
                     x=z, grad=grad, w=w, u=u, eta=eta, debug=debug
                 ).requires_grad_(True)
-                if debug:
-                    # l = ((y-xhat).permute(0, 1, 3, 2).matmul(y-xhat) + (u * w * z.abs()).sum(axis=[1, 2, 3]))
 
-                    # hist.append(l[0, 0, :, :])
-                    if debug > 1:
-                        print(
-                            "Left: ",
-                            (y - xhat).permute(0, 1, 3, 2).matmul(y - xhat).data[0],
-                            "Right: ",
-                            (u * w * z.abs()).sum(axis=[1, 2, 3]).data[0],
-                        )
             # STEP 3
-
             lagrange = (lagrange + delta * (H.matmul(xhat) - z)).requires_grad_(True)
             if debug:
                 l = (
@@ -569,10 +542,9 @@ class GTV(nn.Module):
 
         # xhat = D.matmul(2*y - H.T.matmul(lagrange) + delta*H.T.matmul(z)).requires_grad_(True)
         if debug:
-            print("min - max xhat: ", xhat.min(), xhat.max())
+            print("min - max xhat: ", xhat.min().data, xhat.max().data)
             hist = [h.flatten() for h in hist]
             return hist
-        #xhat = _norm(xhat, 0, 255)
         return xhat.view(xhat.shape[0], opt.channels, opt.width, opt.width)
 
     def predict(self, xf):
@@ -817,4 +789,4 @@ if __name__=="__main__":
         model_name = args.model
     else:
         model_name='GTV.pkl'
-    main(seed=1, model_name=model_name, cont=cont, epoch=1600, subset=['1', '3', '5', '7', '9'])
+    main(seed=1, model_name=model_name, cont=cont, epoch=600, subset=['1', '3', '5', '7', '9'])

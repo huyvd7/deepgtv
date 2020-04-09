@@ -195,8 +195,8 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     )
     width = 36
     PATH = model_name
-    device = torch.device("cuda")
-    gtv.load_state_dict(torch.load(PATH))
+    device = torch.device("cuda") if cuda else torch.device("cpu")
+    gtv.load_state_dict(torch.load(PATH, map_location=device))
     if not image_path:
         image_path = "..\\all\\all\\"
     if noise_type=='gauss':
@@ -276,7 +276,9 @@ if __name__=="__main__":
     parser.add_argument(
         "-m", "--model"
     )
-
+    parser.add_argument(
+        "-p", "--image_path"
+    )
 
     args = parser.parse_args()
     if args.width:
@@ -288,4 +290,8 @@ if __name__=="__main__":
         model_name = args.model
     else:
         model_name = 'GTV_20.pkl'
-    _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path='..\\gauss', noise_type='gauss')
+    if args.image_path:
+        image_path = args.image_path
+    else:
+        image_path = '..\\gauss'
+    _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss')
