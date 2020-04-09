@@ -339,5 +339,6 @@ if __name__=="__main__":
     channels=int(args.channels)
     opt.channels=channels
 
+    opt._print()
 
     _main(imgw=imgw, trainp=args.train_path, gaussp=args.gauss_path)
