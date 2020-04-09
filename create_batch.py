@@ -242,7 +242,7 @@ def _main(imgw=324, trainp=None, gaussp=None):
         gaussp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
     noisyp = os.path.join(gaussp, 'noisy')
     refp = os.path.join(gaussp, 'ref')
-
+    print(gaussp, noisyp, refp)
     shutil.rmtree(gaussp, ignore_errors=True)
     shutil.rmtree(noisyp, ignore_errors=True)
     shutil.rmtree(refp, ignore_errors=True)
