@@ -782,6 +782,9 @@ if __name__=="__main__":
     parser.add_argument(
         "-c", "--cont"
     )
+    parser.add_argument(
+        "--channels", default=3
+    )
 
     args = parser.parse_args()
     if args.cont:
@@ -792,4 +795,7 @@ if __name__=="__main__":
         model_name = args.model
     else:
         model_name='GTV.pkl'
+    channels=int(args.channels)
+    
+    opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=channels, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=65, u_min=55)
     main(seed=1, model_name=model_name, cont=cont, epoch=600, subset=['1', '3', '5', '7', '9'])

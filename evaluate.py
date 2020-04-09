@@ -294,4 +294,5 @@ if __name__=="__main__":
         image_path = args.image_path
     else:
         image_path = '..\\gauss'
+
     _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss')
