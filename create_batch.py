@@ -230,13 +230,11 @@ def _main(imgw=324, trainp=None, gaussp=None):
     if not trainp:
         trainp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\train' 
     testset = ['10', '1', '2', '3', '4', '5', '6', '7','8','9']
-    print(trainp)
     dataset = RENOIR_Dataset2(
         img_dir=trainp,
         transform=transforms.Compose([standardize2(w=imgw), ToTensor2(), gaussian_noise_(mean=0, stddev=25)]),
     )
 
-    print(dataset.rimg_name)
     
     dataloader = DataLoader(
         dataset, batch_size=1, shuffle=False#, pin_memory=True
@@ -245,7 +243,6 @@ def _main(imgw=324, trainp=None, gaussp=None):
         gaussp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
     noisyp = os.path.join(gaussp, 'noisy')
     refp = os.path.join(gaussp, 'ref')
-    print(gaussp, noisyp, refp)
     shutil.rmtree(gaussp, ignore_errors=True)
     shutil.rmtree(noisyp, ignore_errors=True)
     shutil.rmtree(refp, ignore_errors=True)
@@ -284,7 +281,6 @@ def _main(imgw=324, trainp=None, gaussp=None):
     gaussp2 = gaussp + '_batch'
     noisyp = os.path.join(gaussp2, 'noisy')
     refp = os.path.join(gaussp2, 'ref')
-    print(gaussp2, noisyp, refp)
     shutil.rmtree(gaussp2, ignore_errors=True)
     shutil.rmtree(noisyp, ignore_errors=True)
     shutil.rmtree(refp, ignore_errors=True)
@@ -316,7 +312,6 @@ def _main(imgw=324, trainp=None, gaussp=None):
             plt.imsave('{0}\\{1}_{2}.bmp'.format(refp, rn,i), img )
             
         print(total)
-        print(noisyp, refp)
     print(T1.shape)
 
 if __name__=="__main__":
