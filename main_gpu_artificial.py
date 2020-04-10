@@ -487,7 +487,7 @@ class GTV(nn.Module):
         self.cnny.apply(weights_init_normal)
         self.cnnu.apply(weights_init_normal)
 
-    def forward(self, xf, debug=False, Tmod=False, predict=False):  # gtvforward
+    def forward(self, xf, debug=False, Tmod=False):  # gtvforward
         #u = opt.u
         u = self.cnnu.forward(xf)
         u_max = opt.u_max
