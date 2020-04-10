@@ -210,20 +210,20 @@ class standardize2(object):
 dtype=torch.FloatTensor
 from torch.autograd import Variable
 
-class gaussian_noise_(object):
-    def __init__(self, stddev, mean):
-        self.stddev = stddev
-        self.mean = mean
-
-    def __call__(self, sample):
-        nimg, rimg = sample["rimg"].type(torch.FloatTensor), sample["rimg"]
-        noise = self.stddev*Variable(torch.zeros(nimg.shape)).normal_()
-        nimg = nimg + noise
-        masks = (nimg>255).type(dtype)
-        nimg = nimg - (nimg - 255)*masks
-        masks = (nimg<0).type(dtype)
-        nimg = nimg - (nimg)*masks
-        return {"nimg": nimg, "rimg": rimg, 'rn':sample['rn']}
+#class gaussian_noise_(object):
+#    def __init__(self, stddev, mean):
+#        self.stddev = stddev
+#        self.mean = mean
+#
+#    def __call__(self, sample):
+#        nimg, rimg = sample["rimg"].type(torch.FloatTensor), sample["rimg"]
+#        noise = self.stddev*Variable(torch.zeros(nimg.shape)).normal_()
+#        nimg = nimg + noise
+#        masks = (nimg>255).type(dtype)
+#        nimg = nimg - (nimg - 255)*masks
+#        masks = (nimg<0).type(dtype)
+#        nimg = nimg - (nimg)*masks
+#        return {"nimg": nimg, "rimg": rimg, 'rn':sample['rn']}
 
 import shutil
 import torchvision
@@ -232,7 +232,7 @@ def _main(imgw=324, sigma=25):
     testset = ['10', '1', '2', '3', '4', '5', '6', '7','8','9']
     dataset = RENOIR_Dataset2(
         img_dir=os.path.join(trainp),
-        transform=transforms.Compose([standardize2(w=imgw), ToTensor2(), gaussian_noise_(mean=0, stddev=sigma)]),
+        transform=transforms.Compose([standardize2(w=imgw), ToTensor2()])
     )
     
     dataloader = DataLoader(
@@ -254,18 +254,19 @@ def _main(imgw=324, sigma=25):
         inputs = data['nimg'].float().type(dtype).squeeze(0)
         img = inputs.cpu().detach().numpy().astype(np.uint8)
         img = img.transpose(1, 2, 0)
-        #plt.imsave('{0}{1}_g.bmp'.format(noisyp, testset[i]), img )
+        if noisetype!='gauss':
+            plt.imsave('{0}{1}_g.bmp'.format(noisyp, testset[i]), img )
         inputs = data['rimg'].float().type(dtype).squeeze(0)
         img = inputs.cpu().detach().numpy().astype(np.uint8)
         img = img.transpose(1, 2, 0)
         plt.imsave('{0}{1}_r.bmp'.format(refp, testset[i]), img )
-    
-    bm3d_res = {'psnr':list(), 'mse':list()}
-    for t in ['10', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
-        _psnr, _mse = main(t, sigma=sigma)
-        bm3d_res['psnr'].append(_psnr)
-        bm3d_res['mse'].append(_mse)
-    print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
+    if noisetype =='gauss': 
+        bm3d_res = {'psnr':list(), 'mse':list()}
+        for t in ['10', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
+            _psnr, _mse = main(t, sigma=sigma)
+            bm3d_res['psnr'].append(_psnr)
+            bm3d_res['mse'].append(_mse)
+        print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
 
     dataset = RENOIR_Dataset2(img_dir='..\\gauss\\',
                              transform = transforms.Compose([standardize2(),
@@ -306,7 +307,7 @@ def _main(imgw=324, sigma=25):
         print(total)
         print(noisyp, refp)
     print(T1.shape)
-
+noisetype='real'
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
     
@@ -323,4 +324,4 @@ if __name__=="__main__":
     else:
         imgw = None
 
-    _main(imgw=imgw, sigma=int(args.sima))
+    _main(imgw=imgw, sigma=int(args.sigma))
