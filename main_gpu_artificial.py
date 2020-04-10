@@ -215,10 +215,7 @@ class RENOIR_Dataset(Dataset):
                         rimg_name.append(self.rimg_name[i])
             self.nimg_name = sorted(nimg_name)
             self.rimg_name = sorted(rimg_name)
-        if opt.channels==1:
-            self.rgb=0
-        else:
-            self.rgb=1
+
         self.transform = transform
 
     def __len__(self):
@@ -229,9 +226,9 @@ class RENOIR_Dataset(Dataset):
             idx = idx.tolist()
 
         nimg_name = os.path.join(self.npath, self.nimg_name[idx])
-        nimg = cv2.imread(nimg_name, self.rgb)
+        nimg = cv2.imread(nimg_name)
         rimg_name = os.path.join(self.rpath, self.rimg_name[idx])
-        rimg = cv2.imread(rimg_name, self.rgb)
+        rimg = cv2.imread(rimg_name)
 
         sample = {"nimg": nimg, "rimg": rimg}
 
@@ -388,7 +385,6 @@ class OPT:
         u_min=10,
         lr=1e-4,
         momentum=0.99,
-        train_path = './'
     ):
         self.batch_size = batch_size
         self.width = width
@@ -408,10 +404,7 @@ class OPT:
         self.momentum = momentum
         self.u_max = u_max
         self.u_min = u_min
-        self.rgb = 0 if channels==1 else 1
-        self.train_path = train_path
-    def _update(self):
-        self.rgb = 0 if self.channels==1 else 1
+
     def _print(self):
         print(
             "batch_size =",
@@ -661,7 +654,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         subset = [i + "_" for i in subset]
     dataset = RENOIR_Dataset(
         img_dir=os.path.join(
-            opt.train_path),
+            "C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss_batch"
+        ),
         transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
         subset=subset,
     )
@@ -774,7 +768,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     ax.plot(ma_vec)
     fig.savefig("loss.png")
 
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=100, u_min=1)
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=65, u_min=55)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
@@ -783,26 +777,9 @@ if __name__=="__main__":
         "-m", "--model"
     )
     parser.add_argument(
-        "--umin", default=55
-    )
-    parser.add_argument(
         "-c", "--cont"
     )
-    parser.add_argument(
-        "--channels", default=3
-    )
-    parser.add_argument(
-        "--train_path", default=os.path.join('../gauss/_batch')
-    )
-    parser.add_argument(
-        "--epoch", default=500
-    )
-    parser.add_argument(
-        "--lr", default=8e-6
-    )
-    parser.add_argument(
-        "--batch", default=50
-    )
+
     args = parser.parse_args()
     if args.cont:
         cont = args.cont
@@ -812,11 +789,4 @@ if __name__=="__main__":
         model_name = args.model
     else:
         model_name='GTV.pkl'
-    channels=int(args.channels)
-    epoch=int(args.epoch)
-    opt.channels = channels
-    opt.train_path = args.train_path
-    opt.lr = float(args.lr)
-    opt.batch_size=int(args.batch)
-    opt.u_min = float(args.umin)
-    main(seed=1, model_name=model_name, cont=cont, epoch=epoch, subset=['1', '3', '5', '7', '9'])
+    main(seed=1, model_name=model_name, cont=cont, epoch=600, subset=['1', '3', '5', '7', '9'])
