@@ -528,7 +528,6 @@ class GTV(nn.Module):
             .type(dtype)
             .requires_grad_(True)
         )
-        minT = torch.zeros()
         for i in range(T):
             # STEP 1
             xhat = D.matmul(
