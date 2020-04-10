@@ -711,7 +711,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     cnnu_params = list(filter(lambda kv: 'cnnu' in kv[0], gtv.named_parameters()))
     cnnu_params = [i[1] for i in cnnu_params ]
     optimizer = optim.SGD([
-                {'params': cnny_params, 'lr':opt.lr*2},
+                {'params': cnny_params, 'lr':opt.lr*1.2},
                  {'params': cnnf_params , 'lr': opt.lr*50},
                  {'params': cnnu_params , 'lr': opt.lr*4}
              ], lr=opt.lr, momentum=opt.momentum)
@@ -740,7 +740,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             loss = criterion(outputs, labels)
             loss.backward()
             #torch.nn.utils.clip_grad_norm_(gtv.parameters(), 1e5)
-            torch.nn.utils.clip_grad_norm_(cnnf_params, 1e2)
+            torch.nn.utils.clip_grad_norm_(cnnf_params, 1e3)
             torch.nn.utils.clip_grad_norm_(cnny_params, 1e5)
             torch.nn.utils.clip_grad_norm_(cnnu_params, 1)
 
