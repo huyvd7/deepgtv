@@ -755,7 +755,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         
         losshist.append(running_loss / ld)
 
-        if ((epoch + 1) % 2 == 0) or (epoch + 1) == total_epoch:
+        if ((epoch + 1) % 1 == 0) or (epoch + 1) == total_epoch:
             with torch.no_grad():
                 histW = gtv(inputs[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 4)
             print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
