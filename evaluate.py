@@ -143,13 +143,11 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         filename = inp.split("/")[-1]
         opath = "./{0}_{1}".format(prefix, filename)
         opath = opath[:-3] + "png"
-    #if argref:
-    #    mse = ((d-(tref/255.0))**2).mean()*255
-    #    print("MSE: {:.6f}".format(mse))
+
     d = np.minimum(np.maximum(d, 0), 1)
     print(d.shape, tref.shape)
-    #plt.imsave(opath, d, cmap='gray')
-    cv2.imwrite(opath, d*255)
+    plt.imsave(opath, d)
+    #cv2.imwrite(opath, d*255)
     if argref:
         mse = ((d-(tref/255.0))**2).mean()*255
         print(tref.max(), d.max())
