@@ -741,8 +741,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             loss.backward()
             #torch.nn.utils.clip_grad_norm_(gtv.parameters(), 1e5)
             torch.nn.utils.clip_grad_norm_(cnnf_params, 1e2)
-            torch.nn.utils.clip_grad_norm_(cnny_params, 1e1)
-            torch.nn.utils.clip_grad_norm_(cnnu_params, 1)
+            torch.nn.utils.clip_grad_norm_(cnny_params, 1)
+            torch.nn.utils.clip_grad_norm_(cnnu_params, 1e1)
 
             optimizer.step()
             running_loss += loss.item()
