@@ -224,11 +224,13 @@ class RENOIR_Dataset(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-
+        uid = np.random.randint(0, 8)
         nimg_name = os.path.join(self.npath, self.nimg_name[idx])
         nimg = cv2.imread(nimg_name)
+        nimg = data_aug(nimg, uid)
         rimg_name = os.path.join(self.rpath, self.rimg_name[idx])
         rimg = cv2.imread(rimg_name)
+        rimg = data_aug(rimg, uid)
 
         sample = {"nimg": nimg, "rimg": rimg}
 
@@ -298,6 +300,25 @@ class ToTensor(object):
             "nimg": torch.from_numpy(nimg).type(dtype),
             "rimg": torch.from_numpy(rimg).type(dtype),
         }
+
+def data_aug(img, mode=0):
+    # data augmentation
+    if mode == 0:
+        return img
+    elif mode == 1:
+        return np.flipud(img)
+    elif mode == 2:
+        return np.rot90(img)
+    elif mode == 3:
+        return np.flipud(np.rot90(img))
+    elif mode == 4:
+        return np.rot90(img, k=2)
+    elif mode == 5:
+        return np.flipud(np.rot90(img, k=2))
+    elif mode == 6:
+        return np.rot90(img, k=3)
+    elif mode == 7:
+        return np.flipud(np.rot90(img, k=3))
 
 
 def connected_adjacency(image, connect=8, patch_size=(1, 1)):
@@ -466,7 +487,7 @@ class GTV(nn.Module):
         self.cnny.apply(weights_init_normal)
         self.cnnu.apply(weights_init_normal)
 
-    def forward(self, xf, debug=False, Tmod=False):  # gtvforward
+    def forward(self, xf, debug=False, Tmod=False, predict=False):  # gtvforward
         #u = opt.u
         u = self.cnnu.forward(xf)
         u_max = opt.u_max
@@ -507,6 +528,7 @@ class GTV(nn.Module):
             .type(dtype)
             .requires_grad_(True)
         )
+        minT = torch.zeros()
         for i in range(T):
             # STEP 1
             xhat = D.matmul(
@@ -539,7 +561,8 @@ class GTV(nn.Module):
                     .matmul(H.matmul(xhat) - z)
                 )
                 hist.append(l[:, 0, :, :])
-
+            if predict:
+    
         # xhat = D.matmul(2*y - H.T.matmul(lagrange) + delta*H.T.matmul(z)).requires_grad_(True)
         if debug:
             print("min - max xhat: ", xhat.min().data, xhat.max().data)
