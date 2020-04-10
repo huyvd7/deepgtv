@@ -660,9 +660,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 
     DST = "./"
     DST = ""
-    #PATH = os.path.join(DST, "GTV.pkl")
     PATH = os.path.join(DST, model_name)
-    # SAVEPATH = '/content/drive/My Drive/data/GTV_realnoise.pkl'
     SAVEPATH = PATH
     batch_size = opt.batch_size
     # _subset = ['10', '1', '3', '5', '9']
@@ -706,13 +704,16 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     criterion = nn.MSELoss()
     # optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
     
-    cnny_params = list(filter(lambda kv: 'cnnf' in kv[0] , gtv.named_parameters()))
+    cnny_params = list(filter(lambda kv: 'cnny' in kv[0] , gtv.named_parameters()))
     cnny_params = [i[1] for i in cnny_params]
-    base_params = list(filter(lambda kv: 'cnnf' not in kv[0], gtv.named_parameters()))
-    base_params = [i[1] for i in base_params]
+    cnnf_params = list(filter(lambda kv: 'cnnf' in kv[0], gtv.named_parameters()))
+    cnnf_params = [i[1] for i in cnnf_params]
+    cnnu_params = list(filter(lambda kv: 'cnnu' in kv[0], gtv.named_parameters()))
+    cnnu_params = [i[1] for i in cnnu_params ]
     optimizer = optim.SGD([
-                 {'params': base_params},
-                 {'params': cnny_params , 'lr': opt.lr*50}
+                 {'params': cnny_params},
+                 {'params': cnnf_params , 'lr': opt.lr*50},
+                 {'params': cnnu_params , 'lr': opt.lr/50}
              ], lr=opt.lr, momentum=opt.momentum)
     #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
     if cont:
