@@ -711,9 +711,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     cnnu_params = list(filter(lambda kv: 'cnnu' in kv[0], gtv.named_parameters()))
     cnnu_params = [i[1] for i in cnnu_params ]
     optimizer = optim.SGD([
-                {'params': cnny_params, 'lr':opt.lr},
+                {'params': cnny_params, 'lr':opt.lr/10},
                  {'params': cnnf_params , 'lr': opt.lr*50},
-                 {'params': cnnu_params , 'lr': opt.lr*3.5}
+                 {'params': cnnu_params , 'lr': opt.lr*4}
              ], lr=opt.lr, momentum=opt.momentum)
     #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
     if cont:
