@@ -208,7 +208,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     
     #trainset = ["10", "1", "7", "8", "9"]
     traineva = {'psnr':list(), 'ssim':list(), 'ssim2':list(), 'psnr2':list(), 'mse':list()}
-    stride=4
+    stride=6
     for t in trainset:
         print("image #", t)
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
