@@ -561,7 +561,6 @@ class GTV(nn.Module):
                     .matmul(H.matmul(xhat) - z)
                 )
                 hist.append(l[:, 0, :, :])
-            if predict:
     
         # xhat = D.matmul(2*y - H.T.matmul(lagrange) + delta*H.T.matmul(z)).requires_grad_(True)
         if debug:
