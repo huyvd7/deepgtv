@@ -779,7 +779,9 @@ if __name__=="__main__":
     parser.add_argument(
         "-c", "--cont"
     )
-
+    parser.add_argument(
+        "--batch"
+    )
     args = parser.parse_args()
     if args.cont:
         cont = args.cont
@@ -789,4 +791,5 @@ if __name__=="__main__":
         model_name = args.model
     else:
         model_name='GTV.pkl'
+    opt.batch_size = int(args.batch) 
     main(seed=1, model_name=model_name, cont=cont, epoch=600, subset=['1', '3', '5', '7', '9'])
