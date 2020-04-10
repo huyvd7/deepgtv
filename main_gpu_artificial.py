@@ -474,7 +474,8 @@ class GTV(nn.Module):
         self.wt = width
         self.width = width
         self.cnnu = cnnu(u_min=u_min)
-
+        self.u_min = u_min
+        self.u_max = u_max
         self.cnny = cnny()
 
         if cuda:
@@ -490,8 +491,8 @@ class GTV(nn.Module):
     def forward(self, xf, debug=False, Tmod=False):  # gtvforward
         #u = opt.u
         u = self.cnnu.forward(xf)
-        u_max = opt.u_max
-        u_min = opt.u_min
+        u_max = self.u_max
+        u_min = self.u_min
         u = torch.clamp(u, u_min, u_max)
         u = u.unsqueeze(1).unsqueeze(1)
         if debug:
@@ -691,10 +692,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     gtv = GTV(
         width=36,
         prox_iter=1,
-        u_max=10,
-        u_min=0.5,
-        lambda_min=0.5,
-        lambda_max=1e9,
+        u_max=opt.u_max,
+        u_min=opt.u_min,
         cuda=cuda,
         opt=opt,
     )
