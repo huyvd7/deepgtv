@@ -8,7 +8,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 
-def main(t):
+def main(t,sigma):
     # Experiment specifications
     #imagename = 'image_Lena512rgb.png'
     imagepath = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
@@ -19,7 +19,7 @@ def main(t):
     # Possible noise types to be generated 'gw', 'g1', 'g2', 'g3', 'g4', 'g1w',
     # 'g2w', 'g3w', 'g4w'.
     noise_type = 'gw'
-    noise_var = (15/255)**2  # Noise variance 25 std
+    noise_var = (sigma/255)**2  # Noise variance 25 std
     seed = 0  # seed for pseudorandom noise realization
 
     # Generate noise with given PSD
@@ -227,12 +227,12 @@ class gaussian_noise_(object):
 
 import shutil
 import torchvision
-def _main(imgw=324):
+def _main(imgw=324, sigma=25):
     trainp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\train' 
     testset = ['10', '1', '2', '3', '4', '5', '6', '7','8','9']
     dataset = RENOIR_Dataset2(
         img_dir=os.path.join(trainp),
-        transform=transforms.Compose([standardize2(w=imgw), ToTensor2(), gaussian_noise_(mean=0, stddev=25)]),
+        transform=transforms.Compose([standardize2(w=imgw), ToTensor2(), gaussian_noise_(mean=0, stddev=sigma)]),
     )
     
     dataloader = DataLoader(
@@ -262,7 +262,7 @@ def _main(imgw=324):
     
     bm3d_res = {'psnr':list(), 'mse':list()}
     for t in ['10', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
-        _psnr, _mse = main(t)
+        _psnr, _mse = main(t, sigma=sigma)
         bm3d_res['psnr'].append(_psnr)
         bm3d_res['mse'].append(_mse)
     print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
@@ -313,6 +313,9 @@ if __name__=="__main__":
     parser.add_argument(
         "-w", "--width", help="Resize image to a square image with given width"
     )
+    parser.add_argument(
+        "--sigma", default=25
+    )
 
     args = parser.parse_args()
     if args.width:
@@ -320,4 +323,4 @@ if __name__=="__main__":
     else:
         imgw = None
 
-    _main(imgw=imgw)
+    _main(imgw=imgw, sigma=int(args.sima))
