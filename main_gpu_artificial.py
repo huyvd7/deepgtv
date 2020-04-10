@@ -713,7 +713,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     optimizer = optim.SGD([
                  {'params': cnny_params},
                  {'params': cnnf_params , 'lr': opt.lr*50},
-                 {'params': cnnu_params , 'lr': opt.lr*50}
+                 {'params': cnnu_params , 'lr': opt.lr*5}
              ], lr=opt.lr, momentum=opt.momentum)
     #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
     if cont:
@@ -742,7 +742,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             #torch.nn.utils.clip_grad_norm_(gtv.parameters(), 1e5)
             torch.nn.utils.clip_grad_norm_(cnnf_params, 1e5)
             torch.nn.utils.clip_grad_norm_(cnny_params, 1e5)
-            torch.nn.utils.clip_grad_norm_(cnnu_params, 1e2)
+            torch.nn.utils.clip_grad_norm_(cnnu_params, 10)
 
             optimizer.step()
             running_loss += loss.item()
