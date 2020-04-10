@@ -711,9 +711,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     cnnu_params = list(filter(lambda kv: 'cnnu' in kv[0], gtv.named_parameters()))
     cnnu_params = [i[1] for i in cnnu_params ]
     optimizer = optim.SGD([
-                {'params': cnny_params, 'lr':opt.lr/10},
+                {'params': cnny_params, 'lr':opt.lr},
                  {'params': cnnf_params , 'lr': opt.lr*50},
-                 {'params': cnnu_params , 'lr': opt.lr*4}
+                 {'params': cnnu_params , 'lr': opt.lr*2}
              ], lr=opt.lr, momentum=opt.momentum)
     #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
     if cont:
@@ -740,8 +740,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             loss = criterion(outputs, labels)
             loss.backward()
             #torch.nn.utils.clip_grad_norm_(gtv.parameters(), 1e5)
-            torch.nn.utils.clip_grad_norm_(cnnf_params, 1e3)
-            torch.nn.utils.clip_grad_norm_(cnny_params, 1e3)
+            torch.nn.utils.clip_grad_norm_(cnnf_params, 1e2)
+            torch.nn.utils.clip_grad_norm_(cnny_params, 1e1)
             torch.nn.utils.clip_grad_norm_(cnnu_params, 1)
 
             optimizer.step()
@@ -791,7 +791,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     ax.plot(ma_vec)
     fig.savefig("loss.png")
 
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=1e-6, momentum=0.9, u_max=1e2, u_min=1e-2)
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=1e2, u_min=1)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
