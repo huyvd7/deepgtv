@@ -26,26 +26,19 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         from skimage.metrics import structural_similarity as compare_ssim
     except Exception:
         from skimage.measure import compare_ssim
-    if opt.channels==1:
-        rgb=0
-    else:
-        rgb=1
-    print(rgb)
-    sample = cv2.imread(inp, rgb)
+
+    sample = cv2.imread(inp)
     if width==None:
         width = sample.shape[0]
     else:
         sample = cv2.resize(sample, (width, width))
-    if rgb:
-        sample = cv2.cvtColor(sample, cv2.COLOR_BGR2RGB)
-        sample = sample.transpose((2, 0, 1))
+    sample = cv2.cvtColor(sample, cv2.COLOR_BGR2RGB)
+    sample = sample.transpose((2, 0, 1))
     shape = sample.shape
 
     if normalize:
         sample = _norm(sample, newmin=0, newmax=1)
     sample = torch.from_numpy(sample)
-    if not rgb:
-        sample = sample.unsqueeze(0)
 
     cuda = True if torch.cuda.is_available() else False
 
@@ -55,17 +48,13 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     psnrs = list()
     score2 = list()
     if argref:
-        ref = cv2.imread(argref, rgb)
+        ref = cv2.imread(argref)
         if ref.shape[0] != width or ref.shape[1] != width:
             ref = cv2.resize(ref, (width, width))
-        if rgb:
-            ref = cv2.cvtColor(ref, cv2.COLOR_BGR2RGB)
+        ref = cv2.cvtColor(ref, cv2.COLOR_BGR2RGB)
         tref = ref.copy()
-        if rgb:
-            ref = ref.transpose((2, 0, 1))
+        ref = ref.transpose((2, 0, 1))
         ref = torch.from_numpy(ref)
-        if not rgb:
-            ref = ref.unsqueeze(0)
         if normalize:
             ref = _norm(ref, newmin=0, newmax=1)
 
@@ -124,6 +113,9 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         print("\nPrediction time: ", time.time() - tstart)
     else:
         print("Prediction time: ", time.time() - tstart)
+    if argref:
+        #print("PSNR: {:.2f}".format(np.mean(np.array(psnrs))))
+        pass
 
     dummy = (
         patch_merge(dummy, stride=stride, shape=shapex, shapeorg=shape).detach().numpy()
@@ -143,18 +135,16 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         filename = inp.split("/")[-1]
         opath = "./{0}_{1}".format(prefix, filename)
         opath = opath[:-3] + "png"
-
+    #if argref:
+    #    mse = ((d-(tref/255.0))**2).mean()*255
+    #    print("MSE: {:.6f}".format(mse))
     d = np.minimum(np.maximum(d, 0), 1)
-    print(d.shape, tref.shape)
     plt.imsave(opath, d)
-    #cv2.imwrite(opath, d*255)
     if argref:
         mse = ((d-(tref/255.0))**2).mean()*255
-        print(tref.max(), d.max())
         print("MSE: {:.5f}".format(mse))
-        d = cv2.imread(opath, rgb)
-        if rgb:
-            d = cv2.cvtColor(d, cv2.COLOR_BGR2RGB)
+        d = cv2.imread(opath)
+        d = cv2.cvtColor(d, cv2.COLOR_BGR2RGB)
         psnr2 = cv2.PSNR(tref,d)
         print("PSNR: {:.5f}".format(psnr2))
         (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
@@ -192,7 +182,6 @@ def patch_merge(P, stride=36, shape=None, shapeorg=None):
 def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_path=None, noise_type='gauss'):
     # INITIALIZE
     global opt
-    opt._print()
     supporting_matrix(opt)
     gtv = GTV(
         width=36,
@@ -203,13 +192,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         lambda_max=1e9,
         cuda=cuda,
         opt=opt,
-    )    
-    if opt.channels==1:
-        rgb=0
-    else:
-        rgb=1
-
-
+    )
     width = 36
     PATH = model_name
     device = torch.device("cuda") if cuda else torch.device("cpu")
@@ -241,8 +224,8 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         except Exception:
             from skimage.measure import compare_ssim
     
-        img1 = cv2.imread(inp, rgb)
-        img2 = cv2.imread(argref, rgb)
+        img1 = cv2.imread(inp)[:, :, : opt.channels]
+        img2 = cv2.imread(argref)[:, :, : opt.channels]
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
         print("Original ", cv2.PSNR(img1, img2), score)
     print("========================")
@@ -271,8 +254,8 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         except Exception:
             from skimage.measure import compare_ssim
     
-        img1 = cv2.imread(inp, rgb)
-        img2 = cv2.imread(argref, rgb)
+        img1 = cv2.imread(inp)[:, :, : opt.channels]
+        img2 = cv2.imread(argref)[:, :, : opt.channels]
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
         print("Original ", cv2.PSNR(img1, img2), score)
     print("========================")
@@ -285,35 +268,30 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     return traineva, testeva
 if __name__=="__main__":
     global opt
-    
     parser = argparse.ArgumentParser()
     
     parser.add_argument(
         "-w", "--width", help="Resize image to a square image with given width"
     )
     parser.add_argument(
-        "-m", "--model", default='GTV.pkl'
+        "-m", "--model"
     )
     parser.add_argument(
         "-p", "--image_path"
     )
 
-    parser.add_argument(
-        "--channels", default=3
-    )
     args = parser.parse_args()
     if args.width:
         imgw = int(args.width)
     else:
         imgw = None
     supporting_matrix(opt)
-
+    if args.model:
+        model_name = args.model
+    else:
+        model_name = 'GTV_20.pkl'
     if args.image_path:
         image_path = args.image_path
     else:
         image_path = '..\\gauss'
-
-    channels=int(args.channels)
-    opt.channels=channels
-    
-    _, _ = main_eva(seed='gauss', model_name=args.model, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss')
+    _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss')
