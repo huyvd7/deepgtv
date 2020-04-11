@@ -35,7 +35,7 @@ def main(t,sigma, imagepath = None, denoise=False):
     z = np.atleast_3d(y) + np.atleast_3d(noise)
 
     z_rang = np.minimum(np.maximum(z, 0), 1)
-    noisyimagename=imagepath+ 'noisy\\' + t + '_g.bmp'
+    noisyimagename=imagepath+ 'noisy\\' + t 
     plt.imsave(noisyimagename, z_rang)
     if denoise:
         z = np.array(Image.open(noisyimagename)) / 255
