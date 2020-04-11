@@ -759,7 +759,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             time.ctime(),
             '[{0}] \x1b[31mLOSS\x1b[0m: {1:.3f}, time elapsed: {2:.1f} secs'.format(
                 epoch + 1, running_loss / ld, time.time() - tstart
-            ),
+            )
         )
         
 
@@ -786,9 +786,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             print("CHANGE LR")
             current_lr /= 5
             optimizer = optim.SGD(gtv.parameters(), lr=current_lr, momentum=opt.momentum)
-            #optimizer = optim.SGD([
-            #        {'params': base_params},
-            #        {'params': cnny_params , 'lr': current_lr*20}], lr=current_lr, momentum=opt.momentum)
+            
     torch.save(gtv.state_dict(), SAVEPATH)
     torch.save(optimizer.state_dict(), SAVEPATH + "optim")
     print("Total running time: {0:.3f}".format(time.time() - tstart))
@@ -832,4 +830,4 @@ if __name__=="__main__":
     opt.batch_size = int(args.batch) 
     opt.lr = float(args.lr)
     opt.admm_iter = int(args.admm_iter)
-    main(seed=1, model_name=model_name, cont=cont, epoch=200, subset=['1', '3', '5', '7', '9'])
+    main(seed=1, model_name=model_name, cont=cont, epoch=200, subset=['1', '3', '5', '7', '9']);
