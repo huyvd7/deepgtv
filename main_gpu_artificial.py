@@ -226,10 +226,10 @@ class RENOIR_Dataset(Dataset):
             idx = idx.tolist()
         uid = np.random.randint(0, 8)
         nimg_name = os.path.join(self.npath, self.nimg_name[idx])
-        nimg = cv2.imread(nimg_name)/255.0
+        nimg = cv2.imread(nimg_name)
         nimg = data_aug(nimg, uid)
         rimg_name = os.path.join(self.rpath, self.rimg_name[idx])
-        rimg = cv2.imread(rimg_name)/255.0
+        rimg = cv2.imread(rimg_name)
         rimg = data_aug(rimg, uid)
 
         sample = {"nimg": nimg, "rimg": rimg}
@@ -268,8 +268,8 @@ class standardize(object):
         nimg = cv2.cvtColor(nimg, cv2.COLOR_BGR2RGB)
         rimg = cv2.cvtColor(rimg, cv2.COLOR_BGR2RGB)
         if self.normalize:
-            nimg = nimg / 255
-            rimg = rimg / 255
+            nimg = nimg / 255.0
+            rimg = rimg / 255.0
         return {"nimg": nimg, "rimg": rimg}
 
 
@@ -676,7 +676,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         img_dir=os.path.join(
             "C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss_batch"
         ),
-        transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
+        transform=transforms.Compose([standardize(normalize=True), ToTensor()]),
         subset=subset,
     )
     dataloader = DataLoader(
