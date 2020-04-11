@@ -803,7 +803,10 @@ if __name__=="__main__":
         "-c", "--cont"
     )
     parser.add_argument(
-        "--batch"
+        "--batch", default=64
+    )
+    parser.add_argument(
+        "--lr", default=8e-6
     )
     args = parser.parse_args()
     if args.cont:
@@ -815,4 +818,5 @@ if __name__=="__main__":
     else:
         model_name='GTV.pkl'
     opt.batch_size = int(args.batch) 
-    main(seed=1, model_name=model_name, cont=cont, epoch=600, subset=['1', '3', '5', '7', '9'])
+    opt.lr = int(args.lr)
+    main(seed=1, model_name=model_name, cont=cont, epoch=200, subset=['1', '3', '5', '7', '9'])
