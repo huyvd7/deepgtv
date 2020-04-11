@@ -252,7 +252,7 @@ def _main(trainp, outp, imgw=324, sigma=25):
         bm3d_res = {'psnr':list(), 'mse':list()}
         for data in dataloader:
             t = data['rn'][0]
-            _psnr, _mse = main(t, sigma=sigma, imagepath=gaussp, bm3d=True)
+            _psnr, _mse = main(t, sigma=sigma, imagepath=gaussp, denoise=True)
             bm3d_res['psnr'].append(_psnr)
             bm3d_res['mse'].append(_mse)
         print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
