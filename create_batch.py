@@ -318,4 +318,4 @@ if __name__=="__main__":
     else:
         imgw = None
 
-    _main(trainp=args.image_in, outp=args.image_out, imgw=imgw, sigma=int(args.sigma))
+    _main(trainp=os.path.join(args.image_in), outp=os.path.join(args.image_out), imgw=imgw, sigma=int(args.sigma))
