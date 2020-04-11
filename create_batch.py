@@ -13,7 +13,6 @@ def main(t,sigma, imagepath = None, denoise=False):
     #imagename = 'image_Lena512rgb.png'
     #imagepath = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
     imagename = imagepath+ 'ref\\' + t
-    print(imagename)
     # Load noise-free image
     y = np.array(Image.open(imagename)) / 255
 
