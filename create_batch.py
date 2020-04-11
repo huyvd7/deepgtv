@@ -213,7 +213,7 @@ dtype=torch.FloatTensor
 from torch.autograd import Variable
 import shutil
 import torchvision
-def _main(trainp, imgw=324, sigma=25):
+def _main(trainp, outp, imgw=324, sigma=25):
     #testset = ['10', '1', '2', '3', '4', '5', '6', '7','8','9']
     dataset = RENOIR_Dataset2(
         img_dir=os.path.join(trainp),
@@ -223,8 +223,9 @@ def _main(trainp, imgw=324, sigma=25):
     dataloader = DataLoader(
         dataset, batch_size=1, shuffle=False#, pin_memory=True
     )
+    gaussp= outp
     #gaussp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
-    gaussp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss_bsds\\'
+    #gaussp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss_bsds\\'
     noisyp = gaussp+'noisy\\'
     refp = gaussp+'ref\\'
 
@@ -306,7 +307,10 @@ if __name__=="__main__":
         "--sigma", default=25
     )
     parser.add_argument(
-        "--image", default= 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\train')
+        "--image_in", default= 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\train')
+    parser.add_argument(
+        "--image_out", default= 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss')
+
 
     args = parser.parse_args()
     if args.width:
@@ -314,4 +318,4 @@ if __name__=="__main__":
     else:
         imgw = None
 
-    _main(trainp=args.image, imgw=imgw, sigma=int(args.sigma))
+    _main(trainp=args.image_in, outp=args.image_out, imgw=imgw, sigma=int(args.sigma))
