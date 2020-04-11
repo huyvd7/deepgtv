@@ -212,22 +212,6 @@ class standardize2(object):
                 'rimg': rimg, 'nn':nn, 'rn':rn}
 dtype=torch.FloatTensor
 from torch.autograd import Variable
-
-#class gaussian_noise_(object):
-#    def __init__(self, stddev, mean):
-#        self.stddev = stddev
-#        self.mean = mean
-#
-#    def __call__(self, sample):
-#        nimg, rimg = sample["rimg"].type(torch.FloatTensor), sample["rimg"]
-#        noise = self.stddev*Variable(torch.zeros(nimg.shape)).normal_()
-#        nimg = nimg + noise
-#        masks = (nimg>255).type(dtype)
-#        nimg = nimg - (nimg - 255)*masks
-#        masks = (nimg<0).type(dtype)
-#        nimg = nimg - (nimg)*masks
-#        return {"nimg": nimg, "rimg": rimg, 'rn':sample['rn']}
-
 import shutil
 import torchvision
 def _main(trainp, imgw=324, sigma=25):
@@ -240,9 +224,10 @@ def _main(trainp, imgw=324, sigma=25):
     dataloader = DataLoader(
         dataset, batch_size=1, shuffle=False#, pin_memory=True
     )
-    gaussp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
-    noisyp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\noisy\\'
-    refp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\ref\\'
+    #gaussp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
+    gaussp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss_bsds\\'
+    noisyp = gaussp+'noisy\\'
+    refp = gaussp+'ref\\'
 
     shutil.rmtree(gaussp, ignore_errors=True)
     shutil.rmtree(noisyp, ignore_errors=True)
@@ -265,7 +250,6 @@ def _main(trainp, imgw=324, sigma=25):
 
     if noisetype =='gauss': 
         bm3d_res = {'psnr':list(), 'mse':list()}
-        #for t in ['10', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
         for data in dataloader:
             t = data['rn']
             _psnr, _mse = main(t, sigma=sigma)
@@ -273,7 +257,7 @@ def _main(trainp, imgw=324, sigma=25):
             bm3d_res['mse'].append(_mse)
         print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
 
-    dataset = RENOIR_Dataset2(img_dir='..\\gauss\\',
+    dataset = RENOIR_Dataset2(img_dir=gaussp,
                              transform = transforms.Compose([standardize2(),
                                                 ToTensor2()])
                             )
