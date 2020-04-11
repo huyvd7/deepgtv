@@ -770,6 +770,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
             print("\tCNNU stats: ", gtv.u.mean().data, gtv.u.max().data, gtv.u.min().data)
             print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
+            print('\t CNNU outputs:', gtv.cnnu.fc[1].weight)
+            print('\t CNNU outputs:', gtv.cnnu.fc[0].weight)
             pmax = list()
             for p in gtv.parameters():
                 pmax.append(p.grad.max())
