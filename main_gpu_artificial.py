@@ -492,10 +492,11 @@ class GTV(nn.Module):
         u = self.cnnu.forward(xf)
         u_max = opt.u_max
         u_min = opt.u_min
-        u = torch.clamp(u, u_min, u_max)
-        u = u.unsqueeze(1).unsqueeze(1)
         if debug:
             self.u=u.clone()
+
+        u = torch.clamp(u, u_min, u_max)
+        u = u.unsqueeze(1).unsqueeze(1)
         x = xf.view(xf.shape[0], xf.shape[1], opt.width ** 2, 1).requires_grad_(True)
         z = opt.H.matmul(x).requires_grad_(True)
 
