@@ -8,10 +8,10 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 
-def main(t,sigma, denoise=False):
+def main(t,sigma, imagepath = None, denoise=False):
     # Experiment specifications
     #imagename = 'image_Lena512rgb.png'
-    imagepath = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
+    #imagepath = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
     imagename = imagepath+ 'ref\\' + t
     print(imagename)
     # Load noise-free image
@@ -252,7 +252,7 @@ def _main(trainp, imgw=324, sigma=25):
         bm3d_res = {'psnr':list(), 'mse':list()}
         for data in dataloader:
             t = data['rn'][0]
-            _psnr, _mse = main(t, sigma=sigma)
+            _psnr, _mse = main(t, sigma=sigma, imagepath=gaussp)
             bm3d_res['psnr'].append(_psnr)
             bm3d_res['mse'].append(_mse)
         print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
