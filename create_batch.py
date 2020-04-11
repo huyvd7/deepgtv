@@ -246,6 +246,7 @@ def _main(trainp, imgw=324, sigma=25):
         inputs = data['rimg'].float().type(dtype).squeeze(0)
         img = inputs.cpu().detach().numpy().astype(np.uint8)
         img = img.transpose(1, 2, 0)
+        print('{0}{1}'.format(refp, data['rn']))
         plt.imsave('{0}{1}'.format(refp, data['rn']), img )
 
     if noisetype =='gauss': 
