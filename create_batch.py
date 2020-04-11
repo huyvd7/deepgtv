@@ -231,7 +231,6 @@ from torch.autograd import Variable
 import shutil
 import torchvision
 def _main(trainp, imgw=324, sigma=25):
-    trainp =  
     #testset = ['10', '1', '2', '3', '4', '5', '6', '7','8','9']
     dataset = RENOIR_Dataset2(
         img_dir=os.path.join(trainp),
