@@ -749,9 +749,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             outputs = gtv(inputs, debug=0)
             loss = criterion(outputs, labels)
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(cnnf_params, 1e2)
+            torch.nn.utils.clip_grad_norm_(cnnf_params, 1e3)
             torch.nn.utils.clip_grad_norm_(cnny_params, 2)
-            torch.nn.utils.clip_grad_norm_(cnnu_params, 4)
+            torch.nn.utils.clip_grad_norm_(cnnu_params, 1e1)
 
             optimizer.step()
             #optimizer[i%3].step()
@@ -774,7 +774,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 pmax.append(p.grad.max())
             print("\tmax gradients", max(pmax))
             with torch.no_grad():
-                us = gtv.cnnu(inputs)
+                us = gtv.cnnu(inputs[:10])
                 print("\tCNNU stats: ", us.mean().data, us.max().data, us.min().data)
 
 
