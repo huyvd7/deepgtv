@@ -802,7 +802,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     ax.plot(ma_vec)
     fig.savefig("loss.png")
 
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.9, channels=3, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=1e2, u_min=1e-2)
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.9, channels=3, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=1e3, u_min=1e-1)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
