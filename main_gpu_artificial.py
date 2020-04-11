@@ -746,30 +746,30 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 
             optimizer.step()
             running_loss += loss.item()
-        print(
-            time.ctime(),
-            '[{0}] \x1b[31mLOSS\x1b[0m: {1:.3f}, time elapsed: {2:.1f} secs'.format(
-                epoch + 1, running_loss / ld, time.time() - tstart
-            ),
-        )
-        
+            print(
+                time.ctime(),
+                '[{0}] \x1b[31mLOSS\x1b[0m: {1:.3f}, time elapsed: {2:.1f} secs'.format(
+                    epoch + 1, running_loss / ld, time.time() - tstart
+                ),
+            )
+            
 
-        if ((epoch + 1) % 1 == 0) or (epoch + 1) == total_epoch:
-            with torch.no_grad():
-                histW = gtv(inputs[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 4)
-            print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
-            print("\tCNNU mean: ", gtv.u.mean().data)
-            print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
-            pmax = list()
-            for p in gtv.parameters():
-                pmax.append(p.grad.max())
-            print("\tmax gradients", max(pmax))
+            if ((epoch + 1) % 1 == 0) or (epoch + 1) == total_epoch:
+                with torch.no_grad():
+                    histW = gtv(inputs[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 4)
+                print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
+                print("\tCNNU mean: ", gtv.u.mean().data)
+                print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
+                pmax = list()
+                for p in gtv.parameters():
+                    pmax.append(p.grad.max())
+                print("\tmax gradients", max(pmax))
 
-            print("\tsave @ epoch ", epoch + 1)
-            torch.save(gtv.state_dict(), SAVEPATH)
-            torch.save(optimizer.state_dict(), SAVEPATH + "optim")
-            histW = [h.cpu().detach().numpy()[0] for h in histW]
-            print("\t", np.argmin(histW), min(histW), histW)
+                print("\tsave @ epoch ", epoch + 1)
+                torch.save(gtv.state_dict(), SAVEPATH)
+                torch.save(optimizer.state_dict(), SAVEPATH + "optim")
+                histW = [h.cpu().detach().numpy()[0] for h in histW]
+                print("\t", np.argmin(histW), min(histW), histW)
 
         #scheduler.step() 
         losshist.append(running_loss / ld)
