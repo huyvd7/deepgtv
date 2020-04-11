@@ -237,7 +237,7 @@ def _main(trainp, imgw=324, sigma=25):
     os.makedirs(refp)
 
     for i, data in enumerate(dataloader, 0): 
-        print(data['rn'])
+        #print(data['rn'])
         inputs = data['nimg'].float().type(dtype).squeeze(0)
         img = inputs.cpu().detach().numpy().astype(np.uint8)
         img = img.transpose(1, 2, 0)
@@ -246,13 +246,12 @@ def _main(trainp, imgw=324, sigma=25):
         inputs = data['rimg'].float().type(dtype).squeeze(0)
         img = inputs.cpu().detach().numpy().astype(np.uint8)
         img = img.transpose(1, 2, 0)
-        print('{0}{1}'.format(refp, data['rn']))
         plt.imsave('{0}{1}'.format(refp, data['rn'][0]), img )
 
     if noisetype =='gauss': 
         bm3d_res = {'psnr':list(), 'mse':list()}
         for data in dataloader:
-            t = data['rn']
+            t = data['rn'][0]
             _psnr, _mse = main(t, sigma=sigma)
             bm3d_res['psnr'].append(_psnr)
             bm3d_res['mse'].append(_mse)
