@@ -766,7 +766,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 
         if ((epoch + 1) % 1 == 0) or (epoch + 1) == total_epoch:
             with torch.no_grad():
-                histW = gtv(inputs[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 4)
+                histW = gtv(inputs[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 5)
             print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
             print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
             pmax = list()
@@ -802,7 +802,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     ax.plot(ma_vec)
     fig.savefig("loss.png")
 
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.9, channels=3, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=200, u_min=1e-1)
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.9, channels=3, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=1e3, u_min=1e-1)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
