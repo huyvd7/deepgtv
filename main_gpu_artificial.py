@@ -768,14 +768,15 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             with torch.no_grad():
                 histW = gtv(inputs[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 4)
             print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
-            print("\tCNNU stats: ", gtv.u.mean().data, gtv.u.max().data, gtv.u.min().data)
             print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
-            print('\t CNNU outputs:', gtv.cnnu.fc[1].weight)
-            print('\t CNNU outputs:', gtv.cnnu.fc[0].weight)
             pmax = list()
             for p in gtv.parameters():
                 pmax.append(p.grad.max())
             print("\tmax gradients", max(pmax))
+            with torch.no_grad():
+                us = gtv.cnnu(inputs)
+                print("\tCNNU stats: ", us.mean().data, us.max().data, us.min().data)
+
 
             print("\tsave @ epoch ", epoch + 1)
             torch.save(gtv.state_dict(), SAVEPATH)
