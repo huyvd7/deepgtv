@@ -745,7 +745,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             #optimizer.zero_grad()
             for op in optimizer:
                 op.zero_grad()
-            #forward + backward + optimize
+             forward + backward + optimize
             outputs = gtv(inputs, debug=0)
             loss = criterion(outputs, labels)
             loss.backward()
