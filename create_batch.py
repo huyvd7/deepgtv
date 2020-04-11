@@ -8,11 +8,11 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 
-def main(t,sigma, imagepath = None, denoise=False):
+def main(t,sigma):
     # Experiment specifications
     #imagename = 'image_Lena512rgb.png'
-    #imagepath = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
-    imagename = os.path.join(imagepath, 'ref\\' + t)
+    imagepath = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
+    imagename = imagepath+ 'ref\\' + t + '_r.bmp'
     # Load noise-free image
     y = np.array(Image.open(imagename)) / 255
 
@@ -34,70 +34,68 @@ def main(t,sigma, imagepath = None, denoise=False):
     z = np.atleast_3d(y) + np.atleast_3d(noise)
 
     z_rang = np.minimum(np.maximum(z, 0), 1)
-    noisyimagename=os.path.join(imagepath, 'noisy\\' + t )
+    noisyimagename=imagepath+ 'noisy\\' + t + '_g.bmp'
     plt.imsave(noisyimagename, z_rang)
-    if denoise:
-        z = np.array(Image.open(noisyimagename)) / 255
-        # Call BM3D With the default settings.
-        y_est = bm3d_rgb(z, psd)
+    z = np.array(Image.open(noisyimagename)) / 255
+    # Call BM3D With the default settings.
+    y_est = bm3d_rgb(z, psd)
 
-        # To include refiltering:
-        # y_est = bm3d_rgb(z, psd, 'refilter');
+    # To include refiltering:
+    # y_est = bm3d_rgb(z, psd, 'refilter');
 
-        # For other settings, use BM3DProfile.
-        # profile = BM3DProfile(); # equivalent to profile = BM3DProfile('np');
-        # profile.gamma = 6;  # redefine value of gamma parameter
-        # y_est = bm3d_rgb(z, psd, profile);
+    # For other settings, use BM3DProfile.
+    # profile = BM3DProfile(); # equivalent to profile = BM3DProfile('np');
+    # profile.gamma = 6;  # redefine value of gamma parameter
+    # y_est = bm3d_rgb(z, psd, profile);
 
-        # Note: For white noise, you may instead of the PSD
-        # also pass a standard deviation
-        # y_est = bm3d_rgb(z, sqrt(noise_var));
+    # Note: For white noise, you may instead of the PSD
+    # also pass a standard deviation
+    # y_est = bm3d_rgb(z, sqrt(noise_var));
 
-        # If the different channels have varying PSDs, you can supply a MxNx3 PSD or a list of 3 STDs:
-        # y_est = bm3d_rgb(z, np.concatenate((psd1, psd2, psd3), 2))
-        # y_est = bm3d_rgb(z, [sigma1, sigma2, sigma3])
+    # If the different channels have varying PSDs, you can supply a MxNx3 PSD or a list of 3 STDs:
+    # y_est = bm3d_rgb(z, np.concatenate((psd1, psd2, psd3), 2))
+    # y_est = bm3d_rgb(z, [sigma1, sigma2, sigma3])
 
-        psnr = get_psnr(y, y_est)
-        print("PSNR:", psnr)
+    psnr = get_psnr(y, y_est)
+    print("PSNR:", psnr)
 
-        # PSNR ignoring 16-pixel wide borders (as used in the paper), due to refiltering potentially leaving artifacts
-        # on the pixels near the boundary of the image when noise is not circulant
-        psnr_cropped = get_cropped_psnr(y, y_est, [16, 16])
-        print("PSNR cropped:", psnr_cropped)
+    # PSNR ignoring 16-pixel wide borders (as used in the paper), due to refiltering potentially leaving artifacts
+    # on the pixels near the boundary of the image when noise is not circulant
+    psnr_cropped = get_cropped_psnr(y, y_est, [16, 16])
+    print("PSNR cropped:", psnr_cropped)
 
-        # Ignore values outside range for display (or plt gives an error for multichannel input)
-        y_est = np.minimum(np.maximum(y_est, 0), 1)
-        z_rang = np.minimum(np.maximum(z, 0), 1)
-        plt.imsave('t.bmp', y_est)
-        y_est = np.array(Image.open('t.bmp')) / 255
+    # Ignore values outside range for display (or plt gives an error for multichannel input)
+    y_est = np.minimum(np.maximum(y_est, 0), 1)
+    z_rang = np.minimum(np.maximum(z, 0), 1)
+    plt.imsave('t.bmp', y_est)
+    y_est = np.array(Image.open('t.bmp')) / 255
 
-        psnr = get_psnr(y, y_est)
-        print("PSNR 2:", psnr)
-        mse = ((y_est - y)**2).mean()*255
-        print("MSE:", mse)
-        #plt.imsave(imagepath+ 'noisy\\' + t + '_g.bmp', z_rang)
+    psnr = get_psnr(y, y_est)
+    print("PSNR 2:", psnr)
+    mse = ((y_est - y)**2).mean()*255
+    print("MSE:", mse)
+    #plt.imsave(imagepath+ 'noisy\\' + t + '_g.bmp', z_rang)
 
-        # TEST CV2 PSNR
-        try:
-            from skimage.metrics import structural_similarity as compare_ssim
-        except Exception:
-            from skimage.measure import compare_ssim
-        import cv2
-        opath = 't.bmp'
-        argref = imagename
-        d = cv2.imread(opath)
-        tref = cv2.imread(argref)
-        (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
-        psnr2 = cv2.PSNR(tref, d)
-        print('#######################') 
-        print('CV2 PSNR, SSIM: {:.2f}, {:.2f}'.format( psnr2, score))
-        print('#######################') 
-        print('')
-        #plt.title("y, z, y_est")
-        #plt.imshow(np.concatenate((y, np.squeeze(z_rang), y_est), axis=1))
-        #plt.show()
-        return psnr, mse
-    return 0, 0
+    # TEST CV2 PSNR
+    try:
+        from skimage.metrics import structural_similarity as compare_ssim
+    except Exception:
+        from skimage.measure import compare_ssim
+    import cv2
+    opath = 't.bmp'
+    argref = imagename
+    d = cv2.imread(opath)
+    tref = cv2.imread(argref)
+    (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
+    psnr2 = cv2.PSNR(tref, d)
+    print('#######################') 
+    print('CV2 PSNR, SSIM: {:.2f}, {:.2f}'.format( psnr2, score))
+    print('#######################') 
+    print('')
+    #plt.title("y, z, y_est")
+    #plt.imshow(np.concatenate((y, np.squeeze(z_rang), y_est), axis=1))
+    #plt.show()
+    return psnr, mse
 
 class RENOIR_Dataset2(Dataset):
     """
@@ -211,10 +209,27 @@ class standardize2(object):
                 'rimg': rimg, 'nn':nn, 'rn':rn}
 dtype=torch.FloatTensor
 from torch.autograd import Variable
+
+#class gaussian_noise_(object):
+#    def __init__(self, stddev, mean):
+#        self.stddev = stddev
+#        self.mean = mean
+#
+#    def __call__(self, sample):
+#        nimg, rimg = sample["rimg"].type(torch.FloatTensor), sample["rimg"]
+#        noise = self.stddev*Variable(torch.zeros(nimg.shape)).normal_()
+#        nimg = nimg + noise
+#        masks = (nimg>255).type(dtype)
+#        nimg = nimg - (nimg - 255)*masks
+#        masks = (nimg<0).type(dtype)
+#        nimg = nimg - (nimg)*masks
+#        return {"nimg": nimg, "rimg": rimg, 'rn':sample['rn']}
+
 import shutil
 import torchvision
-def _main(trainp, outp, imgw=324, sigma=25):
-    #testset = ['10', '1', '2', '3', '4', '5', '6', '7','8','9']
+def _main(imgw=324, sigma=25):
+    trainp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\train' 
+    testset = ['10', '1', '2', '3', '4', '5', '6', '7','8','9']
     dataset = RENOIR_Dataset2(
         img_dir=os.path.join(trainp),
         transform=transforms.Compose([standardize2(w=imgw), ToTensor2()])
@@ -223,11 +238,9 @@ def _main(trainp, outp, imgw=324, sigma=25):
     dataloader = DataLoader(
         dataset, batch_size=1, shuffle=False#, pin_memory=True
     )
-    gaussp= outp
-    #gaussp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
-    #gaussp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss_bsds\\'
-    noisyp = os.path.join(gaussp,'noisy\\')
-    refp = os.path.join(gaussp,'ref\\')
+    gaussp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
+    noisyp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\noisy\\'
+    refp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\ref\\'
 
     shutil.rmtree(gaussp, ignore_errors=True)
     shutil.rmtree(noisyp, ignore_errors=True)
@@ -237,27 +250,25 @@ def _main(trainp, outp, imgw=324, sigma=25):
     os.makedirs(refp)
 
     for i, data in enumerate(dataloader, 0): 
-        #print(data['rn'])
+        print(data['rn'])
         inputs = data['nimg'].float().type(dtype).squeeze(0)
         img = inputs.cpu().detach().numpy().astype(np.uint8)
         img = img.transpose(1, 2, 0)
         if noisetype!='gauss':
-            plt.imsave('{0}{1}'.format(noisyp, data['rn']), img )
+            plt.imsave('{0}{1}_g.bmp'.format(noisyp, testset[i]), img )
         inputs = data['rimg'].float().type(dtype).squeeze(0)
         img = inputs.cpu().detach().numpy().astype(np.uint8)
         img = img.transpose(1, 2, 0)
-        plt.imsave('{0}{1}'.format(refp, data['rn'][0]), img )
-
+        plt.imsave('{0}{1}_r.bmp'.format(refp, testset[i]), img )
     if noisetype =='gauss': 
         bm3d_res = {'psnr':list(), 'mse':list()}
-        for data in dataloader:
-            t = data['rn'][0]
-            _psnr, _mse = main(t, sigma=sigma, imagepath=gaussp, denoise=True)
+        for t in ['10', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
+            _psnr, _mse = main(t, sigma=sigma)
             bm3d_res['psnr'].append(_psnr)
             bm3d_res['mse'].append(_mse)
         print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
 
-    dataset = RENOIR_Dataset2(img_dir=gaussp,
+    dataset = RENOIR_Dataset2(img_dir='..\\gauss\\',
                              transform = transforms.Compose([standardize2(),
                                                 ToTensor2()])
                             )
@@ -301,16 +312,11 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser()
     
     parser.add_argument(
-        "-w", "--width" 
+        "-w", "--width", help="Resize image to a square image with given width"
     )
     parser.add_argument(
         "--sigma", default=25
     )
-    parser.add_argument(
-        "--image_in", default= 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\train')
-    parser.add_argument(
-        "--image_out", default= 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss')
-
 
     args = parser.parse_args()
     if args.width:
@@ -318,4 +324,4 @@ if __name__=="__main__":
     else:
         imgw = None
 
-    _main(trainp=args.image_in, outp=args.image_out, imgw=imgw, sigma=int(args.sigma))
+    _main(imgw=imgw, sigma=int(args.sigma))
