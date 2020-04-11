@@ -331,4 +331,4 @@ if __name__=="__main__":
     else:
         imgw = None
 
-    _main(trainp=args.trainp, imgw=imgw, sigma=int(args.sigma))
+    _main(trainp=args.image, imgw=imgw, sigma=int(args.sigma))
