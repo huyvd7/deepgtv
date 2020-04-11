@@ -226,8 +226,8 @@ def _main(trainp, outp, imgw=324, sigma=25):
     gaussp= outp
     #gaussp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
     #gaussp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss_bsds\\'
-    noisyp = gaussp+'noisy\\'
-    refp = gaussp+'ref\\'
+    noisyp = os.path.join(gaussp,'noisy\\')
+    refp = os.path.join(gaussp,'ref\\')
 
     shutil.rmtree(gaussp, ignore_errors=True)
     shutil.rmtree(noisyp, ignore_errors=True)
@@ -252,7 +252,7 @@ def _main(trainp, outp, imgw=324, sigma=25):
         bm3d_res = {'psnr':list(), 'mse':list()}
         for data in dataloader:
             t = data['rn'][0]
-            _psnr, _mse = main(t, sigma=sigma, imagepath=gaussp)
+            _psnr, _mse = main(t, sigma=sigma, imagepath=gaussp, bm3d=True)
             bm3d_res['psnr'].append(_psnr)
             bm3d_res['mse'].append(_mse)
         print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
