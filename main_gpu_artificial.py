@@ -136,7 +136,7 @@ class cnnu(nn.Module):
         self.fc = nn.Sequential(
             nn.Linear(3 * 3 * 32, 1 * 1 * 32),
             nn.Linear(1 * 1 * 32, 1),
-            #nn.ReLU()
+            nn.ReLU()
             #nn.LeakyReLU(0.05),
         )
 
