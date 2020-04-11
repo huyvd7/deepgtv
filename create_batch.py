@@ -12,7 +12,7 @@ def main(t,sigma, imagepath = None, denoise=False):
     # Experiment specifications
     #imagename = 'image_Lena512rgb.png'
     #imagepath = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
-    imagename = imagepath+ 'ref\\' + t
+    imagename = os.path.join(imagepath, 'ref\\' + t)
     # Load noise-free image
     y = np.array(Image.open(imagename)) / 255
 
@@ -34,7 +34,7 @@ def main(t,sigma, imagepath = None, denoise=False):
     z = np.atleast_3d(y) + np.atleast_3d(noise)
 
     z_rang = np.minimum(np.maximum(z, 0), 1)
-    noisyimagename=imagepath+ 'noisy\\' + t 
+    noisyimagename=os.path.join(imagepath, 'noisy\\' + t )
     plt.imsave(noisyimagename, z_rang)
     if denoise:
         z = np.array(Image.open(noisyimagename)) / 255
@@ -318,4 +318,4 @@ if __name__=="__main__":
     else:
         imgw = None
 
-    _main(trainp=os.path.join(args.image_in), outp=os.path.join(args.image_out), imgw=imgw, sigma=int(args.sigma))
+    _main(trainp=args.image_in, outp=args.image_out, imgw=imgw, sigma=int(args.sigma))
