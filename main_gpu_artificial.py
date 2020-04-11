@@ -715,13 +715,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     optimizer = optim.SGD([
                 {'params': cnny_params, 'lr':opt.lr},
                  {'params': cnnf_params , 'lr': opt.lr*50},
-                 {'params': cnnu_params , 'lr': opt.lr*25}
+                 {'params': cnnu_params , 'lr': opt.lr*5}
              ], lr=opt.lr, momentum=opt.momentum)
-    optimizer = optim.Adam([
-                {'params': cnny_params, 'lr':opt.lr},
-                 {'params': cnnf_params , 'lr': opt.lr*50},
-                 {'params': cnnu_params , 'lr': opt.lr*25}
-             ], lr=opt.lr)
+
     #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
     #optimizer_f = optim.SGD(cnnf_params, lr=opt.lr*50, momentum=opt.momentum)
     #optimizer_u = optim.SGD(cnnf_params, lr=opt.lr*40, momentum=opt.momentum)
