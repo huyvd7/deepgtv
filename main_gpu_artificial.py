@@ -702,7 +702,6 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     if cuda:
         gtv.cuda()
     criterion = nn.MSELoss()
-    # optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
     
     cnny_params = list(filter(lambda kv: 'cnny' in kv[0] , gtv.named_parameters()))
     cnny_params = [i[1] for i in cnny_params]
