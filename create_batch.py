@@ -247,7 +247,7 @@ def _main(trainp, imgw=324, sigma=25):
         img = inputs.cpu().detach().numpy().astype(np.uint8)
         img = img.transpose(1, 2, 0)
         print('{0}{1}'.format(refp, data['rn']))
-        plt.imsave('{0}{1}'.format(refp, data['rn']), img )
+        plt.imsave('{0}{1}'.format(refp, data['rn'][0]), img )
 
     if noisetype =='gauss': 
         bm3d_res = {'psnr':list(), 'mse':list()}
