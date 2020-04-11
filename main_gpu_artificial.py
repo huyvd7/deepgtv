@@ -710,16 +710,16 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     cnnf_params = [i[1] for i in cnnf_params]
     cnnu_params = list(filter(lambda kv: 'cnnu' in kv[0], gtv.named_parameters()))
     cnnu_params = [i[1] for i in cnnu_params ]
-    #optimizer = optim.SGD([
-    #            {'params': cnny_params, 'lr':opt.lr},
-    #             {'params': cnnf_params , 'lr': opt.lr*50},
-    #             {'params': cnnu_params , 'lr': opt.lr*25}
-    #         ], lr=opt.lr, momentum=opt.momentum)
+    optimizer = optim.SGD([
+                {'params': cnny_params, 'lr':opt.lr},
+                 {'params': cnnf_params , 'lr': opt.lr*50},
+                 {'params': cnnu_params , 'lr': opt.lr*25}
+             ], lr=opt.lr, momentum=opt.momentum)
     #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
-    optimizer_f = optim.SGD(cnnf_params, lr=opt.lr*50, momentum=opt.momentum)
-    optimizer_u = optim.SGD(cnnf_params, lr=opt.lr*40, momentum=opt.momentum)
-    optimizer_y = optim.SGD(cnnf_params, lr=opt.lr, momentum=opt.momentum)
-    optimizer = [optimizer_f, optimizer_u, optimizer_y]
+    #optimizer_f = optim.SGD(cnnf_params, lr=opt.lr*50, momentum=opt.momentum)
+    #optimizer_u = optim.SGD(cnnf_params, lr=opt.lr*40, momentum=opt.momentum)
+    #optimizer_y = optim.SGD(cnnf_params, lr=opt.lr, momentum=opt.momentum)
+    #optimizer = [optimizer_f, optimizer_u, optimizer_y]
     if cont:
         optimizer.load_state_dict(torch.load(cont+'optim'))
         print("LOAD PREVIOUS OPTIMIZER:", cont+'optim')
@@ -739,19 +739,19 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             labels = data["rimg"][:, : opt.channels, :, :].float().type(dtype)
             # zero the parameter gradients
 
-            #optimizer.zero_grad()
-            for op in optimizer:
-                op.zero_grad()
+            optimizer.zero_grad()
+            #for op in optimizer:
+            #    op.zero_grad()
             # forward + backward + optimize
             outputs = gtv(inputs, debug=0)
             loss = criterion(outputs, labels)
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(cnnf_params, 1e2)
+            torch.nn.utils.clip_grad_norm_(cnnf_params, 1e3)
             torch.nn.utils.clip_grad_norm_(cnny_params, 2)
             torch.nn.utils.clip_grad_norm_(cnnu_params, 1e2)
 
-            #optimizer.step()
-            optimizer[i%3].step()
+            optimizer.step()
+            #optimizer[i%3].step()
             running_loss += loss.item()
             print(
                 time.ctime(),
@@ -765,7 +765,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 with torch.no_grad():
                     histW = gtv(inputs[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 4)
                 print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
-                print("\tCNNU mean: ", gtv.u.mean().data)
+                print("\tCNNU stats: ", gtv.u.mean().data, gtv.u.max().data, gtv.u.min().data)
                 print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
                 pmax = list()
                 for p in gtv.parameters():
@@ -774,7 +774,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 
                 print("\tsave @ epoch ", epoch + 1)
                 torch.save(gtv.state_dict(), SAVEPATH)
-                #torch.save(optimizer.state_dict(), SAVEPATH + "optim")
+                torch.save(optimizer.state_dict(), SAVEPATH + "optim")
                 histW = [h.cpu().detach().numpy()[0] for h in histW]
                 print("\t", np.argmin(histW), min(histW), histW)
 
@@ -788,7 +788,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             #        {'params': base_params},
             #        {'params': cnny_params , 'lr': current_lr*20}], lr=current_lr, momentum=opt.momentum)
     torch.save(gtv.state_dict(), SAVEPATH)
-    #torch.save(optimizer.state_dict(), SAVEPATH + "optim")
+    torch.save(optimizer.state_dict(), SAVEPATH + "optim")
     print("Total running time: {0:.3f}".format(time.time() - tstart))
     fig, ax = plt.subplots(1, 1, figsize=(12, 5))
 
@@ -798,7 +798,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     ax.plot(ma_vec)
     fig.savefig("loss.png")
 
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.8, channels=3, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=1e3, u_min=1e-1)
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.8, channels=3, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=1e3, u_min=.5)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
