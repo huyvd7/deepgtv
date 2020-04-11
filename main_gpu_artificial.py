@@ -226,10 +226,10 @@ class RENOIR_Dataset(Dataset):
             idx = idx.tolist()
         uid = np.random.randint(0, 8)
         nimg_name = os.path.join(self.npath, self.nimg_name[idx])
-        nimg = cv2.imread(nimg_name)
+        nimg = cv2.imread(nimg_name)/255.0
         nimg = data_aug(nimg, uid)
         rimg_name = os.path.join(self.rpath, self.rimg_name[idx])
-        rimg = cv2.imread(rimg_name)
+        rimg = cv2.imread(rimg_name)/255.0
         rimg = data_aug(rimg, uid)
 
         sample = {"nimg": nimg, "rimg": rimg}
