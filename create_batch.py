@@ -307,7 +307,7 @@ def _main(imgw=324, sigma=25):
         print(total)
         print(noisyp, refp)
     print(T1.shape)
-noisetype='gauss'
+noisetype='real'
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
     
