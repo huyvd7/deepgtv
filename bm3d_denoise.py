@@ -41,6 +41,7 @@ def main(t,sigma):
     u = np.mean(d)
     std= np.sqrt(((d - u)**2).sum()/d.shape[0])
     std = (17/255)**2
+    std = noise_var
     noise, psd, kernel = get_experiment_noise(noise_type, std**2, seed, y.shape)
     # Call BM3D With the default settings.
     y_est = bm3d_rgb(z, psd)
@@ -104,12 +105,18 @@ def main(t,sigma):
 
 def _main(imgw=324, sigma=25):
     bm3d_res = {'psnr':list(), 'mse':list()}
-    for t in ['10', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
-        _psnr, _mse = main(t, sigma=sigma)
+    for t in ['1', '3', '5', '7', '9']:
+        print("Image: ", t)
+        _psnr, _mse = main(t, sigma=16.5)
         bm3d_res['psnr'].append(_psnr)
         bm3d_res['mse'].append(_mse)
     print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
-
+    for t in ['2', '4', '6', '8', '10']:
+        print("Image: ", t)
+        _psnr, _mse = main(t, sigma=17.7)
+        bm3d_res['psnr'].append(_psnr)
+        bm3d_res['mse'].append(_mse)
+    print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
     #noisetype='real'
 noisetype='gauss'
 if __name__=="__main__":
