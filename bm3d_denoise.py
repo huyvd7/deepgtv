@@ -107,13 +107,13 @@ def _main(imgw=324, sigma=25):
     bm3d_res = {'psnr':list(), 'mse':list()}
     for t in ['1', '3', '5', '7', '9']:
         print("Image: ", t)
-        _psnr, _mse = main(t, sigma=16.5)
+        _psnr, _mse = main(t, sigma=19)
         bm3d_res['psnr'].append(_psnr)
         bm3d_res['mse'].append(_mse)
     print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
     for t in ['2', '4', '6', '8', '10']:
         print("Image: ", t)
-        _psnr, _mse = main(t, sigma=17.7)
+        _psnr, _mse = main(t, sigma=20.4)
         bm3d_res['psnr'].append(_psnr)
         bm3d_res['mse'].append(_mse)
     print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
