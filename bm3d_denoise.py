@@ -40,6 +40,7 @@ def main(t,sigma):
     d = (z-y).flatten()
     u = np.mean(d)
     std= np.sqrt(((d - u)**2).sum()/d.shape[0])
+    std = (17/255)**2
     noise, psd, kernel = get_experiment_noise(noise_type, std**2, seed, y.shape)
     # Call BM3D With the default settings.
     y_est = bm3d_rgb(z, psd)
