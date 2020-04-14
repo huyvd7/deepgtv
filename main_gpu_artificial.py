@@ -820,6 +820,9 @@ if __name__=="__main__":
         "--lr", default=8e-6
     )
     parser.add_argument(
+        "--delta", default=0.9
+    )
+    parser.add_argument(
         "--admm_iter", default=4
     )
     parser.add_argument(
@@ -837,4 +840,5 @@ if __name__=="__main__":
     opt.batch_size = int(args.batch) 
     opt.lr = float(args.lr)
     opt.admm_iter = int(args.admm_iter)
+    opt.delta = float(args.delta)
     main(seed=1, model_name=model_name, cont=cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'])
