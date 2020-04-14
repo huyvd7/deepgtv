@@ -67,8 +67,8 @@ def main(t,sigma):
     # Ignore values outside range for display (or plt gives an error for multichannel input)
     y_est = np.minimum(np.maximum(y_est, 0), 1)
     z_rang = np.minimum(np.maximum(z, 0), 1)
-    plt.imsave('t.bmp', y_est)
-    y_est = np.array(Image.open('t.bmp')) / 255
+    plt.imsave('{0}.bmp'.format(t), y_est)
+    y_est = np.array(Image.open('{0}.bmp'.format(t))) / 255
 
     psnr = get_psnr(y, y_est)
     print("PSNR 2:", psnr)
@@ -82,7 +82,7 @@ def main(t,sigma):
     except Exception:
         from skimage.measure import compare_ssim
     import cv2
-    opath = 't.bmp'
+    opath = '{0}.bmp'.format(t)
     argref = imagename
     d = cv2.imread(opath)
     tref = cv2.imread(argref)
