@@ -73,7 +73,7 @@ def main(t,sigma):
     # Ignore values outside range for display (or plt gives an error for multichannel input)
     y_est = np.minimum(np.maximum(y_est, 0), 1)
     z_rang = np.minimum(np.maximum(z, 0), 1)
-    plt.imsave('t.bmp', y_est)
+    plt.imsave('{0}.bmp'.format(t), y_est)
     y_est = np.array(Image.open('t.bmp')) / 255
 
     psnr = get_psnr(y, y_est)
@@ -88,7 +88,7 @@ def main(t,sigma):
     except Exception:
         from skimage.measure import compare_ssim
     import cv2
-    opath = 't.bmp'
+    opath = '{0}.bmp'.format(t)
     argref = imagename
     d = cv2.imread(opath)
     tref = cv2.imread(argref)
@@ -107,13 +107,13 @@ def _main(imgw=324, sigma=25):
     bm3d_res = {'psnr':list(), 'mse':list()}
     for t in ['1', '3', '5', '7', '9']:
         print("Image: ", t)
-        _psnr, _mse = main(t, sigma=19)
+        _psnr, _mse = main(t, sigma=18)
         bm3d_res['psnr'].append(_psnr)
         bm3d_res['mse'].append(_mse)
     print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
     for t in ['2', '4', '6', '8', '10']:
         print("Image: ", t)
-        _psnr, _mse = main(t, sigma=20.4)
+        _psnr, _mse = main(t, sigma=19.7)
         bm3d_res['psnr'].append(_psnr)
         bm3d_res['mse'].append(_mse)
     print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
