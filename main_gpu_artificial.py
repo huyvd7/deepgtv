@@ -224,7 +224,8 @@ class RENOIR_Dataset(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        uid = np.random.randint(0, 8)
+        #uid = np.random.randint(0, 8)
+        uid=0
         nimg_name = os.path.join(self.npath, self.nimg_name[idx])
         nimg = cv2.imread(nimg_name)
         nimg = data_aug(nimg, uid)
@@ -802,7 +803,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     ax.plot(ma_vec)
     fig.savefig("loss.png")
 
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.9, channels=3, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=100, u_min=40)
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.9, channels=3, eta=.3, u=25, lr=8e-6, momentum=0.9, u_max=100, u_min=55)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
