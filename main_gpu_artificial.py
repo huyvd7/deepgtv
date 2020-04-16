@@ -779,8 +779,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 
 
             print("\tsave @ epoch ", epoch + 1)
-            torch.save(gtv.state_dict(), SAVEPATH)
-            torch.save(optimizer.state_dict(), SAVEPATH + "optim")
+            torch.save(gtv.state_dict(), epoch+'_'+SAVEPATH)
+            torch.save(optimizer.state_dict(), epoch+'_'+SAVEPATH + "optim")
             histW = [h.cpu().detach().numpy()[0] for h in histW]
             print("\t", np.argmin(histW), min(histW), histW)
 
@@ -791,8 +791,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             current_lr /= 5
             optimizer = optim.SGD(gtv.parameters(), lr=current_lr, momentum=opt.momentum)
             
-    torch.save(gtv.state_dict(), SAVEPATH)
-    torch.save(optimizer.state_dict(), SAVEPATH + "optim")
+    torch.save(gtv.state_dict(), epoch+'_'+SAVEPATH)
+    torch.save(optimizer.state_dict(), epoch+'_'+SAVEPATH + "optim")
     print("Total running time: {0:.3f}".format(time.time() - tstart))
     fig, ax = plt.subplots(1, 1, figsize=(12, 5))
 
