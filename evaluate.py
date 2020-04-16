@@ -282,7 +282,9 @@ if __name__=="__main__":
     parser.add_argument(
         "--Tmod", default=9
     )
-
+    parser.add_argument(
+        "--delta", default=0.9
+    )
     args = parser.parse_args()
     if args.width:
         imgw = int(args.width)
@@ -297,4 +299,5 @@ if __name__=="__main__":
         image_path = args.image_path
     else:
         image_path = '..\\gauss'
+    opt.delta = float(arg.delta)
     _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss', Tmod=int(args.Tmod))
