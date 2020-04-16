@@ -514,9 +514,8 @@ class GTV(nn.Module):
         w = w.unsqueeze(1).repeat(1, opt.channels, 1, 1)
         T = opt.admm_iter
         P = opt.prox_iter
-        if debug:
-            if Tmod:
-                T = Tmod
+        if Tmod:
+            T = Tmod
         delta = opt.delta
         eta = opt.eta
         lagrange = opt.lagrange.requires_grad_(True)
