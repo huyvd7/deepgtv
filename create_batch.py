@@ -268,7 +268,7 @@ def _main(imgw=324, sigma=25, args=None):
             bm3d_res['mse'].append(_mse)
         print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
 
-    dataset = RENOIR_Dataset2(img_dir='..\\gauss\\',
+    dataset = RENOIR_Dataset2(img_dir='gauss\\',
                              transform = transforms.Compose([standardize2(),
                                                 ToTensor2()])
                             )
@@ -279,8 +279,8 @@ def _main(imgw=324, sigma=25, args=None):
     # mkdir gauss_batch/noisy
     # mkdir gauss_batch/ref
     
-    noisyp = '..\\gauss_batch\\noisy'
-    refp =   '..\\gauss_batch\\ref'
+    noisyp = 'gauss_batch\\noisy'
+    refp =   'gauss_batch\\ref'
     shutil.rmtree(noisyp, ignore_errors=True)
     shutil.rmtree(refp, ignore_errors=True)
     os.makedirs(noisyp)
