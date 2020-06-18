@@ -327,4 +327,4 @@ if __name__=="__main__":
     else:
         imgw = None
 
-    _main(imgw=imgw, sigma=int(args.sigma))
+    _main(imgw=imgw, sigma=int(args.sigma), args=args)
