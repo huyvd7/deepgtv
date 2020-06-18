@@ -227,8 +227,8 @@ from torch.autograd import Variable
 
 import shutil
 import torchvision
-def _main(imgw=324, sigma=25):
-    trainp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\train' 
+def _main(imgw=324, sigma=25, args=None):
+    trainp = args.train
     testset = ['10', '1', '2', '3', '4', '5', '6', '7','8','9']
     dataset = RENOIR_Dataset2(
         img_dir=os.path.join(trainp),
@@ -238,9 +238,9 @@ def _main(imgw=324, sigma=25):
     dataloader = DataLoader(
         dataset, batch_size=1, shuffle=False#, pin_memory=True
     )
-    gaussp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
-    noisyp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\noisy\\'
-    refp = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\ref\\'
+    gaussp = 'gauss\\'
+    noisyp = 'gauss\\noisy\\'
+    refp = 'gauss\\ref\\'
 
     shutil.rmtree(gaussp, ignore_errors=True)
     shutil.rmtree(noisyp, ignore_errors=True)
@@ -318,7 +318,9 @@ if __name__=="__main__":
     parser.add_argument(
         "--sigma", default=25
     )
-
+    parser.add_argument(
+        "--train", default='../'
+    )
     args = parser.parse_args()
     if args.width:
         imgw = int(args.width)
