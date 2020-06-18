@@ -8,10 +8,10 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 
-def main(t,sigma):
+def main(t,sigma, args=None):
     # Experiment specifications
     #imagename = 'image_Lena512rgb.png'
-    imagepath = 'C:\\Users\\HUYVU\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\home\\huyvu\\gauss\\'
+    imagepath = 'gauss\\'
     imagename = imagepath+ 'ref\\' + t + '_r.bmp'
     # Load noise-free image
     y = np.array(Image.open(imagename)) / 255
