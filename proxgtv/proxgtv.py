@@ -18,7 +18,7 @@ if cuda:
     dtype = torch.cuda.FloatTensor
 else:
     dtype = torch.FloatTensor
-
+global opt
 
 class cnnf(nn.Module):
     """
