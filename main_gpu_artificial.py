@@ -511,6 +511,7 @@ class GTV(nn.Module):
         if debug:
             print("\tWEIGHT SUM", w[0, :, :].sum().data)
             hist = list()
+            print("\tprocessed u:", u.mean().data, u.median().data)
         w = w.unsqueeze(1).repeat(1, opt.channels, 1, 1)
         T = opt.admm_iter
         P = opt.prox_iter
@@ -663,7 +664,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     DST = ""
     PATH = os.path.join(DST, model_name)
     SAVEPATH = PATH.split('.')[-1]
-    SAVEDIR = ''.join(PATH.split('.')[:-1]) 
+    SAVEDIR = ''.join(PATH.split('.')[:-1]) + '_'
     batch_size = opt.batch_size
     # _subset = ['10', '1', '3', '5', '9']
     if not subset:
@@ -780,8 +781,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 
 
             print("\tsave @ epoch ", epoch + 1)
-            torch.save(gtv.state_dict(), SAVEDIR + str(epoch) +'_'+SAVEPATH)
-            torch.save(optimizer.state_dict(), SAVEDIR + str(epoch)+'_'+SAVEPATH + "optim")
+            torch.save(gtv.state_dict(), SAVEDIR + str(epoch) +'.'+SAVEPATH)
+            torch.save(optimizer.state_dict(), SAVEDIR + str(epoch)+'.'+SAVEPATH + "optim")
 
             histW = [h.cpu().detach().numpy()[0] for h in histW]
             print("\t", np.argmin(histW), min(histW), histW)
@@ -792,9 +793,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             print("CHANGE LR")
             current_lr /= 5
             optimizer = optim.SGD(gtv.parameters(), lr=current_lr, momentum=opt.momentum)
-            
-    torch.save(gtv.state_dict(), SAVEDIR + '_' + str(epoch)+SAVEPATH)
-    torch.save(optimizer.state_dict(), SAVEDIR + '_' + str(epoch)+ SAVEPATH + "optim")
+    torch.save(gtv.state_dict(), SAVEDIR + str(epoch) +'.'+SAVEPATH)
+    torch.save(optimizer.state_dict(), SAVEDIR + str(epoch)+'.'+SAVEPATH + "optim")
+           
     print("Total running time: {0:.3f}".format(time.time() - tstart))
     fig, ax = plt.subplots(1, 1, figsize=(12, 5))
 
