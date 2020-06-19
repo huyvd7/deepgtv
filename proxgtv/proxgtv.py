@@ -18,14 +18,13 @@ if cuda:
     dtype = torch.cuda.FloatTensor
 else:
     dtype = torch.FloatTensor
-global opt
 
 class cnnf(nn.Module):
     """
     CNN F of GLR
     """
 
-    def __init__(self):
+    def __init__(self, opt):
         super(cnnf, self).__init__()
         self.layer1 = nn.Sequential(
             # nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
@@ -152,7 +151,7 @@ class cnny(nn.Module):
     CNN Y of GLR
     """
 
-    def __init__(self):
+    def __init__(self, opt):
         super(cnny, self).__init__()
         self.layer = nn.Sequential(
             nn.Conv2d(opt.channels, 32, kernel_size=3, stride=1, padding=1),
@@ -469,14 +468,14 @@ class GTV(nn.Module):
         opt=None,
     ):
         super(GTV, self).__init__()
-        self.cnnf = cnnf()
 
         self.opt = opt
         self.wt = width
         self.width = width
+        self.cnnf = cnnf(opt=self.opt)
         self.cnnu = cnnu(u_min=u_min)
 
-        self.cnny = cnny()
+        self.cnny = cnny(opt=self.opt)
 
         if cuda:
             self.cnnf.cuda()
@@ -491,20 +490,20 @@ class GTV(nn.Module):
     def forward(self, xf, debug=False, Tmod=False):  # gtvforward
         #u = opt.u
         u = self.cnnu.forward(xf)
-        u_max = opt.u_max
-        u_min = opt.u_min
+        u_max = self.opt.u_max
+        u_min = self.opt.u_min
         if debug:
             self.u=u.clone()
 
         u = torch.clamp(u, u_min, u_max)
         u = u.unsqueeze(1).unsqueeze(1)
-        x = xf.view(xf.shape[0], xf.shape[1], opt.width ** 2, 1).requires_grad_(True)
-        z = opt.H.matmul(x).requires_grad_(True)
+        x = xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1).requires_grad_(True)
+        z = self.opt.H.matmul(x).requires_grad_(True)
 
         ###################
         E = self.cnnf.forward(xf)
         Fs = (
-            opt.H.matmul(E.view(E.shape[0], E.shape[1], opt.width ** 2, 1)) ** 2
+            self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1)) ** 2
         ).requires_grad_(True)
         w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2))).requires_grad_(True)
         ###################
@@ -512,21 +511,21 @@ class GTV(nn.Module):
             print("\tWEIGHT SUM", w[0, :, :].sum().data)
             hist = list()
             print("\tprocessed u:", u.mean().data, u.median().data)
-        w = w.unsqueeze(1).repeat(1, opt.channels, 1, 1)
-        T = opt.admm_iter
-        P = opt.prox_iter
+        w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
+        T = self.opt.admm_iter
+        P = self.opt.prox_iter
         if Tmod:
             T = Tmod
-        delta = opt.delta
-        eta = opt.eta
-        lagrange = opt.lagrange.requires_grad_(True)
+        delta = self.opt.delta
+        eta = self.opt.eta
+        lagrange = self.opt.lagrange.requires_grad_(True)
 
         Y = self.cnny.forward(xf).squeeze(0)
-        y = Y.view(xf.shape[0], xf.shape[1], opt.width ** 2, 1).requires_grad_(True)
-        I = opt.I.requires_grad_(True)
-        H = opt.H.requires_grad_(True)
+        y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1).requires_grad_(True)
+        I = self.opt.I.requires_grad_(True)
+        H = self.opt.H.requires_grad_(True)
         D = (
-            torch.inverse(2 * opt.I + delta * (opt.H.T.mm(H)))
+            torch.inverse(2 * self.opt.I + delta * (self.opt.H.T.mm(H)))
             .type(dtype)
             .requires_grad_(True)
         )
@@ -536,7 +535,7 @@ class GTV(nn.Module):
                 2 * y - H.T.matmul(lagrange) + delta * H.T.matmul(z)
             ).requires_grad_(True)
             if i == 0:
-                z = opt.H.matmul(xhat).requires_grad_(True)
+                z = self.opt.H.matmul(xhat).requires_grad_(True)
             
             # STEP 2
             for j in range(P):
@@ -568,7 +567,7 @@ class GTV(nn.Module):
             print("min - max xhat: ", xhat.min().data, xhat.max().data)
             hist = [h.flatten() for h in hist]
             return hist
-        return xhat.view(xhat.shape[0], opt.channels, opt.width, opt.width)
+        return xhat.view(xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width)
 
     def predict(self, xf):
         pass
