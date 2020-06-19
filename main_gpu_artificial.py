@@ -663,7 +663,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     DST = ""
     PATH = os.path.join(DST, model_name)
     SAVEPATH = PATH.split('.')[-1]
-    SAVEDIR = ''.join(PATH.split('.')[:-1]) + '/'
+    SAVEDIR = ''.join(PATH.split('.')[:-1]) 
     batch_size = opt.batch_size
     # _subset = ['10', '1', '3', '5', '9']
     if not subset:
