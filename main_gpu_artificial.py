@@ -832,6 +832,9 @@ if __name__=="__main__":
         "--epoch", default=200
     )
     parser.add_argument(
+        "--umax", default=65, type=float
+    )
+    parser.add_argument(
         "--umin", default=50, type=float
     )
     args = parser.parse_args()
@@ -848,4 +851,5 @@ if __name__=="__main__":
     opt.admm_iter = int(args.admm_iter)
     opt.delta = float(args.delta)
     opt.u_min=args.umin
+    opt.u_max=args.umax
     main(seed=1, model_name=model_name, cont=cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'])
