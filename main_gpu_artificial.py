@@ -831,6 +831,9 @@ if __name__=="__main__":
     parser.add_argument(
         "--epoch", default=200
     )
+    parser.add_argument(
+        "--umin", default=50, type=float
+    )
     args = parser.parse_args()
     if args.cont:
         cont = args.cont
@@ -844,4 +847,5 @@ if __name__=="__main__":
     opt.lr = float(args.lr)
     opt.admm_iter = int(args.admm_iter)
     opt.delta = float(args.delta)
+    opt.u_min=args.umin
     main(seed=1, model_name=model_name, cont=cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'])
