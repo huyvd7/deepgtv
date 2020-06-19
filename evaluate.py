@@ -293,7 +293,7 @@ if __name__=="__main__":
         "--delta", default=0.9
     )
     args = parser.parse_args()
-    opt = pickle.load(args.opt)
+    opt = pickle.load(open(args.opt, "rb"))
     if args.width:
         imgw = int(args.width)
     else:
