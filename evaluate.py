@@ -1,4 +1,5 @@
 import scipy.sparse as ss
+import pickle
 import torch
 import numpy as np
 import os
@@ -21,7 +22,7 @@ else:
     dtype = torch.FloatTensor
 
 
-def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, Tmod=9):
+def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, Tmod=9, opt=None):
     try:
         from skimage.metrics import structural_similarity as compare_ssim
     except Exception:
@@ -179,9 +180,9 @@ def patch_merge(P, stride=36, shape=None, shapeorg=None):
 
     return (R / Rc)[:, : shapeorg[-1], : shapeorg[-1]]
 
-def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_path=None, noise_type='gauss', Tmod=9):
+def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_path=None, noise_type='gauss', Tmod=None, opt=None):
     # INITIALIZE
-    global opt
+    #global opt
     supporting_matrix(opt)
     opt._print()
     gtv = GTV(
@@ -210,11 +211,13 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     #trainset = ["10", "1", "7", "8", "9"]
     traineva = {'psnr':list(), 'ssim':list(), 'ssim2':list(), 'psnr2':list(), 'mse':list()}
     stride=18
+    if not Tmod:
+        Tmod = opt.admm_iter
     for t in trainset:
         print("image #", t)
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
-        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, Tmod=Tmod)
+        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, Tmod=Tmod, opt=opt)
         traineva["psnr"].append(_psnr)
         traineva["ssim"].append(_ssim)
         traineva["ssim2"].append(_ssim2)
@@ -268,7 +271,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     print("========================")
     return traineva, testeva
 if __name__=="__main__":
-    global opt
+    #global opt
     parser = argparse.ArgumentParser()
     
     parser.add_argument(
@@ -276,6 +279,9 @@ if __name__=="__main__":
     )
     parser.add_argument(
         "-m", "--model"
+    )
+    parser.add_argument(
+        "--opt", default='opt'
     )
     parser.add_argument(
         "-p", "--image_path"
@@ -287,6 +293,7 @@ if __name__=="__main__":
         "--delta", default=0.9
     )
     args = parser.parse_args()
+    opt = pickle.load(args.opt)
     if args.width:
         imgw = int(args.width)
     else:
@@ -301,4 +308,4 @@ if __name__=="__main__":
     else:
         image_path = 'gauss'
     opt.delta = float(args.delta)
-    _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss', Tmod=int(args.Tmod))
+    _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss', Tmod=int(args.Tmod), opt=opt)
