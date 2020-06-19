@@ -110,7 +110,7 @@ class cnnu(nn.Module):
     CNNU of GLR
     """
 
-    def __init__(self, u_min=1e-3):
+    def __init__(self, u_min=1e-3, opt=None):
         super(cnnu, self).__init__()
         self.layer = nn.Sequential(
             # nn.Conv2d(3, 32, kernel_size=3, stride=2, padding=1),
@@ -473,7 +473,7 @@ class GTV(nn.Module):
         self.wt = width
         self.width = width
         self.cnnf = cnnf(opt=self.opt)
-        self.cnnu = cnnu(u_min=u_min)
+        self.cnnu = cnnu(u_min=u_min, opt=self.opt)
 
         self.cnny = cnny(opt=self.opt)
 
