@@ -71,7 +71,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         print("LOAD PREVIOUS GTV:", cont)
     if cuda:
         for g in gtv.gtv:
-            gtv.cuda()
+            g.cuda()
     criterion = nn.MSELoss()
     
     cnny_params = list(filter(lambda kv: 'cnny' in kv[0] , gtv.named_parameters()))
