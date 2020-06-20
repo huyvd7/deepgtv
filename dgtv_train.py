@@ -95,8 +95,11 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     #optimizer_y = optim.SGD(cnnf_params, lr=opt.lr, momentum=opt.momentum)
     #optimizer = [optimizer_f, optimizer_u, optimizer_y]
     if cont:
-        optimizer.load_state_dict(torch.load(cont+'optim'))
-        print("LOAD PREVIOUS OPTIMIZER:", cont+'optim')
+        try:
+            optimizer.load_state_dict(torch.load(cont+'optim'))
+            print("LOAD PREVIOUS OPTIMIZER:", cont+'optim')
+        except Exception:
+            print("Using new optimizer")
     current_lr = opt.lr
 
     hist = list()
