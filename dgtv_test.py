@@ -185,7 +185,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     #global opt
     supporting_matrix(opt)
     opt._print()
-    gtv = GTV(
+    gtv = DeepGTV(
         width=36,
         prox_iter=1,
         u_max=10,

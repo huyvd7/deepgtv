@@ -13,6 +13,7 @@ import torchvision.transforms as transforms
 import torch.optim as optim
 import matplotlib.pyplot as plt
 from proxgtv.proxgtv import * 
+import pickle
 #cuda = True if torch.cuda.is_available() else False
 #if cuda:
 #    dtype = torch.cuda.FloatTensor
