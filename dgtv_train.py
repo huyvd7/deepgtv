@@ -70,7 +70,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         gtv.load_state_dict(torch.load(cont))
         print("LOAD PREVIOUS GTV:", cont)
     if cuda:
-        gtv.cuda()
+        for g in gtv.gtv:
+            gtv.cuda()
     criterion = nn.MSELoss()
     
     cnny_params = list(filter(lambda kv: 'cnny' in kv[0] , gtv.named_parameters()))

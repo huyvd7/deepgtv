@@ -605,9 +605,9 @@ class DeepGTV(nn.Module):
         )
         self.cuda = cuda
         self.opt=opt
-        #if self.cuda:
-        #    for gtv in self.gtv:
-        #        gtv.cuda()
+        if self.cuda:
+            for gtv in self.gtv:
+                gtv.cuda()
 
     def load(self, PATHS):
         if self.cuda:
