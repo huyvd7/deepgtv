@@ -149,7 +149,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             pmean = list()
             for p in g.parameters():
                 pmax.append(p.grad.max())
-                pmean.append(p.grad.mean())
+                pmean.append(p.grad.mean().data)
             print("\tmax gradients", max(pmax))
             print("\tmean gradients", np.mean(pmean))
             with torch.no_grad():
