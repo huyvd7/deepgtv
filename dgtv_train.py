@@ -137,16 +137,17 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         
 
         if ((epoch + 1) % 1 == 0) or (epoch + 1) == total_epoch:
+            g = gtv[0]
             with torch.no_grad():
-                histW = gtv.gtv[0](inputs[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 5)
-            print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
-            print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
+                histW = g(inputs[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 5)
+            print("\tCNNF stats: ", g.cnnf.layer1[0].weight.grad.mean())
+            print("\tCNNU grads: ", g.cnnu.layer[0].weight.grad.mean())
             pmax = list()
             for p in gtv.parameters():
                 pmax.append(p.grad.max())
             print("\tmax gradients", max(pmax))
             with torch.no_grad():
-                us = gtv.cnnu(inputs[:10])
+                us = g.cnnu(inputs[:10])
                 print("\tCNNU stats: ", us.mean().data, us.max().data, us.min().data)
 
 
