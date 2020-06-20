@@ -622,14 +622,14 @@ class DeepGTV(nn.Module):
             sample.cuda()
         P = self.gtv[0].predict(sample)
         for i in range(1, self.no):
-            P = self.gtv[i].predict(P)
+            P = self.gtv[i](P)
 
         return P
 
     def forward(self, sample):
         P = self.gtv[0].predict(sample)
         for i in range(1, self.no):
-            P = self.gtv[i].predict(P)
+            P = self.gtv[i](P)
 
         return P
 
