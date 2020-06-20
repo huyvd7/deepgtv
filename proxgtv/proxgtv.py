@@ -614,8 +614,8 @@ class DeepGTV(nn.Module):
             device = torch.device("cuda")
         else:
             device = torch.device("cpu")
-        for i, gtv in enumerate(self.gtv):
-            gtv.load_state_dict(torch.load(PATHS[i], map_location=device))
+        for i, p in enumerate(PATHS):
+            self.gtv[i].load_state_dict(torch.load(p, map_location=device))
 
     def predict(self, sample):
         if self.cuda:
@@ -629,6 +629,7 @@ class DeepGTV(nn.Module):
     def forward(self, sample):
         P = self.gtv[0](sample)
         for i in range(1, self.no):
+            print('forward ', i)
             P = self.gtv[i](P)
 
         return P
