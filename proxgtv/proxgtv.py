@@ -574,6 +574,64 @@ class GTV(nn.Module):
     def predict(self, xf):
         pass
 
+class DeepGLR(nn.Module):
+    """
+    Stack GTVs
+    """
+
+    def __init__(
+        self,
+        width=36,
+        prox_iter=5,
+        u_min=1e-3,
+        u_max=1,
+        lambda_min=1e-9,
+        lambda_max=1e9,
+        cuda=False,
+        opt=None,
+        no=2):
+        super(DeepGLR, self).__init__()
+        self.no = no
+        self.gtv = list()
+        for i in range(self.no):
+            self.gtv.append(GTV(width=36,
+            prox_iter=prox_iter,
+            u_max=u_max,
+            u_min=u_min,
+            lambda_min=lambda_min,
+            lambda_max=lambda_max,
+            cuda=cuda,
+            opt=opt)
+        )
+        self.cuda = cuda
+        self.opt=opt
+        if self.cuda:
+            for gtv in self.gtv:
+                gtv.cuda()
+
+    def load(self, PATHS):
+        if self.cuda:
+            device = torch.device("cuda")
+        else:
+            device = torch.device("cpu")
+        for i, gtv in enumerate(self.gtv):
+            gtv.load_state_dict(torch.load(PATHS[i], map_location=device))
+
+    def predict(self, sample):
+        if self.cuda:
+            sample.cuda()
+        P = self.gtv[0].predict(sample)
+        for i in range(1, self.no):
+            P = self.gtv[i].predict(P)
+
+        return P
+
+    def forward(self, sample):
+        P = self.gtv[0].predict(sample)
+        for i in range(1, self.no):
+            P = self.gtv[i].predict(P)
+
+        return P
 
 def supporting_matrix(opt):
     width = opt.width

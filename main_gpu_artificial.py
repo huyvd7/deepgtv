@@ -733,7 +733,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     hist = list()
     losshist = list()
     tstart = time.time()
+
     opt._print()
+    pickle.dump(opt, open( "opt", "wb" ))
     ld = len(dataset)
     for epoch in range(total_epoch):  # loop over the dataset multiple times
         # running_loss_inside = 0.0
