@@ -143,15 +143,15 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             g = gtv.gtv[-1]
             with torch.no_grad():
                 histW = g(inputs[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 5)
-            print("\tCNNF stats: ", g.cnnf.layer1[0].weight.grad.mean())
-            print("\tCNNU grads: ", g.cnnu.layer[0].weight.grad.mean())
+            print("\tCNNF mean grads: ", g.cnnf.layer1[0].weight.grad.mean())
+            print("\tCNNU mean grads: ", g.cnnu.layer[0].weight.grad.mean())
             pmax = list()
             pmean = list()
             for p in g.parameters():
                 pmax.append(p.grad.max())
-                pmean.append(p.grad.mean().data)
+                pmean.append(p.grad.mean())
             print("\tmax gradients", max(pmax))
-            print("\tmean gradients", np.mean(pmean))
+            print("\tmean gradients", max(pmean))
             with torch.no_grad():
                 us = g.cnnu(inputs[:10])
                 print("\tCNNU stats: ", us.mean().data, us.max().data, us.min().data)
