@@ -574,7 +574,7 @@ class GTV(nn.Module):
     def predict(self, xf):
         pass
 
-class DeepGLR(nn.Module):
+class DeepGTV(nn.Module):
     """
     Stack GTVs
     """
@@ -590,7 +590,7 @@ class DeepGLR(nn.Module):
         cuda=False,
         opt=None,
         no=2):
-        super(DeepGLR, self).__init__()
+        super(DeepGTV, self).__init__()
         self.no = no
         self.gtv = list()
         for i in range(self.no):
