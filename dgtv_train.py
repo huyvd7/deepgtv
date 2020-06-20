@@ -143,7 +143,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             print("\tCNNF stats: ", g.cnnf.layer1[0].weight.grad.mean())
             print("\tCNNU grads: ", g.cnnu.layer[0].weight.grad.mean())
             pmax = list()
-            for p in gtv.parameters():
+            for p in g.parameters():
                 pmax.append(p.grad.max())
             print("\tmax gradients", max(pmax))
             with torch.no_grad():
