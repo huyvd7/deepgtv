@@ -200,6 +200,9 @@ if __name__=="__main__":
         "--delta", default=0.9
     )
     parser.add_argument(
+        "--eta", default=0.3, type=float
+    )
+    parser.add_argument(
         "--admm_iter", default=4
     )
     parser.add_argument(
