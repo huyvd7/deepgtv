@@ -629,7 +629,6 @@ class DeepGTV(nn.Module):
     def forward(self, sample):
         P = self.gtv[0](sample)
         for i in range(1, self.no):
-            print('forward ', i)
             P = self.gtv[i](P)
 
         return P
