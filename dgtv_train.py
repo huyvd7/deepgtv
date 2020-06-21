@@ -75,24 +75,14 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             g.cuda()
     criterion = nn.MSELoss()
     
-    cnny_params = list(filter(lambda kv: 'cnny' in kv[0] , gtv.gtv[0].named_parameters()))
+    cnny_params = list(filter(lambda kv: 'cnny' in kv[0] , gtv.named_parameters()))
     cnny_params = [i[1] for i in cnny_params]
-    cnnf_params = list(filter(lambda kv: 'cnnf' in kv[0], gtv.gtv[0].named_parameters()))
+    cnnf_params = list(filter(lambda kv: 'cnnf' in kv[0], gtv.named_parameters()))
     cnnf_params = [i[1] for i in cnnf_params]
-    cnnu_params = list(filter(lambda kv: 'cnnu' in kv[0], gtv.gtv[0].named_parameters()))
-    cnnu_params = [i[1] for i in cnnu_params]
+    cnnu_params = list(filter(lambda kv: 'cnnu' in kv[0], gtv.named_parameters()))
+    cnnu_params = [i[1] for i in cnnu_params ]
 
-
-    cnny_params1 = list(filter(lambda kv: 'cnny' in kv[0] , gtv.gtv[1].named_parameters()))
-    cnny_params1 = [i[1] for i in cnny_params1]
-    cnnf_params1 = list(filter(lambda kv: 'cnnf' in kv[0], gtv.gtv[1].named_parameters()))
-    cnnf_params1 = [i[1] for i in cnnf_params1]
-    cnnu_params1 = list(filter(lambda kv: 'cnnu' in kv[0], gtv.gtv[1].named_parameters()))
-    cnnu_params1 = [i[1] for i in cnnu_params1]
-
-    cnny_params.extend(cnny_params1)
-    cnnf_params.extend(cnnf_params1)
-    cnnu_params.extend(cnnu_params1)
+    print(len(cnny_params))
     optimizer = optim.SGD([
                 {'params': cnny_params, 'lr':opt.lr},
                  {'params': cnnf_params , 'lr': opt.lr*50},
@@ -134,9 +124,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             outputs = gtv(inputs)
             loss = criterion(outputs, labels)
             loss.backward()
-            #torch.nn.utils.clip_grad_value_(cnnf_params, 20)
-            #torch.nn.utils.clip_grad_value_(cnny_params, 10)
-            #torch.nn.utils.clip_grad_value_(cnnu_params, 20)
+            torch.nn.utils.clip_grad_value_(cnnf_params, 20)
+            torch.nn.utils.clip_grad_value_(cnny_params, 10)
+            torch.nn.utils.clip_grad_value_(cnnu_params, 20)
 
             optimizer.step()
             #optimizer[i%3].step()
