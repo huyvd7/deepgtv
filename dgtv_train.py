@@ -147,11 +147,14 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             print("\tCNNU mean grads: ", g.cnnu.layer[0].weight.grad.mean())
             pmax = list()
             pmean = list()
-            for p in g.parameters():
+            pmin = list()
+            for p in gtv.parameters():
                 pmax.append(p.grad.max())
                 pmean.append(p.grad.mean())
+                pmin.append(p.grad.min())
             print("\tmax gradients", max(pmax))
             print("\tmean gradients", max(pmean))
+            print("\tmin gradients", min(pmean))
             with torch.no_grad():
                 us = g.cnnu(inputs[:10])
                 print("\tCNNU stats: ", us.mean().data, us.max().data, us.min().data)
