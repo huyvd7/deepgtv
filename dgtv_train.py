@@ -83,11 +83,11 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     cnnu_params = [i[1] for i in cnnu_params]
 
 
-    cnny_params1 = list(filter(lambda kv: 'cnny' in kv[0] , gtv.gtv[0].named_parameters()))
+    cnny_params1 = list(filter(lambda kv: 'cnny' in kv[0] , gtv.gtv[1].named_parameters()))
     cnny_params1 = [i[1] for i in cnny_params1]
-    cnnf_params1 = list(filter(lambda kv: 'cnnf' in kv[0], gtv.gtv[0].named_parameters()))
+    cnnf_params1 = list(filter(lambda kv: 'cnnf' in kv[0], gtv.gtv[1].named_parameters()))
     cnnf_params1 = [i[1] for i in cnnf_params1]
-    cnnu_params1 = list(filter(lambda kv: 'cnnu' in kv[0], gtv.gtv[0].named_parameters()))
+    cnnu_params1 = list(filter(lambda kv: 'cnnu' in kv[0], gtv.gtv[1].named_parameters()))
     cnnu_params1 = [i[1] for i in cnnu_params1]
 
     cnny_params.extend(cnny_params1)
