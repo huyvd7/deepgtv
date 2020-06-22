@@ -82,8 +82,8 @@ def main(t,sigma, args=None):
     except Exception:
         from skimage.measure import compare_ssim
     import cv2
-    opath = '{0}.bmp'.format(t)
-    argref = imagename
+    opath = 'bm3d_{0}.bmp'.format(t)
+    argref = imagename # path of noisy image
     d = cv2.imread(opath)
     tref = cv2.imread(argref)
     (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
