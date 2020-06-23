@@ -499,15 +499,15 @@ class GTV(nn.Module):
 
         u = torch.clamp(u, u_min, u_max)
         u = u.unsqueeze(1).unsqueeze(1)
-        x = xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1).requires_grad_(True)
-        z = self.opt.H.matmul(x).requires_grad_(True)
+        x = xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+        z = self.opt.H.matmul(x)#.requires_grad_(True)
 
         ###################
         E = self.cnnf.forward(xf)
         Fs = (
             self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1)) ** 2
-        ).requires_grad_(True)
-        w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2))).requires_grad_(True)
+        )#.requires_grad_(True)
+        w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))#.requires_grad_(True)
         ###################
         if debug:
             print("\tWEIGHT SUM", w[0, :, :].sum().data)

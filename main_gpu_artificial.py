@@ -855,6 +855,9 @@ if __name__=="__main__":
     parser.add_argument(
         "--umin", default=50, type=float
     )
+    parser.add_argument(
+        "--seed", default=0, type=float
+    )
     args = parser.parse_args()
     if args.cont:
         cont = args.cont
@@ -870,4 +873,6 @@ if __name__=="__main__":
     opt.delta = float(args.delta)
     opt.u_min=args.umin
     opt.u_max=args.umax
+    torch.manual_seed(args.seed)
+
     main(seed=1, model_name=model_name, cont=cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'])
