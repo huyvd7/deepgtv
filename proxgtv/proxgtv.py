@@ -297,8 +297,8 @@ class ToTensor(object):
         nimg = nimg.transpose((2, 0, 1))
         rimg = rimg.transpose((2, 0, 1))
         return {
-            "nimg": torch.from_numpy(nimg).type(dtype),
-            "rimg": torch.from_numpy(rimg).type(dtype),
+            "nimg": torch.from_numpy(nimg),#.type(dtype),
+            "rimg": torch.from_numpy(rimg)#.type(dtype),
         }
 
 def data_aug(img, mode=0):
