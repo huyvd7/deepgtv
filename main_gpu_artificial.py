@@ -762,18 +762,18 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             #optimizer[i%3].step()
             running_loss += loss.item()
 
-            #if (i+1)%50==0:
-            #    with torch.no_grad():
-            #        histW = gtv(inputs[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 5)
-            #    print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
-            #    print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
-            #    pmax = list()
-            #    for p in gtv.parameters():
-            #        pmax.append(p.grad.max())
-            #    print("\tmax gradients", max(pmax))
-            #    with torch.no_grad():
-            #        us = gtv.cnnu(inputs[:10])
-            #        print("\tCNNU stats: ", us.mean().data, us.max().data, us.min().data)
+            if epoch==0 and (i+1)%50==0:
+                with torch.no_grad():
+                    histW = gtv(inputs[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 5)
+                print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
+                print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
+                pmax = list()
+                for p in gtv.parameters():
+                    pmax.append(p.grad.max())
+                print("\tmax gradients", max(pmax))
+                with torch.no_grad():
+                    us = gtv.cnnu(inputs[:10])
+                    print("\tCNNU stats: ", us.mean().data, us.max().data, us.min().data)
 
 
         print(
