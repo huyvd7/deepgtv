@@ -566,7 +566,7 @@ class GTV(nn.Module):
     
         # xhat = D.matmul(2*y - H.T.matmul(lagrange) + delta*H.T.matmul(z)).requires_grad_(True)
         if debug:
-            print("min - max xhat: ", xhat.min().data, xhat.max().data)
+            print("\tmin - max xhat: ", xhat.min().data, xhat.max().data)
             hist = [h.flatten() for h in hist]
             return hist
         return xhat.view(xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width)
