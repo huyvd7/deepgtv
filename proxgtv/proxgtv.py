@@ -425,6 +425,7 @@ class OPT:
         u_min=10,
         lr=1e-4,
         momentum=0.99,
+        ver=None
     ):
         self.batch_size = batch_size
         self.width = width
@@ -444,6 +445,7 @@ class OPT:
         self.momentum = momentum
         self.u_max = u_max
         self.u_min = u_min
+        self.ver=ver
 
     def _print(self):
         print(
@@ -493,7 +495,10 @@ class GTV(nn.Module):
         self.opt = opt
         self.wt = width
         self.width = width
-        self.cnnf = cnnf_2(opt=self.opt)
+        if self.opt.ver:
+            self.cnnf = cnnf_2(opt=self.opt)
+        else:
+            self.cnnf=cnnf(opt=self.opt)
         self.cnnu = cnnu(u_min=u_min, opt=self.opt)
 
         self.cnny = cnny(opt=self.opt)

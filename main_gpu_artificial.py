@@ -873,6 +873,7 @@ if __name__=="__main__":
     opt.delta = float(args.delta)
     opt.u_min=args.umin
     opt.u_max=args.umax
+    opt.ver=True
     torch.manual_seed(args.seed)
 
     main(seed=1, model_name=model_name, cont=cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'])
