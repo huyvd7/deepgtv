@@ -19,25 +19,30 @@ if cuda:
 else:
     dtype = torch.FloatTensor
 
+
 class cnnf_2(nn.Module):
+
     def __init__(self, opt):
         super(cnnf_2, self).__init__()
-        self.conv1 = nn.Conv2d(opt.channels, 32, 3, stride=1, padding=1)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(32, 3, 3)
-        #self.fc1 = nn.Linear(16 * 5 * 5, 120)
-        #self.fc2 = nn.Linear(120, 84)
-        #self.fc3 = nn.Linear(84, 10)
+        self.layer = nn.Sequential(
+            nn.Conv2d(opt.channels, 32, kernel_size=3, stride=1, padding=1),
+            # nn.ReLU(),
+            nn.LeakyReLU(0.05),
+            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
+            # nn.ReLU(),
+            nn.LeakyReLU(0.05),
+            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
+            # nn.ReLU(),
+            nn.LeakyReLU(0.05),
+            nn.Conv2d(32, opt.channels, kernel_size=3, stride=1, padding=1),
+        )
 
     def forward(self, x):
-        x = self.pool(nn.functional.relu(self.conv1(x)))
-        x = self.pool(nn.functional.relu(self.conv2(x)))
-        #x = x.view(-1, 16 * 5 * 5)
-        #x = F.relu(self.fc1(x))
-        #x = F.relu(self.fc2(x))
-        #x = self.fc3(x)
-        print(x.shape)
-        return x
+        #identity = x
+        out = self.layer(x)
+        #out = identity + out
+        return out
+
 
 class cnnf(nn.Module):
     """
