@@ -19,6 +19,25 @@ if cuda:
 else:
     dtype = torch.FloatTensor
 
+class cnnf_2(nn.Module):
+    def __init__(self, opt):
+        super(Net, self).__init__()
+        self.conv1 = nn.Conv2d(3, 6, 5)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(6, 3, 5)
+        #self.fc1 = nn.Linear(16 * 5 * 5, 120)
+        #self.fc2 = nn.Linear(120, 84)
+        #self.fc3 = nn.Linear(84, 10)
+
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        #x = x.view(-1, 16 * 5 * 5)
+        #x = F.relu(self.fc1(x))
+        #x = F.relu(self.fc2(x))
+        #x = self.fc3(x)
+        return x
+
 class cnnf(nn.Module):
     """
     CNN F of GLR
@@ -455,7 +474,7 @@ class OPT:
 
 class GTV(nn.Module):
     """
-    GLR network
+    GTV network 
     """
 
     def __init__(
@@ -474,7 +493,7 @@ class GTV(nn.Module):
         self.opt = opt
         self.wt = width
         self.width = width
-        self.cnnf = cnnf(opt=self.opt)
+        self.cnnf = cnnf_2(opt=self.opt)
         self.cnnu = cnnu(u_min=u_min, opt=self.opt)
 
         self.cnny = cnny(opt=self.opt)
@@ -523,21 +542,21 @@ class GTV(nn.Module):
         lagrange = self.opt.lagrange.requires_grad_(True)
 
         Y = self.cnny.forward(xf).squeeze(0)
-        y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1).requires_grad_(True)
-        I = self.opt.I.requires_grad_(True)
-        H = self.opt.H.requires_grad_(True)
+        y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+        I = self.opt.I#.requires_grad_(True)
+        H = self.opt.H#.requires_grad_(True)
         D = (
             torch.inverse(2 * self.opt.I + delta * (self.opt.H.T.mm(H)))
             .type(dtype)
-            .requires_grad_(True)
+            #.requires_grad_(True)
         )
         for i in range(T):
             # STEP 1
             xhat = D.matmul(
                 2 * y - H.T.matmul(lagrange) + delta * H.T.matmul(z)
-            ).requires_grad_(True)
+            )#.requires_grad_(True)
             if i == 0:
-                z = self.opt.H.matmul(xhat).requires_grad_(True)
+                z = self.opt.H.matmul(xhat)#.requires_grad_(True)
             
             # STEP 2
             for j in range(P):
@@ -546,10 +565,10 @@ class GTV(nn.Module):
                 )
                 z = proximal_gradient_descent(
                     x=z, grad=grad, w=w, u=u, eta=eta, debug=debug
-                ).requires_grad_(True)
+                )#.requires_grad_(True)
 
             # STEP 3
-            lagrange = (lagrange + delta * (H.matmul(xhat) - z)).requires_grad_(True)
+            lagrange = (lagrange + delta * (H.matmul(xhat) - z))#.requires_grad_(True)
             if debug:
                 l = (
                     (
