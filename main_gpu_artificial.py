@@ -790,7 +790,11 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         if ((epoch + 1) % 1 == 0) or (epoch + 1) == total_epoch:
             with torch.no_grad():
                 histW = gtv(inputs[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 5)
-            print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
+            if opt.ver: # experimental version
+                print("\tCNNF stats: ", gtv.cnnf.layer[0].weight.grad.mean())
+            else:
+                print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
+            #print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
             print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
             pmax = list()
             for p in gtv.parameters():
