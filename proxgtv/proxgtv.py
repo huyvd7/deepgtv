@@ -24,7 +24,7 @@ class cnnf_2(nn.Module):
         super(cnnf_2, self).__init__()
         self.conv1 = nn.Conv2d(opt.channels, 32, 3, stride=1, padding=1)
         self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(16, 3, 3)
+        self.conv2 = nn.Conv2d(32, 3, 3)
         #self.fc1 = nn.Linear(16 * 5 * 5, 120)
         #self.fc2 = nn.Linear(120, 84)
         #self.fc3 = nn.Linear(84, 10)
