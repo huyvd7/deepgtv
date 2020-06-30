@@ -765,7 +765,10 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             if epoch==0 and (i+1)%50==0:
                 with torch.no_grad():
                     histW = gtv(inputs[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 5)
-                print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
+                if opt.ver: # experimental version
+                    print("\tCNNF stats: ", gtv.cnnf.layer[0].weight.grad.mean())
+                else:
+                    print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
                 print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
                 pmax = list()
                 for p in gtv.parameters():
