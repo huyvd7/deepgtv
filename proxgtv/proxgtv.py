@@ -252,10 +252,10 @@ class RENOIR_Dataset(Dataset):
         uid=0
         nimg_name = os.path.join(self.npath, self.nimg_name[idx])
         nimg = cv2.imread(nimg_name)
-        nimg = data_aug(nimg, uid)
+        #nimg = data_aug(nimg, uid)
         rimg_name = os.path.join(self.rpath, self.rimg_name[idx])
         rimg = cv2.imread(rimg_name)
-        rimg = data_aug(rimg, uid)
+        #rimg = data_aug(rimg, uid)
 
         sample = {"nimg": nimg, "rimg": rimg}
 
@@ -385,7 +385,7 @@ def get_w(ij, F):
         ).sum(axis=1)
     )
 
-    return W.type(dtype)
+    return W#.type(dtype)
 
 
 def gauss(d, epsilon=1):
@@ -558,7 +558,7 @@ class GTV(nn.Module):
         H = self.opt.H#.requires_grad_(True)
         D = (
             torch.inverse(2 * self.opt.I + delta * (self.opt.H.T.mm(H)))
-            .type(dtype)
+            #.type(dtype)
             #.requires_grad_(True)
         )
         for i in range(T):
@@ -698,8 +698,8 @@ def supporting_matrix(opt):
 
 def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False):
     v = x - eta * grad
-    masks1 = ((v.abs() - (eta * w * u).abs()) > 0).type(dtype).requires_grad_(True)
-    masks2 = ((v.abs() - (eta * w * u).abs()) <= 0).type(dtype).requires_grad_(True)
+    masks1 = ((v.abs() - (eta * w * u).abs()) > 0)#.type(dtype).requires_grad_(True)
+    masks2 = ((v.abs() - (eta * w * u).abs()) <= 0)#.type(dtype).requires_grad_(True)
     v = v - masks1 * eta * w * u * torch.sign(v)
     v = v - masks2 * v
     return v
