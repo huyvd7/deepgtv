@@ -577,12 +577,12 @@ class GTV(nn.Module):
         y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
         I = self.opt.I#.requires_grad_(True)
         H = self.opt.H#.requires_grad_(True)
-        D = self.opt.D.clone()
-        #D = (
-        #    torch.inverse(2 * self.opt.I + delta * (self.opt.H.T.mm(H)))
-        #    #.type(dtype)
-        #    #.requires_grad_(True)
-        #)
+        #D = self.opt.D.clone()
+        D = (
+            torch.inverse(2 * self.opt.I + delta * (self.opt.H.T.mm(H)))
+            #.type(dtype)
+            #.requires_grad_(True)
+        )
         for i in range(T):
             # STEP 1
             xhat = D.matmul(
