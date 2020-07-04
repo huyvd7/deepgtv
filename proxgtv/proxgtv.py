@@ -199,6 +199,26 @@ class cnny(nn.Module):
         return out
 
 
+class mlp(nn.Module):
+    """
+    CNN Y of GLR
+    """
+
+    def __init__(self, opt, in_channels=36**2, out_channels=36**2):
+        super(mlp, self).__init__()
+        self.hidden_nodes = 64
+        self.fc = nn.Sequential(
+                nn.Linear(in_channels, self.hidden_nodes),
+                nn.Linear(self.hidden_nodes, out_channels),
+                nn.ReLU()
+                )
+        self.in_channels=in_channels
+        self.out_channels=out_channels
+    def forward(self, x):
+        out = self.fc(x)
+        return out
+
+
 class RENOIR_Dataset(Dataset):
     """
     Dataset loader
@@ -452,6 +472,7 @@ class OPT:
         self.u_max = u_max
         self.u_min = u_min
         self.ver=ver
+        self.D=None
 
     def _print(self):
         print(
@@ -556,11 +577,12 @@ class GTV(nn.Module):
         y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
         I = self.opt.I#.requires_grad_(True)
         H = self.opt.H#.requires_grad_(True)
-        D = (
-            torch.inverse(2 * self.opt.I + delta * (self.opt.H.T.mm(H)))
-            #.type(dtype)
-            #.requires_grad_(True)
-        )
+        D = self.opt.D
+        #D = (
+        #    torch.inverse(2 * self.opt.I + delta * (self.opt.H.T.mm(H)))
+        #    #.type(dtype)
+        #    #.requires_grad_(True)
+        #)
         for i in range(T):
             # STEP 1
             xhat = D.matmul(
@@ -692,7 +714,12 @@ def supporting_matrix(opt):
     opt.connectivity_full = A.requires_grad_(True)
     opt.connectivity_idx = torch.where(A > 0)
     opt.lagrange = lagrange.requires_grad_(True)
-    delta = 1
+    opt.D = (
+            torch.inverse(2 * opt.I + delta * (opt.H.T.mm(H)))
+            #.type(dtype)
+            #.requires_grad_(True)
+        )
+
     # opt.D = torch.inverse(2*opt.I + delta*(opt.H.T.mm(H))).type(dtype)
 
 
