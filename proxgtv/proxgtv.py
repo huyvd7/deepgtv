@@ -577,7 +577,7 @@ class GTV(nn.Module):
         y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
         I = self.opt.I#.requires_grad_(True)
         H = self.opt.H#.requires_grad_(True)
-        D = self.opt.D.clone()
+        D = self.opt.D
         #D = (
         #    torch.inverse(2 * self.opt.I + delta * (self.opt.H.T.mm(H)))
         #    #.type(dtype)
@@ -717,7 +717,7 @@ def supporting_matrix(opt):
     opt.D = (
             torch.inverse(2 * opt.I + opt.delta * (opt.H.T.mm(H)))
             #.type(dtype)
-            .requires_grad_(True)
+            .requires_grad_(False)
         )
 
     # opt.D = torch.inverse(2*opt.I + delta*(opt.H.T.mm(H))).type(dtype)
