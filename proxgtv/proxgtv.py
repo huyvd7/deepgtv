@@ -715,7 +715,7 @@ def supporting_matrix(opt):
     opt.connectivity_idx = torch.where(A > 0)
     opt.lagrange = lagrange.requires_grad_(True)
     opt.D = (
-            torch.inverse(2 * opt.I + delta * (opt.H.T.mm(H)))
+            torch.inverse(2 * opt.I + opt.delta * (opt.H.T.mm(H)))
             #.type(dtype)
             #.requires_grad_(True)
         )
