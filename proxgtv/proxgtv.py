@@ -566,6 +566,7 @@ class GTV(nn.Module):
 
         # REPLACE WITH MLP
         lagrange = self.opt.lagrange.requires_grad_(True)
+        print(w.shape)
         #########################
         lagrange1 = self.mlp1(w)
         lagrange2 = self.mlp2(w)
