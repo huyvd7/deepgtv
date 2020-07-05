@@ -199,6 +199,27 @@ class cnny(nn.Module):
         return out
 
 
+class mlp(nn.Module):
+    """
+    CNN Y of GLR
+    """
+
+    def __init__(self, opt, in_channels=36**2, out_channels=36**2):
+        super(mlp, self).__init__()
+        self.hidden_nodes = 64
+        self.fc = nn.Sequential(
+                nn.Linear(in_channels, self.hidden_nodes),
+                nn.Linear(self.hidden_nodes, out_channels),
+                nn.ReLU()
+                )
+        self.in_channels=in_channels
+        self.out_channels=out_channels
+    def forward(self, x):
+        print(x.shape)
+        out = self.fc(x)
+        return out
+
+
 class RENOIR_Dataset(Dataset):
     """
     Dataset loader
@@ -252,10 +273,10 @@ class RENOIR_Dataset(Dataset):
         uid=0
         nimg_name = os.path.join(self.npath, self.nimg_name[idx])
         nimg = cv2.imread(nimg_name)
-        nimg = data_aug(nimg, uid)
+        #nimg = data_aug(nimg, uid)
         rimg_name = os.path.join(self.rpath, self.rimg_name[idx])
         rimg = cv2.imread(rimg_name)
-        rimg = data_aug(rimg, uid)
+        #rimg = data_aug(rimg, uid)
 
         sample = {"nimg": nimg, "rimg": rimg}
 
@@ -385,7 +406,7 @@ def get_w(ij, F):
         ).sum(axis=1)
     )
 
-    return W.type(dtype)
+    return W#.type(dtype)
 
 
 def gauss(d, epsilon=1):
@@ -452,6 +473,7 @@ class OPT:
         self.u_max = u_max
         self.u_min = u_min
         self.ver=ver
+        self.D=None
 
     def _print(self):
         print(
@@ -508,6 +530,9 @@ class GTV(nn.Module):
         self.cnnu = cnnu(u_min=u_min, opt=self.opt)
 
         self.cnny = cnny(opt=self.opt)
+        self.mlp1 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
+        self.mlp2 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
+        self.mlp3 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
 
         if cuda:
             self.cnnf.cuda()
@@ -530,6 +555,7 @@ class GTV(nn.Module):
         u = torch.clamp(u, u_min, u_max)
         u = u.unsqueeze(1).unsqueeze(1)
         x = xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+
         z = self.opt.H.matmul(x)#.requires_grad_(True)
 
         ###################
@@ -538,7 +564,16 @@ class GTV(nn.Module):
             self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1)) ** 2
         )#.requires_grad_(True)
         w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))#.requires_grad_(True)
+
+        # REPLACE WITH MLP
+        lagrange = self.opt.lagrange.requires_grad_(True)
+        #########################
+        lagrange1 = self.mlp1(w.view(w.shape[0], w.shape[1]))
+        lagrange2 = self.mlp2(w.view(w.shape[0], w.shape[1]))
+        lagrange3 = self.mlp3(w.view(w.shape[0], w.shape[1]))
         ###################
+
+
         if debug:
             print("\tWEIGHT SUM", w[0, :, :].sum().data)
             hist = list()
@@ -550,51 +585,67 @@ class GTV(nn.Module):
             T = Tmod
         delta = self.opt.delta
         eta = self.opt.eta
-        lagrange = self.opt.lagrange.requires_grad_(True)
 
-        Y = self.cnny.forward(xf).squeeze(0)
-        y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+
+
+
+        ########################
+        # USE CNNY
+        #Y = self.cnny.forward(xf).squeeze(0)
+        #y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+        ####
+        y = xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+        #####
         I = self.opt.I#.requires_grad_(True)
         H = self.opt.H#.requires_grad_(True)
-        D = (
-            torch.inverse(2 * self.opt.I + delta * (self.opt.H.T.mm(H)))
-            .type(dtype)
-            #.requires_grad_(True)
-        )
-        print(H.shape, lagrange.shape, y.shape)
-        print("H Shape, lagrange shape, y shape")
-        for i in range(T):
-            # STEP 1
-            xhat = D.matmul(
-                2 * y - H.T.matmul(lagrange) + delta * H.T.matmul(z)
-            )#.requires_grad_(True)
-            if i == 0:
-                z = self.opt.H.matmul(xhat)#.requires_grad_(True)
-            
-            # STEP 2
-            for j in range(P):
-                grad = (delta * z - lagrange - delta * H.matmul(xhat)).requires_grad_(
+        D = self.opt.D.clone().detach()
+        #D = (
+        #    torch.inverse(2 * self.opt.I + delta * (self.opt.H.T.mm(H)))
+        #    #.type(dtype)
+        #    #.requires_grad_(True)
+        #)
+        xhat = D.matmul(
+                2 * y - H.T.matmul(lagrange1) + delta * H.T.matmul(z)
+            )
+
+        z = self.opt.H.matmul(xhat)#.requires_grad_(True)
+        grad = (delta * z - lagrange1 - delta * H.matmul(xhat)).requires_grad_(
                     True
                 )
-                z = proximal_gradient_descent(
-                    x=z, grad=grad, w=w, u=u, eta=eta, debug=debug
-                )#.requires_grad_(True)
+        z = proximal_gradient_descent(
+                    x=z, grad=grad, w=w, u=u, eta=eta, debug=debug)
+        xhat = D.matmul(
+                2 * y - H.T.matmul(lagrange2) + delta * H.T.matmul(z)
+            )
 
-            # STEP 3
-            lagrange = (lagrange + delta * (H.matmul(xhat) - z))#.requires_grad_(True)
-            if debug:
-                l = (
-                    (
-                        (y - xhat).permute(0, 1, 3, 2).matmul(y - xhat)
-                        + (u * w * z.abs()).sum(axis=[1, 2, 3])
-                    )
-                    + lagrange.permute(0, 1, 3, 2).matmul(H.matmul(xhat) - z)
-                    + (delta / 2)
-                    * (H.matmul(xhat) - z)
-                    .permute(0, 1, 3, 2)
-                    .matmul(H.matmul(xhat) - z)
+        grad = (delta * z - lagrange2 - delta * H.matmul(xhat)).requires_grad_(
+                    True
                 )
-                hist.append(l[:, 0, :, :])
+        z = proximal_gradient_descent(
+                    x=z, grad=grad, w=w, u=u, eta=eta, debug=debug)
+
+        grad = (delta * z - lagrange3 - delta * H.matmul(xhat)).requires_grad_(
+                    True
+                )
+        z = proximal_gradient_descent(
+                    x=z, grad=grad, w=w, u=u, eta=eta, debug=debug)
+        xhat = D.matmul(
+                2 * y - H.T.matmul(lagrange3) + delta * H.T.matmul(z)
+            )
+
+        if debug:
+            l = (
+                (
+                    (y - xhat).permute(0, 1, 3, 2).matmul(y - xhat)
+                    + (u * w * z.abs()).sum(axis=[1, 2, 3])
+                )
+                + lagrange3.permute(0, 1, 3, 2).matmul(H.matmul(xhat) - z)
+                + (delta / 2)
+                * (H.matmul(xhat) - z)
+                .permute(0, 1, 3, 2)
+                .matmul(H.matmul(xhat) - z)
+            )
+            hist.append(l[:, 0, :, :])
     
         # xhat = D.matmul(2*y - H.T.matmul(lagrange) + delta*H.T.matmul(z)).requires_grad_(True)
         if debug:
@@ -688,20 +739,19 @@ def supporting_matrix(opt):
         H[e, p[1]] = -1
         A[p[0], p[1]] = 1
 
-    opt.I = I.type(dtype).requires_grad_(True)
+    opt.I = I#.type(dtype).requires_grad_(True)
     opt.pairs = A_pair
-    opt.H = H.type(dtype).requires_grad_(True)
+    opt.H = H#.type(dtype).requires_grad_(True)
     opt.connectivity_full = A.requires_grad_(True)
     opt.connectivity_idx = torch.where(A > 0)
-    opt.lagrange = lagrange.requires_grad_(True)
-    delta = 1
-    # opt.D = torch.inverse(2*opt.I + delta*(opt.H.T.mm(H))).type(dtype)
+    opt.lagrange = lagrange#.requires_grad_(True)
+    opt.D = torch.inverse(2 * opt.I + opt.delta * (opt.H.T.mm(H))).type(dtype)
 
 
 def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False):
     v = x - eta * grad
-    masks1 = ((v.abs() - (eta * w * u).abs()) > 0).type(dtype).requires_grad_(True)
-    masks2 = ((v.abs() - (eta * w * u).abs()) <= 0).type(dtype).requires_grad_(True)
+    masks1 = ((v.abs() - (eta * w * u).abs()) > 0)#.type(dtype).requires_grad_(True)
+    masks2 = ((v.abs() - (eta * w * u).abs()) <= 0)#.type(dtype).requires_grad_(True)
     v = v - masks1 * eta * w * u * torch.sign(v)
     v = v - masks2 * v
     return v
