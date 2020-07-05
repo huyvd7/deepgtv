@@ -215,6 +215,7 @@ class mlp(nn.Module):
         self.in_channels=in_channels
         self.out_channels=out_channels
     def forward(self, x):
+        print(x.shape)
         out = self.fc(x)
         return out
 
