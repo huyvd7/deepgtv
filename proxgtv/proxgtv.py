@@ -529,6 +529,9 @@ class GTV(nn.Module):
         self.cnnu = cnnu(u_min=u_min, opt=self.opt)
 
         self.cnny = cnny(opt=self.opt)
+        self.mlp1 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
+        self.mlp2 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
+        self.mlp3 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
 
         if cuda:
             self.cnnf.cuda()
@@ -551,6 +554,7 @@ class GTV(nn.Module):
         u = torch.clamp(u, u_min, u_max)
         u = u.unsqueeze(1).unsqueeze(1)
         x = xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+
         z = self.opt.H.matmul(x)#.requires_grad_(True)
 
         ###################
@@ -559,7 +563,16 @@ class GTV(nn.Module):
             self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1)) ** 2
         )#.requires_grad_(True)
         w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))#.requires_grad_(True)
+
+        # REPLACE WITH MLP
+        lagrange = self.opt.lagrange.requires_grad_(True)
+        #########################
+        lagrange1 = self.mlp1(w)
+        lagrange2 = self.mlp2(w)
+        lagrange3 = self.mlp3(w)
         ###################
+
+
         if debug:
             print("\tWEIGHT SUM", w[0, :, :].sum().data)
             hist = list()
@@ -571,10 +584,17 @@ class GTV(nn.Module):
             T = Tmod
         delta = self.opt.delta
         eta = self.opt.eta
-        lagrange = self.opt.lagrange.requires_grad_(True)
 
-        Y = self.cnny.forward(xf).squeeze(0)
-        y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+
+
+
+        ########################
+        # USE CNNY
+        #Y = self.cnny.forward(xf).squeeze(0)
+        #y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+        ####
+        y = xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+        #####
         I = self.opt.I#.requires_grad_(True)
         H = self.opt.H#.requires_grad_(True)
         D = self.opt.D.clone().detach()
@@ -583,38 +603,49 @@ class GTV(nn.Module):
         #    #.type(dtype)
         #    #.requires_grad_(True)
         #)
-        for i in range(T):
-            # STEP 1
-            xhat = D.matmul(
-                2 * y - H.T.matmul(lagrange) + delta * H.T.matmul(z)
-            )#.requires_grad_(True)
-            if i == 0:
-                z = self.opt.H.matmul(xhat)#.requires_grad_(True)
-            
-            # STEP 2
-            for j in range(P):
-                grad = (delta * z - lagrange - delta * H.matmul(xhat)).requires_grad_(
+        xhat = D.matmul(
+                2 * y - H.T.matmul(lagrange1) + delta * H.T.matmul(z)
+            )
+
+        z = self.opt.H.matmul(xhat)#.requires_grad_(True)
+        grad = (delta * z - lagrange1 - delta * H.matmul(xhat)).requires_grad_(
                     True
                 )
-                z = proximal_gradient_descent(
+        z = proximal_gradient_descent(
                     x=z, grad=grad, w=w, u=u, eta=eta, debug=debug
-                )#.requires_grad_(True)
 
-            # STEP 3
-            lagrange = (lagrange + delta * (H.matmul(xhat) - z))#.requires_grad_(True)
-            if debug:
-                l = (
-                    (
-                        (y - xhat).permute(0, 1, 3, 2).matmul(y - xhat)
-                        + (u * w * z.abs()).sum(axis=[1, 2, 3])
-                    )
-                    + lagrange.permute(0, 1, 3, 2).matmul(H.matmul(xhat) - z)
-                    + (delta / 2)
-                    * (H.matmul(xhat) - z)
-                    .permute(0, 1, 3, 2)
-                    .matmul(H.matmul(xhat) - z)
+        xhat = D.matmul(
+                2 * y - H.T.matmul(lagrange2) + delta * H.T.matmul(z)
+            )
+
+        grad = (delta * z - lagrange2 - delta * H.matmul(xhat)).requires_grad_(
+                    True
                 )
-                hist.append(l[:, 0, :, :])
+        z = proximal_gradient_descent(
+                    x=z, grad=grad, w=w, u=u, eta=eta, debug=debug
+
+        grad = (delta * z - lagrange3 - delta * H.matmul(xhat)).requires_grad_(
+                    True
+                )
+        z = proximal_gradient_descent(
+                    x=z, grad=grad, w=w, u=u, eta=eta, debug=debug)
+        xhat = D.matmul(
+                2 * y - H.T.matmul(lagrange3) + delta * H.T.matmul(z)
+            )
+
+        if debug:
+            l = (
+                (
+                    (y - xhat).permute(0, 1, 3, 2).matmul(y - xhat)
+                    + (u * w * z.abs()).sum(axis=[1, 2, 3])
+                )
+                + lagrange3.permute(0, 1, 3, 2).matmul(H.matmul(xhat) - z)
+                + (delta / 2)
+                * (H.matmul(xhat) - z)
+                .permute(0, 1, 3, 2)
+                .matmul(H.matmul(xhat) - z)
+            )
+            hist.append(l[:, 0, :, :])
     
         # xhat = D.matmul(2*y - H.T.matmul(lagrange) + delta*H.T.matmul(z)).requires_grad_(True)
         if debug:
@@ -708,14 +739,13 @@ def supporting_matrix(opt):
         H[e, p[1]] = -1
         A[p[0], p[1]] = 1
 
-    opt.I = I.type(dtype).requires_grad_(True)
+    opt.I = I#.type(dtype).requires_grad_(True)
     opt.pairs = A_pair
-    opt.H = H.type(dtype).requires_grad_(True)
+    opt.H = H#.type(dtype).requires_grad_(True)
     opt.connectivity_full = A.requires_grad_(True)
     opt.connectivity_idx = torch.where(A > 0)
-    opt.lagrange = lagrange.requires_grad_(True)
+    opt.lagrange = lagrange#.requires_grad_(True)
     opt.D = torch.inverse(2 * opt.I + opt.delta * (opt.H.T.mm(H))).type(dtype)
-    # opt.D = torch.inverse(2*opt.I + delta*(opt.H.T.mm(H))).type(dtype)
 
 
 def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False):
