@@ -612,8 +612,7 @@ class GTV(nn.Module):
                     True
                 )
         z = proximal_gradient_descent(
-                    x=z, grad=grad, w=w, u=u, eta=eta, debug=debug
-
+                    x=z, grad=grad, w=w, u=u, eta=eta, debug=debug)
         xhat = D.matmul(
                 2 * y - H.T.matmul(lagrange2) + delta * H.T.matmul(z)
             )
@@ -622,7 +621,7 @@ class GTV(nn.Module):
                     True
                 )
         z = proximal_gradient_descent(
-                    x=z, grad=grad, w=w, u=u, eta=eta, debug=debug
+                    x=z, grad=grad, w=w, u=u, eta=eta, debug=debug)
 
         grad = (delta * z - lagrange3 - delta * H.matmul(xhat)).requires_grad_(
                     True
