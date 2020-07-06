@@ -537,6 +537,9 @@ class GTV(nn.Module):
             self.cnnf.cuda()
             self.cnnu.cuda()
             self.cnny.cuda()
+            self.mlp1.cuda()
+            self.mlp2.cuda()
+            self.mlp3.cuda()
 
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.cnnf.apply(weights_init_normal)
