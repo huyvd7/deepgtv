@@ -527,6 +527,7 @@ class GTV(nn.Module):
         if self.opt.ver:
             self.cnnf = cnnf_2(opt=self.opt)
         else:
+            print("ORIGINAL CNNF")
             self.cnnf=cnnf(opt=self.opt)
         self.cnnu = cnnu(u_min=u_min, opt=self.opt)
 
