@@ -451,7 +451,8 @@ class OPT:
         u_min=10,
         lr=1e-4,
         momentum=0.99,
-        ver=None
+        ver=None,
+        train='gauss_batch'
     ):
         self.batch_size = batch_size
         self.width = width
@@ -473,6 +474,7 @@ class OPT:
         self.u_min = u_min
         self.ver=ver
         self.D=None
+        self.train=train
 
     def _print(self):
         print(
