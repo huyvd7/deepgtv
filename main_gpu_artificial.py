@@ -126,7 +126,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             torch.nn.utils.clip_grad_norm_(cnnf_params, 1e2)
             torch.nn.utils.clip_grad_norm_(cnny_params, 1)
             torch.nn.utils.clip_grad_norm_(mlp1_params, 1e2)
-            torch.nn.utils.clip_grad_norm_(mlp2_params, 1e2)
+            torch.nn.utils.clip_grad_norm_(mlp2_params, 1e1)
             torch.nn.utils.clip_grad_norm_(cnnu_params, 1e1)
 
             optimizer.step()
