@@ -136,9 +136,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                     print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
                 print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
                 pmax = list()
-                for p in gtv.parameters():
-                    pmax.append(p.grad.max())
-                print("\tmax gradients", max(pmax))
+                #for p in gtv.parameters():
+                #    pmax.append(p.grad.max())
+                #print("\tmax gradients", max(pmax))
                 with torch.no_grad():
                     us = gtv.cnnu(inputs[:10])
                     print("\tCNNU stats: ", us.mean().data, us.max().data, us.min().data)
@@ -162,9 +162,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             #print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
             print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
             pmax = list()
-            for p in gtv.parameters():
-                pmax.append(p.grad.max())
-            print("\tmax gradients", max(pmax))
+            #for p in gtv.parameters():
+            #    pmax.append(p.grad.max())
+            #print("\tmax gradients", max(pmax))
             with torch.no_grad():
                 us = gtv.cnnu(inputs[:10])
                 print("\tCNNU stats: ", us.mean().data, us.max().data, us.min().data)

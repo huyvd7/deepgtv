@@ -215,7 +215,6 @@ class mlp(nn.Module):
         self.in_channels=in_channels
         self.out_channels=out_channels
     def forward(self, x):
-        print(x.shape)
         out = self.fc(x)
         return out
 
@@ -608,7 +607,6 @@ class GTV(nn.Module):
                 2 * y - H.T.matmul(lagrange1) + delta * H.T.matmul(z)
             )
 
-        print(xhat.shape, z.shape)
         z = self.opt.H.matmul(xhat)#.requires_grad_(True)
         grad = (delta * z - lagrange1 - delta * H.matmul(xhat)).requires_grad_(
                     True
