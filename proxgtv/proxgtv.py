@@ -608,6 +608,7 @@ class GTV(nn.Module):
                 2 * y - H.T.matmul(lagrange1) + delta * H.T.matmul(z)
             )
 
+        print(xhat.shape, z.shape)
         z = self.opt.H.matmul(xhat)#.requires_grad_(True)
         grad = (delta * z - lagrange1 - delta * H.matmul(xhat)).requires_grad_(
                     True
@@ -652,7 +653,6 @@ class GTV(nn.Module):
             print("\tmin - max xhat: ", xhat.min().data, xhat.max().data)
             hist = [h.flatten() for h in hist]
             return hist
-        print(xhat.shape)
         return xhat.view(xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width)
 
     def predict(self, xf):
