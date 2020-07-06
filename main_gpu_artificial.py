@@ -84,7 +84,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     optimizer = optim.SGD([
                 {'params': cnny_params, 'lr':opt.lr},
                  {'params': cnnf_params , 'lr': opt.lr*200},
-                 {'params': mlp_params , 'lr': opt.lr},
+                 {'params': mlp_params , 'lr': opt.lr*50},
                  {'params': cnnu_params , 'lr': opt.lr*10}
              ], lr=opt.lr, momentum=opt.momentum)
 
@@ -123,7 +123,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             loss.backward()
             torch.nn.utils.clip_grad_norm_(cnnf_params, 1e2)
             torch.nn.utils.clip_grad_norm_(cnny_params, 1)
-            torch.nn.utils.clip_grad_norm_(mlp_params, 1)
+            torch.nn.utils.clip_grad_norm_(mlp_params, 1e2)
             torch.nn.utils.clip_grad_norm_(cnnu_params, 1e1)
 
             optimizer.step()
