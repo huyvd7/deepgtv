@@ -78,13 +78,14 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     cnnf_params = [i[1] for i in cnnf_params]
     cnnu_params = list(filter(lambda kv: 'cnnu' in kv[0], gtv.named_parameters()))
     cnnu_params = [i[1] for i in cnnu_params ]
-    mlp_params = list(filter(lambda kv: 'mlp' in kv[0], gtv.named_parameters()))
-    mlp_params = [i[1] for i in mlp_params ]
-
-    optimizer = optim.SGD([
+    mlp1_params = list(filter(lambda kv: 'mlp1' in kv[0], gtv.named_parameters()))
+    mlp1_params = [i[1] for i in mlp1_params ]
+    mlp2_params = list(filter(lambda kv: 'mlp2' in kv[0], gtv.named_parameters()))
+    mlp2_params = [i[1] for i in mlp2_params ]                                        optimizer = optim.SGD([
                 {'params': cnny_params, 'lr':opt.lr},
                  {'params': cnnf_params , 'lr': opt.lr*200},
-                 {'params': mlp_params , 'lr': opt.lr*200},
+                 {'params': mlp2_params , 'lr': opt.lr*200},
+                 {'params': mlp1_params , 'lr': opt.lr*500},
                  {'params': cnnu_params , 'lr': opt.lr*10}
              ], lr=opt.lr, momentum=opt.momentum)
 
