@@ -83,7 +83,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 
     optimizer = optim.SGD([
                 {'params': cnny_params, 'lr':opt.lr},
-                 {'params': cnnf_params , 'lr': opt.lr*1000},
+                 {'params': cnnf_params , 'lr': opt.lr*200},
                  {'params': mlp_params , 'lr': opt.lr},
                  {'params': cnnu_params , 'lr': opt.lr*10}
              ], lr=opt.lr, momentum=opt.momentum)
