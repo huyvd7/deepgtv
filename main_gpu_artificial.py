@@ -42,7 +42,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         subset = [i + "_" for i in subset]
     dataset = RENOIR_Dataset(
         img_dir=os.path.join(
-            "gauss_batch"
+            opt.train
         ),
         transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
         subset=subset,
@@ -241,6 +241,8 @@ if __name__=="__main__":
     parser.add_argument(
         "--seed", default=0, type=float
     )
+    parser.add_argument(
+            "--train", default='gauss_batch')
     args = parser.parse_args()
     if args.cont:
         cont = args.cont
