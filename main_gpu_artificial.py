@@ -84,10 +84,10 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     mlp2_params = [i[1] for i in mlp2_params ]                                        
     optimizer = optim.SGD([
                 {'params': cnny_params, 'lr':opt.lr},
-                 {'params': cnnf_params , 'lr': opt.lr*200},
-                 {'params': mlp2_params , 'lr': opt.lr*100},
-                 {'params': mlp1_params , 'lr': opt.lr*2000},
-                 {'params': cnnu_params , 'lr': opt.lr*10}
+                 {'params': cnnf_params , 'lr': opt.lr},
+                 {'params': mlp2_params , 'lr': opt.lr},
+                 {'params': mlp1_params , 'lr': opt.lr},
+                 {'params': cnnu_params , 'lr': opt.lr}
              ], lr=opt.lr, momentum=opt.momentum)
 
     #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
