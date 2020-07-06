@@ -543,7 +543,9 @@ class GTV(nn.Module):
 
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.cnnf.apply(weights_init_normal)
-        self.cnny.apply(weights_init_normal)
+        self.mlp1.apply(weights_init_normal)
+        self.mlp2.apply(weights_init_normal)
+        #self.cnny.apply(weights_init_normal)
         #self.cnnu.apply(weights_init_normal)
 
     def forward(self, xf, debug=False, Tmod=False):  # gtvforward
