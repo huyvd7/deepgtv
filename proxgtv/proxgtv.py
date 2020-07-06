@@ -641,7 +641,7 @@ class GTV(nn.Module):
                     (y - xhat).permute(0, 1, 3, 2).matmul(y - xhat)
                     + (u * w * z.abs()).sum(axis=[1, 2, 3])
                 )
-                + lagrange3.permute(0, 1, 3, 2).matmul(H.matmul(xhat) - z)
+                + lagrange2.permute(0, 1, 3, 2).matmul(H.matmul(xhat) - z)
                 + (delta / 2)
                 * (H.matmul(xhat) - z)
                 .permute(0, 1, 3, 2)
