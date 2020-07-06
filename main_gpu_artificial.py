@@ -78,11 +78,13 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     cnnf_params = [i[1] for i in cnnf_params]
     cnnu_params = list(filter(lambda kv: 'cnnu' in kv[0], gtv.named_parameters()))
     cnnu_params = [i[1] for i in cnnu_params ]
-
+    mlp_params = list(filter(lambda kv: 'mlp' in kv[0], gtv.named_parameters()))
+    mlp_params = [i[1] for i in cnnu_params ]
 
     optimizer = optim.SGD([
                 {'params': cnny_params, 'lr':opt.lr},
                  {'params': cnnf_params , 'lr': opt.lr*50},
+                 {'params': mlp_params , 'lr': opt.lr*10},
                  {'params': cnnu_params , 'lr': opt.lr*40}
              ], lr=opt.lr, momentum=opt.momentum)
 
@@ -121,6 +123,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             loss.backward()
             torch.nn.utils.clip_grad_norm_(cnnf_params, 1e2)
             torch.nn.utils.clip_grad_norm_(cnny_params, 1)
+            torch.nn.utils.clip_grad_norm_(mlp_params, 1)
             torch.nn.utils.clip_grad_norm_(cnnu_params, 1e2)
 
             optimizer.step()
