@@ -652,6 +652,7 @@ class GTV(nn.Module):
             print("\tmin - max xhat: ", xhat.min().data, xhat.max().data)
             hist = [h.flatten() for h in hist]
             return hist
+        print(xhat.shape)
         return xhat.view(xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width)
 
     def predict(self, xf):
