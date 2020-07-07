@@ -531,7 +531,7 @@ class GTV(nn.Module):
             self.cnnf=cnnf(opt=self.opt)
         self.cnnu = cnnu(u_min=u_min, opt=self.opt)
 
-        self.cnny = cnny(opt=self.opt)
+        #self.cnny = cnny(opt=self.opt)
         self.mlp1 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
         self.mlp2 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
         #self.mlp3 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
@@ -539,7 +539,7 @@ class GTV(nn.Module):
         if cuda:
             self.cnnf.cuda()
             self.cnnu.cuda()
-            self.cnny.cuda()
+            #self.cnny.cuda()
             self.mlp1.cuda()
             self.mlp2.cuda()
             #self.mlp3.cuda()
@@ -599,10 +599,10 @@ class GTV(nn.Module):
 
         ########################
         # USE CNNY
-        Y = self.cnny.forward(xf).squeeze(0)
-        y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+        #Y = self.cnny.forward(xf).squeeze(0)
+        #y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
         ####
-        #y = xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+        y = xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
         #####
         I = self.opt.I#.requires_grad_(True)
         H = self.opt.H#.requires_grad_(True)
