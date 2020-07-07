@@ -612,7 +612,7 @@ class GTV(nn.Module):
             )
         grad = (delta * z - lagrange1 - delta * H.matmul(xhat))
         z = proximal_gradient_descent(
-                    x=z, grad=grad, w=w, u=u, eta=eta, debug=debug)
+                    x=z, grad=grad, w=w, u=u, eta=eta, opt=opt, debug=debug)
 
         xhat = D.matmul(
                 2 * y - H.T.matmul(lagrange2) + delta * H.T.matmul(z)
@@ -621,13 +621,13 @@ class GTV(nn.Module):
         #            True
         #        )
         #z = proximal_gradient_descent(
-        #            x=z, grad=grad, w=w, u=u, eta=eta, debug=debug)
+        #            x=z, grad=grad, w=w, u=u, eta=eta, opt=opt, debug=debug)
 
         #grad = (delta * z - lagrange3 - delta * H.matmul(xhat)).requires_grad_(
         #            True
         #        )
         #z = proximal_gradient_descent(
-        #            x=z, grad=grad, w=w, u=u, eta=eta, debug=debug)
+        #            x=z, grad=grad, w=w, u=u, eta=eta, opt=opt, debug=debug)
         #xhat = D.matmul(
         #        2 * y - H.T.matmul(lagrange3) + delta * H.T.matmul(z)
         #    )
@@ -747,13 +747,13 @@ def supporting_matrix(opt):
     opt.D = torch.inverse(2 * opt.I + opt.delta * (opt.H.T.mm(H))).type(dtype).detach()
     opt.pg_zero = torch.zeros(opt.edges, 1).type(dtype)
 
-def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False):
+def proximal_gradient_descent(x, grad, w, u=1, eta=1, opt=None, debug=False):
     v = x - eta * grad
     #masks1 = ((v.abs() - (eta * w * u).abs()) > 0)#.type(dtype).requires_grad_(True)
     #masks2 = ((v.abs() - (eta * w * u).abs()) <= 0)#.type(dtype).requires_grad_(True)
     #v = v - masks1 * eta * w * u * torch.sign(v)
     #v = v - masks2 * v
-    v = torch.sign(v)*torch.max(v.abs() - (eta*w*u), torch.zeros(4970, 1).type(dtype))
+    v = torch.sign(v)*torch.max(v.abs() - (eta*w*u), opt.pg_zero)
     return v
 
 
