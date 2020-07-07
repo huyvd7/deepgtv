@@ -206,7 +206,7 @@ class mlp(nn.Module):
 
     def __init__(self, opt, in_channels=36**2, out_channels=36**2):
         super(mlp, self).__init__()
-        self.hidden_nodes = 256
+        self.hidden_nodes = 64
         self.fc = nn.Sequential(
                 nn.Linear(in_channels, self.hidden_nodes),
                 nn.Linear(self.hidden_nodes, out_channels),
@@ -534,7 +534,7 @@ class GTV(nn.Module):
         self.cnny = cnny(opt=self.opt)
         self.mlp1 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
         self.mlp2 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
-        self.mlp3 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
+        #self.mlp3 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
 
         if cuda:
             self.cnnf.cuda()
@@ -542,7 +542,7 @@ class GTV(nn.Module):
             self.cnny.cuda()
             self.mlp1.cuda()
             self.mlp2.cuda()
-            self.mlp3.cuda()
+            #self.mlp3.cuda()
 
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.cnnf.apply(weights_init_normal)
@@ -578,7 +578,7 @@ class GTV(nn.Module):
         lagrange1 = self.mlp1(w.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
         #lagrange2 = self.mlp2(lagrange1.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
         lagrange2 = self.mlp2(w.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
-        lagrange3 = self.mlp3(w.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
+        #lagrange3 = self.mlp3(w.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
         ###################
 
 
@@ -624,20 +624,20 @@ class GTV(nn.Module):
         xhat = D.matmul(
                 2 * y - H.T.matmul(lagrange2) + delta * H.T.matmul(z)
             )
-        grad = (delta * z - lagrange2 - delta * H.matmul(xhat)).requires_grad_(
-                    True
-                )
-        z = proximal_gradient_descent(
-                    x=z, grad=grad, w=w, u=u, eta=eta, debug=debug)
+        #grad = (delta * z - lagrange2 - delta * H.matmul(xhat)).requires_grad_(
+        #            True
+        #        )
+        #z = proximal_gradient_descent(
+        #            x=z, grad=grad, w=w, u=u, eta=eta, debug=debug)
 
-        grad = (delta * z - lagrange3 - delta * H.matmul(xhat)).requires_grad_(
-                    True
-                )
-        z = proximal_gradient_descent(
-                    x=z, grad=grad, w=w, u=u, eta=eta, debug=debug)
-        xhat = D.matmul(
-                2 * y - H.T.matmul(lagrange3) + delta * H.T.matmul(z)
-            )
+        #grad = (delta * z - lagrange3 - delta * H.matmul(xhat)).requires_grad_(
+        #            True
+        #        )
+        #z = proximal_gradient_descent(
+        #            x=z, grad=grad, w=w, u=u, eta=eta, debug=debug)
+        #xhat = D.matmul(
+        #        2 * y - H.T.matmul(lagrange3) + delta * H.T.matmul(z)
+        #    )
 
         if debug:
             l = (
