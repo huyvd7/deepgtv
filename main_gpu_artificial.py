@@ -123,11 +123,11 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             outputs = gtv(inputs, debug=0)
             loss = criterion(outputs, labels)
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(cnnf_params, 1e2)
-            torch.nn.utils.clip_grad_norm_(cnny_params, 1)
-            torch.nn.utils.clip_grad_norm_(mlp1_params, 1e2)
-            torch.nn.utils.clip_grad_norm_(mlp2_params, 1e1)
-            torch.nn.utils.clip_grad_norm_(cnnu_params, 1e1)
+            #torch.nn.utils.clip_grad_norm_(cnnf_params, 1e2)
+            #torch.nn.utils.clip_grad_norm_(cnny_params, 1)
+            #torch.nn.utils.clip_grad_norm_(mlp1_params, 1e2)
+            #torch.nn.utils.clip_grad_norm_(mlp2_params, 1e1)
+            #torch.nn.utils.clip_grad_norm_(cnnu_params, 1e1)
 
             optimizer.step()
             #optimizer[i%3].step()
@@ -139,10 +139,10 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 if opt.ver: # experimental version
                     print("\tCNNF stats: ", gtv.cnnf.layer[0].weight.grad.median())
                 else:
-                    print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.median())
-                print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.median())
-                print("\tMLP1 grad: ", gtv.mlp1.fc[0].weight.grad.median())
-                print("\tMLP2 grad: ", gtv.mlp2.fc[0].weight.grad.median())
+                    print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
+                print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
+                print("\tMLP1 grad: ", gtv.mlp1.fc[0].weight.grad.mean())
+                print("\tMLP2 grad: ", gtv.mlp2.fc[0].weight.grad.mean())
                 pmax = list()
                 #for p in gtv.parameters():
                 #    pmax.append(p.grad.max())
