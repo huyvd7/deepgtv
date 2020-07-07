@@ -534,7 +534,7 @@ class GTV(nn.Module):
         self.cnny = cnny(opt=self.opt)
         self.mlp1 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
         self.mlp2 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
-        #self.mlp3 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
+        self.mlp3 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
 
         if cuda:
             self.cnnf.cuda()
@@ -542,7 +542,7 @@ class GTV(nn.Module):
             self.cnny.cuda()
             self.mlp1.cuda()
             self.mlp2.cuda()
-            #self.mlp3.cuda()
+            self.mlp3.cuda()
 
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.cnnf.apply(weights_init_normal)
