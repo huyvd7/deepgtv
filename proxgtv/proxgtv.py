@@ -209,8 +209,7 @@ class mlp(nn.Module):
         self.hidden_nodes = 64
         self.fc = nn.Sequential(
                 nn.Linear(in_channels, self.hidden_nodes),
-                nn.Linear(self.hidden_nodes, out_channels),
-                nn.ReLU()
+                nn.Linear(self.hidden_nodes, out_channels)
                 )
         self.in_channels=in_channels
         self.out_channels=out_channels
@@ -606,18 +605,11 @@ class GTV(nn.Module):
         #####
         I = self.opt.I#.requires_grad_(True)
         H = self.opt.H#.requires_grad_(True)
-        D = self.opt.D.clone().detach()
-        #D = (
-        #    torch.inverse(2 * self.opt.I + delta * (self.opt.H.T.mm(H)))
-        #    #.type(dtype)
-        #    #.requires_grad_(True)
-        #)
+        D = self.opt.D#.clone().detach()
         xhat = D.matmul(
                 2 * y - H.T.matmul(lagrange1) + delta * H.T.matmul(z)
             )
-        grad = (delta * z - lagrange1 - delta * H.matmul(xhat)).requires_grad_(
-                    True
-                )
+        grad = (delta * z - lagrange1 - delta * H.matmul(xhat))
         z = proximal_gradient_descent(
                     x=z, grad=grad, w=w, u=u, eta=eta, debug=debug)
 
@@ -751,7 +743,7 @@ def supporting_matrix(opt):
     opt.connectivity_full = A.requires_grad_(True)
     opt.connectivity_idx = torch.where(A > 0)
     opt.lagrange = lagrange#.requires_grad_(True)
-    opt.D = torch.inverse(2 * opt.I + opt.delta * (opt.H.T.mm(H))).type(dtype)
+    opt.D = torch.inverse(2 * opt.I + opt.delta * (opt.H.T.mm(H))).type(dtype).detach()
 
 
 def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False):
