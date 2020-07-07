@@ -143,6 +143,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
                 print("\tMLP1 grad: ", gtv.mlp1.fc[0].weight.grad.mean())
                 print("\tMLP2 grad: ", gtv.mlp2.fc[0].weight.grad.mean())
+                print("\tMLP3 grad: ", gtv.mlp3.fc[0].weight.grad.mean())
                 pmax = list()
                 #for p in gtv.parameters():
                 #    pmax.append(p.grad.max())
@@ -171,6 +172,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
             print("\tMLP1 grad: ", gtv.mlp1.fc[0].weight.grad.mean())
             print("\tMLP2 grad: ", gtv.mlp2.fc[0].weight.grad.mean())
+            print("\tMLP2 grad: ", gtv.mlp3.fc[0].weight.grad.mean())
             #print("\tMLP3 grad: ", gtv.mlp3.fc[0].weight.grad.mean())
             pmax = list()
             for p in gtv.parameters():
