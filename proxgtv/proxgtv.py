@@ -474,6 +474,7 @@ class OPT:
         self.ver=ver
         self.D=None
         self.train=train
+        self.pg_zero=None
 
     def _print(self):
         print(
@@ -744,7 +745,7 @@ def supporting_matrix(opt):
     opt.connectivity_idx = torch.where(A > 0)
     opt.lagrange = lagrange#.requires_grad_(True)
     opt.D = torch.inverse(2 * opt.I + opt.delta * (opt.H.T.mm(H))).type(dtype).detach()
-
+    opt.pg_zero = torch.zeros(opt.edges, 1).type(dtype)
 
 def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False):
     v = x - eta * grad
@@ -752,7 +753,6 @@ def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False):
     #masks2 = ((v.abs() - (eta * w * u).abs()) <= 0)#.type(dtype).requires_grad_(True)
     #v = v - masks1 * eta * w * u * torch.sign(v)
     #v = v - masks2 * v
-    print(v.shape)
     v = torch.sign(v)*torch.max(v.abs() - (eta*w*u), torch.zeros(4970, 1).type(dtype))
     return v
 
