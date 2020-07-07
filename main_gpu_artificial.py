@@ -258,7 +258,7 @@ if __name__=="__main__":
     opt.delta = float(args.delta)
     opt.u_min=args.umin
     opt.u_max=args.umax
-    opt.ver=False
+    opt.ver=True
     opt.train=args.train
     torch.manual_seed(args.seed)
 
