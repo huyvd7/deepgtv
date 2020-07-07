@@ -206,7 +206,7 @@ class mlp(nn.Module):
 
     def __init__(self, opt, in_channels=36**2, out_channels=36**2):
         super(mlp, self).__init__()
-        self.hidden_nodes = 64
+        self.hidden_nodes = 256
         self.fc = nn.Sequential(
                 nn.Linear(in_channels, self.hidden_nodes),
                 nn.Linear(self.hidden_nodes, out_channels),
