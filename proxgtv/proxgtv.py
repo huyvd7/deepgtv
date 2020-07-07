@@ -753,7 +753,7 @@ def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False):
     #v = v - masks1 * eta * w * u * torch.sign(v)
     #v = v - masks2 * v
     print(v.shape)
-    v = torch.sign(v)*torch.max(v.abs() - (eta*w*u),0.0)
+    v = torch.sign(v)*torch.max(v.abs() - (eta*w*u), torch.zeros(4970, 1))
     return v
 
 
