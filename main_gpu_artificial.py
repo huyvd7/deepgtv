@@ -227,6 +227,9 @@ if __name__=="__main__":
         "--delta", default=0.05
     )
     parser.add_argument(
+        "--eta", default=0.05, type=float
+    )
+    parser.add_argument(
         "--admm_iter", default=4
     )
     parser.add_argument(
@@ -256,6 +259,7 @@ if __name__=="__main__":
     opt.lr = float(args.lr)
     opt.admm_iter = int(args.admm_iter)
     opt.delta = float(args.delta)
+    opt.eta=args.eta
     opt.u_min=args.umin
     opt.u_max=args.umax
     opt.ver=True
