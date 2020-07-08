@@ -552,15 +552,15 @@ class GTV(nn.Module):
         #self.cnnu.apply(weights_init_normal)
 
     def forward(self, xf, debug=False, Tmod=False):  # gtvforward
-        #u = opt.u
-        u = self.cnnu.forward(xf)
-        u_max = self.opt.u_max
-        u_min = self.opt.u_min
-        if debug:
-            self.u=u.clone()
+        u = opt.u
+        #u = self.cnnu.forward(xf)
+        #u_max = self.opt.u_max
+        #u_min = self.opt.u_min
+        #if debug:
+        #    self.u=u.clone()
 
-        u = torch.clamp(u, u_min, u_max)
-        u = u.unsqueeze(1).unsqueeze(1)
+        #u = torch.clamp(u, u_min, u_max)
+        #u = u.unsqueeze(1).unsqueeze(1)
         #x = xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
 
         z = self.opt.H.matmul(xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1))#.requires_grad_(True)
