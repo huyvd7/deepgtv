@@ -84,10 +84,10 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     mlp2_params = [i[1] for i in mlp2_params ]                                        
     optimizer = optim.SGD([
                 {'params': cnny_params, 'lr':opt.lr},
-                 {'params': cnnf_params , 'lr': opt.lr*100},
+                 {'params': cnnf_params , 'lr': opt.lr*50},
                  {'params': mlp2_params , 'lr': opt.lr},
-                 {'params': mlp1_params , 'lr': opt.lr*100},
-                 {'params': cnnu_params , 'lr': opt.lr}
+                 {'params': mlp1_params , 'lr': opt.lr*50},
+                 {'params': cnnu_params , 'lr': opt.lr*40}
              ], lr=opt.lr, momentum=opt.momentum)
 
     #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
@@ -123,11 +123,11 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             outputs = gtv(inputs, debug=0)
             loss = criterion(outputs, labels)
             loss.backward()
-            #torch.nn.utils.clip_grad_norm_(cnnf_params, 1e2)
-            #torch.nn.utils.clip_grad_norm_(cnny_params, 1)
-            #torch.nn.utils.clip_grad_norm_(mlp1_params, 1e2)
-            #torch.nn.utils.clip_grad_norm_(mlp2_params, 1e1)
-            #torch.nn.utils.clip_grad_norm_(cnnu_params, 1e1)
+            torch.nn.utils.clip_grad_norm_(cnnf_params, 1e3)
+            torch.nn.utils.clip_grad_norm_(cnny_params, 1)
+            torch.nn.utils.clip_grad_norm_(mlp1_params, 1e3)
+            torch.nn.utils.clip_grad_norm_(mlp2_params, 1e1)
+            torch.nn.utils.clip_grad_norm_(cnnu_params, 1e1)
 
             optimizer.step()
             #optimizer[i%3].step()
