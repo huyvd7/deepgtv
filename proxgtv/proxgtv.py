@@ -26,14 +26,14 @@ class cnnf_2(nn.Module):
         super(cnnf_2, self).__init__()
         self.layer = nn.Sequential(
             nn.Conv2d(opt.channels, 32, kernel_size=3, stride=1, padding=1),
-            # nn.ReLU(),
-            nn.LeakyReLU(0.05),
+            nn.ReLU(),
+            #nn.LeakyReLU(0.05),
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
-            # nn.ReLU(),
-            nn.LeakyReLU(0.05),
+            nn.ReLU(),
+            #nn.LeakyReLU(0.05),
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
-            # nn.ReLU(),
-            nn.LeakyReLU(0.05),
+            nn.ReLU(),
+            #nn.LeakyReLU(0.05),
             nn.Conv2d(32, 6, kernel_size=3, stride=1, padding=1),
         )
 
