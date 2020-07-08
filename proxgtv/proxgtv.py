@@ -34,13 +34,7 @@ class cnnf_2(nn.Module):
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
             # nn.ReLU(),
             nn.LeakyReLU(0.05),
-
-            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
-            nn.LeakyReLU(0.05),
-            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
-            nn.LeakyReLU(0.05),
-
-            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(32, 6, kernel_size=3, stride=1, padding=1),
         )
 
     def forward(self, x):
@@ -535,7 +529,7 @@ class GTV(nn.Module):
         else:
             print("ORIGINAL CNNF")
             self.cnnf=cnnf(opt=self.opt)
-        #self.cnnu = cnnu(u_min=u_min, opt=self.opt)
+        self.cnnu = cnnu(u_min=u_min, opt=self.opt)
 
         #self.cnny = cnny(opt=self.opt)
         self.mlp1 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
@@ -544,29 +538,29 @@ class GTV(nn.Module):
 
         if cuda:
             self.cnnf.cuda()
-            #self.cnnu.cuda()
+            self.cnnu.cuda()
             #self.cnny.cuda()
             self.mlp1.cuda()
             self.mlp2.cuda()
             #self.mlp3.cuda()
 
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
-        #self.cnnf.apply(weights_init_normal)
+        self.cnnf.apply(weights_init_normal)
         self.mlp1.apply(weights_init_normal)
         self.mlp2.apply(weights_init_normal)
         #self.cnny.apply(weights_init_normal)
         #self.cnnu.apply(weights_init_normal)
 
     def forward(self, xf, debug=False, Tmod=False):  # gtvforward
-        u = self.opt.u
-        #u = self.cnnu.forward(xf)
-        #u_max = self.opt.u_max
-        #u_min = self.opt.u_min
-        #if debug:
-        #    self.u=u.clone()
+        #u = opt.u
+        u = self.cnnu.forward(xf)
+        u_max = self.opt.u_max
+        u_min = self.opt.u_min
+        if debug:
+            self.u=u.clone()
 
-        #u = torch.clamp(u, u_min, u_max)
-        #u = u.unsqueeze(1).unsqueeze(1)
+        u = torch.clamp(u, u_min, u_max)
+        u = u.unsqueeze(1).unsqueeze(1)
         #x = xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
 
         z = self.opt.H.matmul(xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1))#.requires_grad_(True)
@@ -582,16 +576,16 @@ class GTV(nn.Module):
         #lagrange = self.opt.lagrange.requires_grad_(True)
         #########################
         lagrange1 = self.mlp1(w.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
-        lagrange2 = self.mlp2(lagrange1.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
-        #lagrange2 = self.mlp2(w.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
+        #lagrange2 = self.mlp2(lagrange1.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
+        lagrange2 = self.mlp2(w.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
         #lagrange3 = self.mlp3(w.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
         ###################
 
 
         if debug:
-            print("\tWEIGHT SUM (of first sample)", w[0, :, :].sum().data)
+            print("\tWEIGHT SUM", w[0, :, :].sum().data)
             hist = list()
-            #print("\tprocessed u:", u.mean().data, u.median().data)
+            print("\tprocessed u:", u.mean().data, u.median().data)
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
         delta = self.opt.delta
         eta = self.opt.eta
