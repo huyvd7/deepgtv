@@ -529,7 +529,7 @@ class GTV(nn.Module):
         else:
             print("ORIGINAL CNNF")
             self.cnnf=cnnf(opt=self.opt)
-        self.cnnu = cnnu(u_min=u_min, opt=self.opt)
+        #self.cnnu = cnnu(u_min=u_min, opt=self.opt)
 
         #self.cnny = cnny(opt=self.opt)
         self.mlp1 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
@@ -538,7 +538,7 @@ class GTV(nn.Module):
 
         if cuda:
             self.cnnf.cuda()
-            self.cnnu.cuda()
+            #self.cnnu.cuda()
             #self.cnny.cuda()
             self.mlp1.cuda()
             self.mlp2.cuda()
