@@ -85,9 +85,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     optimizer = optim.SGD([
                 {'params': cnny_params, 'lr':opt.lr},
                  {'params': cnnf_params , 'lr': opt.lr},
-                 {'params': mlp2_params , 'lr': opt.lr},
+                 {'params': mlp2_params , 'lr': opt.lr/100},
                  {'params': mlp1_params , 'lr': opt.lr},
-                 {'params': cnnu_params , 'lr': opt.lr}
+                 {'params': cnnu_params , 'lr': opt.lr/100}
              ], lr=opt.lr, momentum=opt.momentum)
 
     #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
