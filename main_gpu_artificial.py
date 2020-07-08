@@ -83,7 +83,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     mlp2_params = list(filter(lambda kv: 'mlp2' in kv[0], gtv.named_parameters()))
     mlp2_params = [i[1] for i in mlp2_params ]                                        
     optimizer = optim.SGD([
-                {'params': cnny_params, 'lr':opt.lr/10},
+                {'params': cnny_params, 'lr':opt.lr},
                  {'params': cnnf_params , 'lr': opt.lr*100},
                  {'params': mlp2_params , 'lr': opt.lr},
                  {'params': mlp1_params , 'lr': opt.lr*100},
