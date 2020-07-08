@@ -549,7 +549,7 @@ class GTV(nn.Module):
         self.mlp1.apply(weights_init_normal)
         self.mlp2.apply(weights_init_normal)
         #self.cnny.apply(weights_init_normal)
-        #self.cnnu.apply(weights_init_normal)
+        self.cnnu.apply(weights_init_normal)
 
     def forward(self, xf, debug=False, Tmod=False):  # gtvforward
         #u = opt.u
@@ -598,7 +598,11 @@ class GTV(nn.Module):
         #####
         I = self.opt.I#.requires_grad_(True)
         H = self.opt.H#.requires_grad_(True)
-        D = self.opt.D#.clone().detach()
+        #D = self.opt.D#.clone().detach()
+        D = (
+            torch.inverse(2 * self.opt.I + delta * (self.opt.H.T.mm(H)))
+            .type(dtype)
+        )
         xhat = D.matmul(
                 2 * y - H.T.matmul(lagrange1) + delta * H.T.matmul(z)
             )
