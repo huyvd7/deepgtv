@@ -583,9 +583,9 @@ class GTV(nn.Module):
 
 
         if debug:
-            print("\tWEIGHT SUM", w[0, :, :].sum().data)
+            print("\tWEIGHT SUM (of first sample)", w[0, :, :].sum().data)
             hist = list()
-            print("\tprocessed u:", u.mean().data, u.median().data)
+            #print("\tprocessed u:", u.mean().data, u.median().data)
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
         delta = self.opt.delta
         eta = self.opt.eta
