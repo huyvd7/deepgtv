@@ -561,7 +561,7 @@ class GTV(nn.Module):
 
         u = torch.clamp(u, u_min, u_max)
         u = u.unsqueeze(1).unsqueeze(1)
-        x = xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+        #x = xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
 
         z = self.opt.H.matmul(x)#.requires_grad_(True)
 
@@ -587,16 +587,8 @@ class GTV(nn.Module):
             hist = list()
             print("\tprocessed u:", u.mean().data, u.median().data)
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
-        T = self.opt.admm_iter
-        P = self.opt.prox_iter
-        if Tmod:
-            T = Tmod
         delta = self.opt.delta
         eta = self.opt.eta
-
-
-
-
         ########################
         # USE CNNY
         #Y = self.cnny.forward(xf).squeeze(0)
