@@ -592,7 +592,8 @@ class GTV(nn.Module):
             print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().data)
             hist = list()
             print("\tprocessed u:", u.mean().data, u.median().data)
-        w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
+        #w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
+        w = w.unsqueeze(-1).repeat(1, self.opt.channels, 1, 1)
         delta = self.opt.delta
         eta = self.opt.eta
         ########################
