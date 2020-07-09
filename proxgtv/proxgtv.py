@@ -581,9 +581,9 @@ class GTV(nn.Module):
         #lagrange = self.opt.lagrange.requires_grad_(True)
         #########################
         print(w.shape)
-        lagrange1 = self.mlp1(w.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
+        lagrange1 = self.mlp1(w.view(w.shape[0], -1)).unsqueeze(1).unsqueeze(-1)
         #lagrange2 = self.mlp2(lagrange1.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
-        lagrange2 = self.mlp2(w.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
+        lagrange2 = self.mlp2(w.view(w.shape[0], -1).unsqueeze(1).unsqueeze(-1)
         #lagrange3 = self.mlp3(w.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
         ###################
 
