@@ -36,13 +36,12 @@ class cnnf_2(nn.Module):
             #nn.LeakyReLU(0.05),
             nn.Conv2d(32, 6, kernel_size=3, stride=1, padding=1),
         )
-        self.fc = nn.Sequential(
-                nn.Linear(6 * 36 * 36, opt.edges))
+        #self.fc = nn.Sequential(
+        #        nn.Linear(6 * 
 
     def forward(self, x):
         #identity = x
         out = self.layer(x)
-        out = self.fc(out)
         #out = identity + out
         return out
 
@@ -570,15 +569,15 @@ class GTV(nn.Module):
 
         ###################
         E = self.cnnf.forward(xf)
-        w = E
-        #Fs = (
-        #    self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1)) ** 2
-        #)#.requires_grad_(True)
-        #w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))#.requires_grad_(True)
-        
+        Fs = (
+            self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1)) ** 2
+        )#.requires_grad_(True)
+        w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))#.requires_grad_(True)
+
         # REPLACE WITH MLP
         #lagrange = self.opt.lagrange.requires_grad_(True)
         #########################
+        print(w.shape)
         lagrange1 = self.mlp1(w.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
         #lagrange2 = self.mlp2(lagrange1.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
         lagrange2 = self.mlp2(w.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
