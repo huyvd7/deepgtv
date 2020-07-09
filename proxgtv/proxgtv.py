@@ -41,7 +41,7 @@ class cnnf_2(nn.Module):
 
     def forward(self, x):
         #identity = x
-        out = self.layer(x)
+        out = self.layer(x).view(out.shape[0], out.shape[1], -1)
         out = self.fc(out)
         #out = identity + out
         return out
