@@ -606,10 +606,16 @@ class GTV(nn.Module):
         xhat = D.matmul(
                 2 * y - H.T.matmul(lagrange1) + delta * H.T.matmul(z)
             )
+        
         grad = (delta * z - lagrange1 - delta * H.matmul(xhat))
         z = proximal_gradient_descent(
                     x=z, grad=grad, w=w, u=u, eta=eta, opt=self.opt, debug=debug)
-
+        grad = (delta * z - lagrange1 - delta * H.matmul(xhat))
+        z = proximal_gradient_descent(
+                    x=z, grad=grad, w=w, u=u, eta=eta, opt=self.opt, debug=debug)
+        grad = (delta * z - lagrange1 - delta * H.matmul(xhat))
+        z = proximal_gradient_descent(
+                    x=z, grad=grad, w=w, u=u, eta=eta, opt=self.opt, debug=debug)
         xhat = D.matmul(
                 2 * y - H.T.matmul(lagrange2) + delta * H.T.matmul(z)
             )
