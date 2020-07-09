@@ -572,7 +572,8 @@ class GTV(nn.Module):
         Fs = (
             self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1)) ** 2
         )#.requires_grad_(True)
-        w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))#.requires_grad_(True)
+        #w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))#.requires_grad_(True)
+        w = -(Fs.sum(axis=1)) / (2 * (1 ** 2))
 
         # REPLACE WITH MLP
         #lagrange = self.opt.lagrange.requires_grad_(True)
