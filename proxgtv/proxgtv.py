@@ -617,6 +617,20 @@ class GTV(nn.Module):
         grad = (delta * z - lagrange1 - delta * H.matmul(xhat))
         z = proximal_gradient_descent(
                     x=z, grad=grad, w=w, u=u, eta=eta, opt=self.opt, debug=debug)
+
+        if debug:
+            l = (
+                (
+                    (y - xhat).permute(0, 1, 3, 2).matmul(y - xhat)
+                    + (u * w * z.abs()).sum(axis=[1, 2, 3])
+                )
+                + lagrange1.permute(0, 1, 3, 2).matmul(H.matmul(xhat) - z)
+                + (delta / 2)
+                * (H.matmul(xhat) - z)
+                .permute(0, 1, 3, 2)
+                .matmul(H.matmul(xhat) - z)
+            )
+            hist.append(l[:, 0, :, :])
         xhat = D.matmul(
                 2 * y - H.T.matmul(lagrange2) + delta * H.T.matmul(z)
             )
@@ -630,10 +644,6 @@ class GTV(nn.Module):
         grad = (delta * z - lagrange2 - delta * H.matmul(xhat))
         z = proximal_gradient_descent(
                     x=z, grad=grad, w=w, u=u, eta=eta, opt=self.opt, debug=debug)
-        xhat = D.matmul(
-                2 * y - H.T.matmul(lagrange3) + delta * H.T.matmul(z)
-            )
-        
         if debug:
             l = (
                 (
@@ -641,6 +651,34 @@ class GTV(nn.Module):
                     + (u * w * z.abs()).sum(axis=[1, 2, 3])
                 )
                 + lagrange2.permute(0, 1, 3, 2).matmul(H.matmul(xhat) - z)
+                + (delta / 2)
+                * (H.matmul(xhat) - z)
+                .permute(0, 1, 3, 2)
+                .matmul(H.matmul(xhat) - z)
+            )
+            hist.append(l[:, 0, :, :])
+
+        xhat = D.matmul(
+                2 * y - H.T.matmul(lagrange3) + delta * H.T.matmul(z)
+            )
+        
+        if debug:
+            grad = (delta * z - lagrange3 - delta * H.matmul(xhat))
+            z = proximal_gradient_descent(
+                        x=z, grad=grad, w=w, u=u, eta=eta, opt=self.opt, debug=debug)
+            grad = (delta * z - lagrange3 - delta * H.matmul(xhat))
+            z = proximal_gradient_descent(
+                        x=z, grad=grad, w=w, u=u, eta=eta, opt=self.opt, debug=debug)
+            grad = (delta * z - lagrange3 - delta * H.matmul(xhat))
+            z = proximal_gradient_descent(
+                        x=z, grad=grad, w=w, u=u, eta=eta, opt=self.opt, debug=debug)
+
+            l = (
+                (
+                    (y - xhat).permute(0, 1, 3, 2).matmul(y - xhat)
+                    + (u * w * z.abs()).sum(axis=[1, 2, 3])
+                )
+                + lagrange3.permute(0, 1, 3, 2).matmul(H.matmul(xhat) - z)
                 + (delta / 2)
                 * (H.matmul(xhat) - z)
                 .permute(0, 1, 3, 2)
