@@ -34,16 +34,14 @@ class cnnf_2(nn.Module):
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             #nn.LeakyReLU(0.05),
-            nn.Conv2d(32, 1, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(32, 6, kernel_size=3, stride=1, padding=1),
         )
-        self.fc = nn.Sequential(
-                nn.Linear(1 * 36 * 36, opt.edges))
+        #self.fc = nn.Sequential(
+        #        nn.Linear(6 * 
 
     def forward(self, x):
         #identity = x
         out = self.layer(x)
-        out = out.view(out.shape[0], out.shape[1], -1)
-        out = self.fc(out)
         #out = identity + out
         return out
 
@@ -571,18 +569,17 @@ class GTV(nn.Module):
 
         ###################
         E = self.cnnf.forward(xf)
-        w = E
-        #Fs = (
-        #    self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1)) ** 2
-        #)#.requires_grad_(True)
-        #w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))#.requires_grad_(True)
-        
+        Fs = (
+            self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1)) ** 2
+        )#.requires_grad_(True)
+        w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))#.requires_grad_(True)
+
         # REPLACE WITH MLP
         #lagrange = self.opt.lagrange.requires_grad_(True)
         #########################
-        lagrange1 = self.mlp1(w.view(w.shape[0], -1)).unsqueeze(1).unsqueeze(-1)
+        lagrange1 = self.mlp1(w.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
         #lagrange2 = self.mlp2(lagrange1.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
-        lagrange2 = self.mlp2(w.view(w.shape[0], -1)).unsqueeze(1).unsqueeze(-1)
+        lagrange2 = self.mlp2(w.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
         #lagrange3 = self.mlp3(w.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
         ###################
 
@@ -591,8 +588,7 @@ class GTV(nn.Module):
             print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().data)
             hist = list()
             print("\tprocessed u:", u.mean().data, u.median().data)
-        #w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
-        w = w.unsqueeze(-1).repeat(1, self.opt.channels, 1, 1)
+        w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
         delta = self.opt.delta
         eta = self.opt.eta
         ########################
