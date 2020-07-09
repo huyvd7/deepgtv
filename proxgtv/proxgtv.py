@@ -37,11 +37,12 @@ class cnnf_2(nn.Module):
             nn.Conv2d(32, 6, kernel_size=3, stride=1, padding=1),
         )
         self.fc = nn.Sequential(
-                nn.Linear(6 * 36 * 36, opt.edges)
+                nn.Linear(6 * 36 * 36, opt.edges))
 
     def forward(self, x):
         #identity = x
         out = self.layer(x)
+        out = self.fc(out)
         #out = identity + out
         return out
 
