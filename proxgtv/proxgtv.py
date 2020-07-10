@@ -552,12 +552,12 @@ class GTV(nn.Module):
         #self.cnny.apply(weights_init_normal)
         self.cnnu.apply(weights_init_normal)
 
-        self.cnnd = cnnu(u_min = u_min, opt.self.opt)
+        self.cnnd = cnnu(u_min = u_min, opt=self.opt)
         if cuda:
             self.cnnd.cuda()
         self.cnnd.apply(weights_init_normal)
 
-        self.cnne = cnnu(u_min = u_min, opt.self.opt)
+        self.cnne = cnnu(u_min = u_min, opt=self.opt)
         if cuda:
             self.cnne.cuda()
         self.cnne.apply(weights_init_normal)
