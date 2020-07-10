@@ -552,17 +552,6 @@ class GTV(nn.Module):
         #self.cnny.apply(weights_init_normal)
         self.cnnu.apply(weights_init_normal)
 
-        self.cnnd = cnnu(u_min = u_min, opt=self.opt)
-        if cuda:
-            self.cnnd.cuda()
-        self.cnnd.apply(weights_init_normal)
-
-        self.cnne = cnnu(u_min = u_min, opt=self.opt)
-        if cuda:
-            self.cnne.cuda()
-        self.cnne.apply(weights_init_normal)
-
-
     def forward(self, xf, debug=False, Tmod=False):  # gtvforward
         #u = opt.u
         u = self.cnnu.forward(xf)
@@ -599,13 +588,8 @@ class GTV(nn.Module):
             hist = list()
             print("\tprocessed u:", u.mean().data, u.median().data)
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
-        #delta = self.opt.delta
-        #eta = self.opt.eta
-        delta = self.cnnd(xf).view(xf.shape[0],1,1,1)
-        eta = self.cnne(xf).view(xf.shape[0],1,1,1)
-        delta = torch.clamp(delta, u_min, u_max)
-        eta = torch.clamp(eta, u_min, u_max)
-
+        delta = self.opt.delta
+        eta = self.opt.eta
         ########################
         # USE CNNY
         #Y = self.cnny.forward(xf).squeeze(0)
