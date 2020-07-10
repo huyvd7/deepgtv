@@ -603,6 +603,7 @@ class GTV(nn.Module):
         #eta = self.opt.eta
         delta = self.cnnd(xf)
         eta = self.cnne(xf)
+        print(delta.shape, eta.shape)
         ########################
         # USE CNNY
         #Y = self.cnny.forward(xf).squeeze(0)
