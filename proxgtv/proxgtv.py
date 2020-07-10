@@ -601,8 +601,8 @@ class GTV(nn.Module):
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
         #delta = self.opt.delta
         #eta = self.opt.eta
-        delta = self.cnnd(xf)
-        eta = self.cnne(xf)
+        delta = self.cnnd(xf).view(xf.shape[0],1,1,1)
+        eta = self.cnne(xf).view(xf.shape[0],1,1,1)
         print(delta.shape, eta.shape)
         ########################
         # USE CNNY
