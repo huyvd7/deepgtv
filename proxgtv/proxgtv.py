@@ -603,6 +603,9 @@ class GTV(nn.Module):
         #eta = self.opt.eta
         delta = self.cnnd(xf).view(xf.shape[0],1,1,1)
         eta = self.cnne(xf).view(xf.shape[0],1,1,1)
+        delta = torch.clamp(delta, u_min, u_max)
+        eta = torch.clamp(eta, u_min, u_max)
+
         ########################
         # USE CNNY
         #Y = self.cnny.forward(xf).squeeze(0)
