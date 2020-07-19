@@ -664,13 +664,18 @@ def supporting_matrix(opt):
         H[e, p[0]] = 1
         H[e, p[1]] = -1
         A[p[0], p[1]] = 1
-        A[p[1], p[0]] = 1
+        #A[p[1], p[0]] = 1
 
     opt.I = I#.type(dtype).requires_grad_(True)
     opt.pairs = A_pair
     opt.H = H#.type(dtype).requires_grad_(True)
     opt.connectivity_full = A.requires_grad_(True)
     opt.connectivity_idx = torch.where(A > 0)
+    
+    for e, p in enumerate(A_pair):
+        A[p[1], p[0]] = 1
+
+
     opt.lagrange = lagrange#.requires_grad_(True)
     opt.D = torch.inverse(2 * opt.I + opt.delta * (opt.H.T.mm(H))).type(dtype).detach()
     opt.pg_zero = torch.zeros(opt.edges, 1).type(dtype)
