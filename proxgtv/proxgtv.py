@@ -532,23 +532,14 @@ class GTV(nn.Module):
         self.cnnu = cnnu(u_min=u_min, opt=self.opt)
 
         #self.cnny = cnny(opt=self.opt)
-        self.mlp1 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
-        self.mlp2 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
-        self.mlp3 = mlp(opt=self.opt, in_channels=opt.edges, out_channels=opt.edges)
 
         if cuda:
             self.cnnf.cuda()
             self.cnnu.cuda()
             #self.cnny.cuda()
-            self.mlp1.cuda()
-            self.mlp2.cuda()
-            self.mlp3.cuda()
 
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.cnnf.apply(weights_init_normal)
-        self.mlp1.apply(weights_init_normal)
-        self.mlp2.apply(weights_init_normal)
-        self.mlp3.apply(weights_init_normal)
         #self.cnny.apply(weights_init_normal)
         self.cnnu.apply(weights_init_normal)
 
@@ -562,7 +553,7 @@ class GTV(nn.Module):
 
         u = torch.clamp(u, u_min, u_max)
         u = u.unsqueeze(1).unsqueeze(1)
-
+        
         z = self.opt.H.matmul(xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1))#.requires_grad_(True)
 
         ###################
@@ -571,125 +562,22 @@ class GTV(nn.Module):
             self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1)) ** 2
         )#.requires_grad_(True)
         w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))#.requires_grad_(True)
-
-        # REPLACE WITH MLP
-        #lagrange = self.opt.lagrange.requires_grad_(True)
-        #########################
-        lagrange1 = self.mlp1(w.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
-        #lagrange2 = self.mlp2(lagrange1.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
-        lagrange2 = self.mlp2(w.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
-        lagrange3 = self.mlp3(w.view(w.shape[0], w.shape[1])).unsqueeze(1).unsqueeze(-1)
-        ###################
-
-
+        gamma = w / z
+        L = self.opt.connectivity_full.detach()
+        L[self.opt.connectivity_idx] = gamma
         if debug:
             print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().data)
             hist = list()
             print("\tprocessed u:", u.mean().data, u.median().data)
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
-        delta = self.opt.delta
-        eta = self.opt.eta
         ########################
         # USE CNNY
         #Y = self.cnny.forward(xf).squeeze(0)
         #y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
         ####
         y = xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
-        #####
-        I = self.opt.I#.requires_grad_(True)
-        H = self.opt.H#.requires_grad_(True)
-        #D = self.opt.D#.clone().detach()
-        D = (
-            torch.inverse(2 * self.opt.I + delta * (self.opt.H.T.mm(H)))
-            .type(dtype)
-        )
-        xhat = D.matmul(
-                2 * y - H.T.matmul(lagrange1) + delta * H.T.matmul(z)
-            )
+        ########################
         
-        grad = (delta * z - lagrange1 - delta * H.matmul(xhat))
-        z = proximal_gradient_descent(
-                    x=z, grad=grad, w=w, u=u, eta=eta, opt=self.opt, debug=debug)
-        grad = (delta * z - lagrange1 - delta * H.matmul(xhat))
-        z = proximal_gradient_descent(
-                    x=z, grad=grad, w=w, u=u, eta=eta, opt=self.opt, debug=debug)
-        grad = (delta * z - lagrange1 - delta * H.matmul(xhat))
-        z = proximal_gradient_descent(
-                    x=z, grad=grad, w=w, u=u, eta=eta, opt=self.opt, debug=debug)
-
-        if debug:
-            l = (
-                (
-                    (y - xhat).permute(0, 1, 3, 2).matmul(y - xhat)
-                    + (u * w * z.abs()).sum(axis=[1, 2, 3])
-                )
-                + lagrange1.permute(0, 1, 3, 2).matmul(H.matmul(xhat) - z)
-                + (delta / 2)
-                * (H.matmul(xhat) - z)
-                .permute(0, 1, 3, 2)
-                .matmul(H.matmul(xhat) - z)
-            )
-            hist.append(l[:, 0, :, :])
-        xhat = D.matmul(
-                2 * y - H.T.matmul(lagrange2) + delta * H.T.matmul(z)
-            )
-
-        grad = (delta * z - lagrange2 - delta * H.matmul(xhat))
-        z = proximal_gradient_descent(
-                    x=z, grad=grad, w=w, u=u, eta=eta, opt=self.opt, debug=debug)
-        grad = (delta * z - lagrange2 - delta * H.matmul(xhat))
-        z = proximal_gradient_descent(
-                    x=z, grad=grad, w=w, u=u, eta=eta, opt=self.opt, debug=debug)
-        grad = (delta * z - lagrange2 - delta * H.matmul(xhat))
-        z = proximal_gradient_descent(
-                    x=z, grad=grad, w=w, u=u, eta=eta, opt=self.opt, debug=debug)
-        if debug:
-            l = (
-                (
-                    (y - xhat).permute(0, 1, 3, 2).matmul(y - xhat)
-                    + (u * w * z.abs()).sum(axis=[1, 2, 3])
-                )
-                + lagrange2.permute(0, 1, 3, 2).matmul(H.matmul(xhat) - z)
-                + (delta / 2)
-                * (H.matmul(xhat) - z)
-                .permute(0, 1, 3, 2)
-                .matmul(H.matmul(xhat) - z)
-            )
-            hist.append(l[:, 0, :, :])
-
-        xhat = D.matmul(
-                2 * y - H.T.matmul(lagrange3) + delta * H.T.matmul(z)
-            )
-        
-        if debug:
-            grad = (delta * z - lagrange3 - delta * H.matmul(xhat))
-            z = proximal_gradient_descent(
-                        x=z, grad=grad, w=w, u=u, eta=eta, opt=self.opt, debug=debug)
-            grad = (delta * z - lagrange3 - delta * H.matmul(xhat))
-            z = proximal_gradient_descent(
-                        x=z, grad=grad, w=w, u=u, eta=eta, opt=self.opt, debug=debug)
-            grad = (delta * z - lagrange3 - delta * H.matmul(xhat))
-            z = proximal_gradient_descent(
-                        x=z, grad=grad, w=w, u=u, eta=eta, opt=self.opt, debug=debug)
-
-            l = (
-                (
-                    (y - xhat).permute(0, 1, 3, 2).matmul(y - xhat)
-                    + (u * w * z.abs()).sum(axis=[1, 2, 3])
-                )
-                + lagrange3.permute(0, 1, 3, 2).matmul(H.matmul(xhat) - z)
-                + (delta / 2)
-                * (H.matmul(xhat) - z)
-                .permute(0, 1, 3, 2)
-                .matmul(H.matmul(xhat) - z)
-            )
-            hist.append(l[:, 0, :, :])
-    
-        # xhat = D.matmul(2*y - H.T.matmul(lagrange) + delta*H.T.matmul(z)).requires_grad_(True)
-        if debug:
-            print("\tmin - max xhat: ", xhat.min().data, xhat.max().data)
-            hist = [h.flatten() for h in hist]
-            return hist
         return xhat.view(xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width)
 
     def predict(self, xf):
@@ -776,6 +664,7 @@ def supporting_matrix(opt):
         H[e, p[0]] = 1
         H[e, p[1]] = -1
         A[p[0], p[1]] = 1
+        A[p[1], p[0]] = 1
 
     opt.I = I#.type(dtype).requires_grad_(True)
     opt.pairs = A_pair
