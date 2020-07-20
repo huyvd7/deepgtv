@@ -597,7 +597,8 @@ class GTV(nn.Module):
         ####
         y = xf.view(xf.shape[0], self.opt.channels, -1, 1)
         ########################
-        xhat = qpsolve(L, u, y, torch.eye(self.opt.width ** 2, self.opt.width ** 2).type(dtype), 3)
+
+        xhat = qpsolve(L, u, y, torch.eye(self.opt.width ** 2, self.opt.width ** 2).type(dtype), self.opt.channels)
 
         return xhat.view(
             xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width
@@ -613,7 +614,8 @@ def qpsolve(L, u, y, Im, channels=3):
     """
 
     t = torch.inverse(Im + u.unsqueeze(1).unsqueeze(1) * L)
-    xhat = torch.zeros(y.shape)
+    print(t.shape, y.shape)
+    xhat = torch.zeros(y.shape).type(dtype)
     for i in range(channels):
         _t = torch.bmm(t[:, i, :, :], y[:, i, :, :])
         xhat[:, i, :, :] = _t
