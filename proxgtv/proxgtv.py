@@ -21,26 +21,25 @@ else:
 
 
 class cnnf_2(nn.Module):
-
     def __init__(self, opt):
         super(cnnf_2, self).__init__()
         self.layer = nn.Sequential(
             nn.Conv2d(opt.channels, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            #nn.LeakyReLU(0.05),
+            # nn.LeakyReLU(0.05),
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            #nn.LeakyReLU(0.05),
+            # nn.LeakyReLU(0.05),
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            #nn.LeakyReLU(0.05),
+            # nn.LeakyReLU(0.05),
             nn.Conv2d(32, 6, kernel_size=3, stride=1, padding=1),
         )
 
     def forward(self, x):
-        #identity = x
+        # identity = x
         out = self.layer(x)
-        #out = identity + out
+        # out = identity + out
         return out
 
 
@@ -161,7 +160,7 @@ class cnnu(nn.Module):
             nn.Linear(3 * 3 * 32, 1 * 1 * 32),
             nn.Linear(1 * 1 * 32, 1),
             nn.ReLU()
-            #nn.LeakyReLU(0.05),
+            # nn.LeakyReLU(0.05),
         )
 
     def forward(self, x):
@@ -204,15 +203,16 @@ class mlp(nn.Module):
     CNN Y of GLR
     """
 
-    def __init__(self, opt, in_channels=36**2, out_channels=36**2):
+    def __init__(self, opt, in_channels=36 ** 2, out_channels=36 ** 2):
         super(mlp, self).__init__()
         self.hidden_nodes = 128
         self.fc = nn.Sequential(
-                nn.Linear(in_channels, self.hidden_nodes),
-                nn.Linear(self.hidden_nodes, out_channels)
-                )
-        self.in_channels=in_channels
-        self.out_channels=out_channels
+            nn.Linear(in_channels, self.hidden_nodes),
+            nn.Linear(self.hidden_nodes, out_channels),
+        )
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+
     def forward(self, x):
         out = self.fc(x)
         return out
@@ -267,14 +267,14 @@ class RENOIR_Dataset(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        #uid = np.random.randint(0, 8)
-        uid=0
+        # uid = np.random.randint(0, 8)
+        uid = 0
         nimg_name = os.path.join(self.npath, self.nimg_name[idx])
         nimg = cv2.imread(nimg_name)
-        #nimg = data_aug(nimg, uid)
+        # nimg = data_aug(nimg, uid)
         rimg_name = os.path.join(self.rpath, self.rimg_name[idx])
         rimg = cv2.imread(rimg_name)
-        #rimg = data_aug(rimg, uid)
+        # rimg = data_aug(rimg, uid)
 
         sample = {"nimg": nimg, "rimg": rimg}
 
@@ -341,9 +341,10 @@ class ToTensor(object):
         nimg = nimg.transpose((2, 0, 1))
         rimg = rimg.transpose((2, 0, 1))
         return {
-            "nimg": torch.from_numpy(nimg),#.type(dtype),
-            "rimg": torch.from_numpy(rimg)#.type(dtype),
+            "nimg": torch.from_numpy(nimg),  # .type(dtype),
+            "rimg": torch.from_numpy(rimg),  # .type(dtype),
         }
+
 
 def data_aug(img, mode=0):
     # data augmentation
@@ -404,7 +405,7 @@ def get_w(ij, F):
         ).sum(axis=1)
     )
 
-    return W#.type(dtype)
+    return W  # .type(dtype)
 
 
 def gauss(d, epsilon=1):
@@ -451,7 +452,7 @@ class OPT:
         lr=1e-4,
         momentum=0.99,
         ver=None,
-        train='gauss_batch'
+        train="gauss_batch",
     ):
         self.batch_size = batch_size
         self.width = width
@@ -471,10 +472,10 @@ class OPT:
         self.momentum = momentum
         self.u_max = u_max
         self.u_min = u_min
-        self.ver=ver
-        self.D=None
-        self.train=train
-        self.pg_zero=None
+        self.ver = ver
+        self.D = None
+        self.train = train
+        self.pg_zero = None
 
     def _print(self):
         print(
@@ -528,60 +529,98 @@ class GTV(nn.Module):
             self.cnnf = cnnf_2(opt=self.opt)
         else:
             print("ORIGINAL CNNF")
-            self.cnnf=cnnf(opt=self.opt)
+            self.cnnf = cnnf(opt=self.opt)
         self.cnnu = cnnu(u_min=u_min, opt=self.opt)
 
-        #self.cnny = cnny(opt=self.opt)
+        # self.cnny = cnny(opt=self.opt)
 
         if cuda:
             self.cnnf.cuda()
             self.cnnu.cuda()
-            #self.cnny.cuda()
+            # self.cnny.cuda()
 
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.cnnf.apply(weights_init_normal)
-        #self.cnny.apply(weights_init_normal)
+        # self.cnny.apply(weights_init_normal)
         self.cnnu.apply(weights_init_normal)
 
     def forward(self, xf, debug=False, Tmod=False):  # gtvforward
-        #u = opt.u
+        # u = opt.u
         u = self.cnnu.forward(xf)
         u_max = self.opt.u_max
         u_min = self.opt.u_min
         if debug:
-            self.u=u.clone()
+            self.u = u.clone()
 
         u = torch.clamp(u, u_min, u_max)
         u = u.unsqueeze(1).unsqueeze(1)
-        
-        z = self.opt.H.matmul(xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1))#.requires_grad_(True)
+
+        z = self.opt.H.matmul(
+            xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)
+        )  # .requires_grad_(True)
 
         ###################
         E = self.cnnf.forward(xf)
         Fs = (
-            self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1)) ** 2
-        )#.requires_grad_(True)
-        w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))#.requires_grad_(True)
-        gamma = w / z
-        L = self.opt.connectivity_full.detach()
-        L[self.opt.connectivity_idx] = gamma
+            self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1))
+            ** 2
+        )
+        w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))
+        w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
+
+        W = torch.zeros(w.shape[0], 3, self.opt.width ** 2, self.opt.width ** 2)
+        W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
+            xf.shape[0], 3, -1
+        ).clone()
+        W[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = w.view(
+            xf.shape[0], 3, -1
+        ).clone()
+        Z = torch.zeros(w.shape[0], 3, self.opt.width ** 2, self.opt.width ** 2)  # +0.01
+        Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
+            z.view(xf.shape[0], 3, -1).clone()
+        )
+        Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
+            z.view(xf.shape[0], 3, -1).clone()
+        )
+        Z = torch.max(Z, torch.ones(1) * 0.01)
+        L = W / Z
+        L1 = L @ torch.ones(L.shape[-1], 1)
+        L = torch.diag_embed(L1.squeeze(-1)) - L
         if debug:
             print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().data)
             hist = list()
             print("\tprocessed u:", u.mean().data, u.median().data)
-        w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
         ########################
         # USE CNNY
-        #Y = self.cnny.forward(xf).squeeze(0)
-        #y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+        # Y = self.cnny.forward(xf).squeeze(0)
+        # y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
         ####
-        y = xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+        y = xf.view(
+            xf.shape[0], xf.shape[1], self.opt.width ** 2, 1
+        )  # .requires_grad_(True)
         ########################
-        
-        return xhat.view(xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width)
+        xhat = qpsolve(L, u, y, torch.eye(self.opt.width ** 2, self.opt.width ** 2), 3)
+
+        return xhat.view(
+            xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width
+        )
 
     def predict(self, xf):
         pass
+
+
+def qpsolve(L, u, y, Im, channels=3):
+    """
+    Solve equation (2) using (6)
+    """
+
+    t = torch.inverse(Im + u.unsqueeze(1).unsqueeze(1) * L)
+    xhat = torch.zeros(y.shape)
+    for i in range(channels):
+        _t = torch.bmm(t[:, i, :, :], y[:, i, :, :])
+        xhat[:, i, :, :] = _t
+    return xhat
+
 
 class DeepGTV(nn.Module):
     """
@@ -598,22 +637,26 @@ class DeepGTV(nn.Module):
         lambda_max=1e9,
         cuda=False,
         opt=None,
-        no=2):
+        no=2,
+    ):
         super(DeepGTV, self).__init__()
         self.no = no
         self.gtv = list()
         for i in range(self.no):
-            self.gtv.append(GTV(width=36,
-            prox_iter=prox_iter,
-            u_max=u_max,
-            u_min=u_min,
-            lambda_min=lambda_min,
-            lambda_max=lambda_max,
-            cuda=cuda,
-            opt=opt)
-        )
+            self.gtv.append(
+                GTV(
+                    width=36,
+                    prox_iter=prox_iter,
+                    u_max=u_max,
+                    u_min=u_min,
+                    lambda_min=lambda_min,
+                    lambda_max=lambda_max,
+                    cuda=cuda,
+                    opt=opt,
+                )
+            )
         self.cuda = cuda
-        self.opt=opt
+        self.opt = opt
         if self.cuda:
             for gtv in self.gtv:
                 gtv.cuda()
@@ -642,6 +685,7 @@ class DeepGTV(nn.Module):
 
         return P
 
+
 def supporting_matrix(opt):
     width = opt.width
 
@@ -664,29 +708,28 @@ def supporting_matrix(opt):
         H[e, p[0]] = 1
         H[e, p[1]] = -1
         A[p[0], p[1]] = 1
-        #A[p[1], p[0]] = 1
+        # A[p[1], p[0]] = 1
 
-    opt.I = I#.type(dtype).requires_grad_(True)
+    opt.I = I  # .type(dtype).requires_grad_(True)
     opt.pairs = A_pair
-    opt.H = H#.type(dtype).requires_grad_(True)
+    opt.H = H  # .type(dtype).requires_grad_(True)
     opt.connectivity_full = A.requires_grad_(True)
     opt.connectivity_idx = torch.where(A > 0)
-    
+
     for e, p in enumerate(A_pair):
         A[p[1], p[0]] = 1
-
-
-    opt.lagrange = lagrange#.requires_grad_(True)
+    opt.lagrange = lagrange  # .requires_grad_(True)
     opt.D = torch.inverse(2 * opt.I + opt.delta * (opt.H.T.mm(H))).type(dtype).detach()
     opt.pg_zero = torch.zeros(opt.edges, 1).type(dtype)
 
+
 def proximal_gradient_descent(x, grad, w, u=1, eta=1, opt=None, debug=False):
     v = x - eta * grad
-    #masks1 = ((v.abs() - (eta * w * u).abs()) > 0)#.type(dtype).requires_grad_(True)
-    #masks2 = ((v.abs() - (eta * w * u).abs()) <= 0)#.type(dtype).requires_grad_(True)
-    #v = v - masks1 * eta * w * u * torch.sign(v)
-    #v = v - masks2 * v
-    v = torch.sign(v)*torch.max(v.abs() - (eta*w*u), opt.pg_zero)
+    # masks1 = ((v.abs() - (eta * w * u).abs()) > 0)#.type(dtype).requires_grad_(True)
+    # masks2 = ((v.abs() - (eta * w * u).abs()) <= 0)#.type(dtype).requires_grad_(True)
+    # v = v - masks1 * eta * w * u * torch.sign(v)
+    # v = v - masks2 * v
+    v = torch.sign(v) * torch.max(v.abs() - (eta * w * u), opt.pg_zero)
     return v
 
 
@@ -717,4 +760,3 @@ def printfull(x):
         global xd
         xd = x.clone()
         return x
-
