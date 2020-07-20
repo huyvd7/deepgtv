@@ -584,7 +584,7 @@ class GTV(nn.Module):
         )
         Z = torch.max(Z, torch.ones(1).type(dtype) * 0.01)
         L = W / Z
-        L1 = L @ torch.ones(L.shape[-1], 1)
+        L1 = L @ torch.ones(L.shape[-1], 1).type(dtype)
         L = torch.diag_embed(L1.squeeze(-1)) - L
         if debug:
             print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().data)
