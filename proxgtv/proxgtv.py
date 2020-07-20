@@ -568,14 +568,14 @@ class GTV(nn.Module):
         w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
 
-        W = torch.zeros(w.shape[0], 3, self.opt.width ** 2, self.opt.width ** 2)
+        W = torch.zeros(w.shape[0], 3, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
+        Z = W.clone()
         W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
             xf.shape[0], 3, -1
         ).clone()
         W[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = w.view(
             xf.shape[0], 3, -1
         ).clone()
-        Z = torch.zeros(w.shape[0], 3, self.opt.width ** 2, self.opt.width ** 2)  # +0.01
         Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
             z.view(xf.shape[0], 3, -1).clone()
         )
