@@ -557,7 +557,7 @@ class GTV(nn.Module):
 
         z = self.opt.H.matmul(
             xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)
-        )  # .requires_grad_(True)
+        )  
 
         ###################
         E = self.cnnf.forward(xf)
@@ -566,6 +566,10 @@ class GTV(nn.Module):
             ** 2
         )
         w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))
+        if debug:
+            print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().data)
+            hist = list()
+            print("\tprocessed u:", u.mean().data, u.median().data)
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
 
         W = torch.zeros(w.shape[0], 3, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
@@ -586,10 +590,7 @@ class GTV(nn.Module):
         L = W / Z
         L1 = L @ torch.ones(L.shape[-1], 1).type(dtype)
         L = torch.diag_embed(L1.squeeze(-1)) - L
-        if debug:
-            print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().data)
-            hist = list()
-            print("\tprocessed u:", u.mean().data, u.median().data)
+        
         ########################
         # USE CNNY
         # Y = self.cnny.forward(xf).squeeze(0)
