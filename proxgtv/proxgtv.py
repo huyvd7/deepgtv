@@ -599,7 +599,7 @@ class GTV(nn.Module):
             xf.shape[0], xf.shape[1], self.opt.width ** 2, 1
         )  # .requires_grad_(True)
         ########################
-        xhat = qpsolve(L, u, y, torch.eye(self.opt.width ** 2, self.opt.width ** 2), 3)
+        xhat = qpsolve(L, u, y, torch.eye(self.opt.width ** 2, self.opt.width ** 2).type(dtype), 3)
 
         return xhat.view(
             xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width
