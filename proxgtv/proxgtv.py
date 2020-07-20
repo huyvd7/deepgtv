@@ -613,8 +613,7 @@ def qpsolve(L, u, y, Im, channels=3):
     Solve equation (2) using (6)
     """
 
-    t = torch.inverse(Im + u.unsqueeze(1).unsqueeze(1) * L)
-    print(t.shape, y.shape)
+    t = torch.inverse(Im + u * L)
     xhat = torch.zeros(y.shape).type(dtype)
     for i in range(channels):
         _t = torch.bmm(t[:, i, :, :], y[:, i, :, :])
