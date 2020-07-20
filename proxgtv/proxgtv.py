@@ -582,7 +582,7 @@ class GTV(nn.Module):
         Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
             z.view(xf.shape[0], 3, -1).clone()
         )
-        Z = torch.max(Z, torch.ones(1) * 0.01)
+        Z = torch.max(Z, torch.ones(1).type(dtype) * 0.01)
         L = W / Z
         L1 = L @ torch.ones(L.shape[-1], 1)
         L = torch.diag_embed(L1.squeeze(-1)) - L
