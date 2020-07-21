@@ -544,6 +544,9 @@ class GTV(nn.Module):
         # self.cnny.apply(weights_init_normal)
         self.cnnu.apply(weights_init_normal)
 
+        self.support_zmax = torch.ones(1).type(dtype)*0.01
+        self.support_identity = torch.eye(self.opt.width**2, self.opt.width**2).type(dtype)
+
     def forward(self, xf, debug=False, Tmod=False):  # gtvforward
         # u = opt.u
         u = self.cnnu.forward(xf)
@@ -586,7 +589,7 @@ class GTV(nn.Module):
         Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
             z.view(xf.shape[0], 3, -1).clone()
         )
-        Z = torch.max(Z, torch.ones(1).type(dtype) * 0.01)
+        Z = torch.max(Z, self.support_zmax)
         L = W / Z
         L1 = L @ torch.ones(L.shape[-1], 1).type(dtype)
         L = torch.diag_embed(L1.squeeze(-1)) - L
@@ -599,7 +602,7 @@ class GTV(nn.Module):
         y = xf.view(xf.shape[0], self.opt.channels, -1, 1)
         ########################
 
-        xhat = qpsolve(L, u, y, torch.eye(self.opt.width ** 2, self.opt.width ** 2).type(dtype), self.opt.channels)
+        xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
 
         return xhat.view(
             xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width
