@@ -546,6 +546,7 @@ class GTV(nn.Module):
 
         self.support_zmax = torch.ones(1).type(dtype)*0.01
         self.support_identity = torch.eye(self.opt.width**2, self.opt.width**2).type(dtype)
+        self.support_L = torch.ones(opt.width**2, 1).type(dtype)
 
     def forward(self, xf, debug=False, Tmod=False):  # gtvforward
         # u = opt.u
@@ -591,7 +592,7 @@ class GTV(nn.Module):
         )
         Z = torch.max(Z, self.support_zmax)
         L = W / Z
-        L1 = L @ torch.ones(L.shape[-1], 1).type(dtype)
+        L1 = L @ self.support_L
         L = torch.diag_embed(L1.squeeze(-1)) - L
         
         ########################
