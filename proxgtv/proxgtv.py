@@ -588,13 +588,13 @@ class GTV(nn.Module):
             xf.shape[0], 3, -1
         ).clone()
 
-
+        xf = xf.view(xf.shape[0], self.opt.channels, self.opt.width ** 2, 1)
         # REPEAT GLR
         for i in range(10):
             xhat = xf.clone().detach()
 
             z = self.opt.H.matmul(
-                xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)
+                xf#.view(xf.shape[0], self.opt.channels, self.opt.width ** 2, 1)
             )  
             Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
                 z.view(xf.shape[0], 3, -1).clone()
@@ -611,7 +611,7 @@ class GTV(nn.Module):
             xf = qpsolve(L, u, y, self.support_identity, self.opt.channels)
 
             with torch.no_grad():
-                if (xf-xhat).sum() < 0.01:
+                if (xf - xhat).sum() < 0.01:
                     print("CONVERGE at step", i+1)
                     break
 
