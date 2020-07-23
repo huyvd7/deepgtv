@@ -596,6 +596,7 @@ class GTV(nn.Module):
         for i in range(10):
             #xhat = xf.clone().detach()
             def foo(xf):
+                Z = W.clone()
                 z = self.opt.H.matmul(
                     xf.view(xf.shape[0], self.opt.channels, self.opt.width ** 2, 1)
                 )  
