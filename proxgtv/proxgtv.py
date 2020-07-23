@@ -591,7 +591,8 @@ class GTV(nn.Module):
         #xf = xf.view(xf.shape[0], self.opt.channels, self.opt.width ** 2, 1)
         # REPEAT GLR
         X = list()
-        X.append(xf.view(xf.shape[0], self.opt.channels, self.opt.width ** 2, 1))
+        xh = xf.view(xf.shape[0], self.opt.channels, self.opt.width ** 2, 1)
+        X.append(xh)
         for i in range(10):
             #xhat = xf.clone().detach()
 
