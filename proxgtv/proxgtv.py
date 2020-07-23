@@ -610,8 +610,8 @@ class GTV(nn.Module):
             L1 = L @ self.support_L
             L = torch.diag_embed(L1.squeeze(-1)) - L
             
-
-            X.append(qpsolve(L, u, y, self.support_identity, self.opt.channels))
+            xh= qpsolve(L, u, y, self.support_identity, self.opt.channels)
+            X.append(xh)
 
             #with torch.no_grad():
             if torch.abs(X[i+1] - X[i]).sum() < 1e-4:
