@@ -613,7 +613,7 @@ class GTV(nn.Module):
             X.append(qpsolve(L, u, y, self.support_identity, self.opt.channels))
 
             with torch.no_grad():
-                if torch.abs(X[i+1] - [i]).sum() < 1e-4:
+                if torch.abs(X[i+1] - X[i]).sum() < 1e-4:
                     print("CONVERGE at step", i+1)
                     break
 
