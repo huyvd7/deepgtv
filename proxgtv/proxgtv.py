@@ -612,7 +612,7 @@ class GTV(nn.Module):
                 L = torch.diag_embed(L1.squeeze(-1)) - L
                 
                 xh= qpsolve(L, u, y, self.support_identity, self.opt.channels)
-                return xh
+                return xh.requires_grad_(True)
             xh = foo(xh)
 
             X.append(xh)
