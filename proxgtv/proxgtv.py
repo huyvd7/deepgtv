@@ -591,7 +591,7 @@ class GTV(nn.Module):
         #xf = xf.view(xf.shape[0], self.opt.channels, self.opt.width ** 2, 1)
         # REPEAT GLR
         xh = xf.view(xf.shape[0], self.opt.channels, self.opt.width ** 2, 1)
-        for i in range(10):
+        for i in range(5):
             #xhat = xf.clone().detach()
             def foo(xf):
                 Z = W.clone()
@@ -615,9 +615,9 @@ class GTV(nn.Module):
 
 
             #with torch.no_grad():
-            if torch.abs(X[i+1] - X[i]).sum() < 1e-4:
-                print("CONVERGE at step", i+1)
-                break
+            #if torch.abs(X[i+1] - X[i]).sum() < 1e-4:
+            #    print("CONVERGE at step", i+1)
+            #    break
 
 
         return xh.view(
