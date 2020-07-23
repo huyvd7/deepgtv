@@ -612,7 +612,7 @@ class GTV(nn.Module):
                 
                 xh= qpsolve(L, u, y, self.support_identity, self.opt.channels)
                 return xh.requires_grad_(True)
-            old_xh = xh.clone.detach()
+            old_xh = xh.clone().detach()
             xh = foo(xh)
 
 
