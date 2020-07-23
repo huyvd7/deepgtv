@@ -595,22 +595,25 @@ class GTV(nn.Module):
         X.append(xh)
         for i in range(10):
             #xhat = xf.clone().detach()
+            def foo(xf):
+                z = self.opt.H.matmul(
+                    xf.view(xf.shape[0], self.opt.channels, self.opt.width ** 2, 1)
+                )  
+                Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
+                    z.view(xf.shape[0], 3, -1).clone()
+                )
+                Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
+                    z.view(xf.shape[0], 3, -1).clone()
+                )
+                Z = torch.max(Z, self.support_zmax)
+                L = W / Z
+                L1 = L @ self.support_L
+                L = torch.diag_embed(L1.squeeze(-1)) - L
+                
+                xh= qpsolve(L, u, y, self.support_identity, self.opt.channels)
+                return xh
+            xh = foo(xh)
 
-            z = self.opt.H.matmul(
-                xf.view(xf.shape[0], self.opt.channels, self.opt.width ** 2, 1)
-            )  
-            Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
-                z.view(xf.shape[0], 3, -1).clone()
-            )
-            Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
-                z.view(xf.shape[0], 3, -1).clone()
-            )
-            Z = torch.max(Z, self.support_zmax)
-            L = W / Z
-            L1 = L @ self.support_L
-            L = torch.diag_embed(L1.squeeze(-1)) - L
-            
-            xh= qpsolve(L, u, y, self.support_identity, self.opt.channels)
             X.append(xh)
 
             #with torch.no_grad():
