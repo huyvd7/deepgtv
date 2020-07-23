@@ -596,7 +596,7 @@ class GTV(nn.Module):
             #xhat = xf.clone().detach()
 
             z = self.opt.H.matmul(
-                xf#.view(xf.shape[0], self.opt.channels, self.opt.width ** 2, 1)
+                xf.view(xf.shape[0], self.opt.channels, self.opt.width ** 2, 1)
             )  
             Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
                 z.view(xf.shape[0], 3, -1).clone()
