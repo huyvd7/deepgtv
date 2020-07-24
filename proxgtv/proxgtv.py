@@ -547,6 +547,7 @@ class GTV(nn.Module):
         self.support_zmax = torch.ones(1).type(dtype)*0.01
         self.support_identity = torch.eye(self.opt.width**2, self.opt.width**2).type(dtype)
         self.support_L = torch.ones(opt.width**2, 1).type(dtype)
+        self.base_W = torch.zeros(self.opt.batch_size, 3, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
 
     def forward(self, xf, debug=False, Tmod=False):  # gtvforward
         # u = opt.u
@@ -576,7 +577,7 @@ class GTV(nn.Module):
             print("\tprocessed u:", u.mean().data, u.median().data)
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
 
-        W = torch.zeros(w.shape[0], 3, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
+        W = self.base_W.clone()
         Z = W.clone()
         W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
             xf.shape[0], 3, -1
