@@ -112,7 +112,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         running_loss = 0.0
         for i, data in enumerate(dataloader, 0):  # start index at 0
             # get the inputs; data is a list of [inputs, labels]
-            print(data["nimg"].shape)
+            #print(data["nimg"].shape)
             inputs = data["nimg"][:, : opt.channels, :, :].float().type(dtype)
             labels = data["rimg"][:, : opt.channels, :, :].float().type(dtype)
             # zero the parameter gradients
@@ -136,7 +136,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 
             if epoch==0 and (i+1)%80==0:
                 with torch.no_grad():
-                    histW = gtv(inputs[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 5)
+                    histW = gtv(inputs#[:1, :, :, :], debug=1, Tmod=opt.admm_iter + 5)
                 if opt.ver: # experimental version
                     print("\tCNNF stats: ", gtv.cnnf.layer[0].weight.grad.median())
                 else:
@@ -149,7 +149,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 #    pmax.append(p.grad.max())
                 #print("\tmax gradients", max(pmax))
                 with torch.no_grad():
-                    us = gtv.cnnu(inputs[:10])
+                    us = gtv.cnnu(inputs#[:10])
                     print("\tCNNU stats: ", us.max().data,  us.mean().data,us.min().data)
 
 
