@@ -559,6 +559,10 @@ class GTV(nn.Module):
         u = torch.clamp(u, u_min, u_max)
         u = u.unsqueeze(1).unsqueeze(1)
 
+        z = self.opt.H.matmul(
+            xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)
+        )  
+
         ###################
         E = self.cnnf.forward(xf)
         Fs = (
@@ -571,13 +575,6 @@ class GTV(nn.Module):
             hist = list()
             print("\tprocessed u:", u.mean().data, u.median().data)
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
-        ########################
-        # USE CNNY
-        # Y = self.cnny.forward(xf).squeeze(0)
-        # y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
-        ####
-        y = xf.view(xf.shape[0], self.opt.channels, -1, 1)
-        ########################
 
         W = torch.zeros(w.shape[0], 3, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
         Z = W.clone()
@@ -587,43 +584,29 @@ class GTV(nn.Module):
         W[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = w.view(
             xf.shape[0], 3, -1
         ).clone()
+        Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
+            z.view(xf.shape[0], 3, -1).clone()
+        )
+        Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
+            z.view(xf.shape[0], 3, -1).clone()
+        )
+        Z = torch.max(Z, self.support_zmax)
+        L = W / Z
+        L1 = L @ self.support_L
+        L = torch.diag_embed(L1.squeeze(-1)) - L
+        
+        ########################
+        # USE CNNY
+        # Y = self.cnny.forward(xf).squeeze(0)
+        # y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+        ####
+        y = xf.view(xf.shape[0], self.opt.channels, -1, 1)
+        ########################
 
-        #xf = xf.view(xf.shape[0], self.opt.channels, self.opt.width ** 2, 1)
-        # REPEAT GLR
-        xh = xf.view(xf.shape[0], self.opt.channels, self.opt.width ** 2, 1)
-        for i in range(5):
-            #xhat = xf.clone().detach()
+        xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
 
-            def foo(xf):
-                Z = W.clone()
-                z = self.opt.H.matmul(
-                    xf.view(xf.shape[0], self.opt.channels, self.opt.width ** 2, 1)
-                )  
-                Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
-                    z.view(xf.shape[0], 3, -1).clone()
-                )
-                Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
-                    z.view(xf.shape[0], 3, -1).clone()
-                )
-                Z = torch.max(Z, self.support_zmax)
-                L = W / Z
-                L1 = L @ self.support_L
-                L = torch.diag_embed(L1.squeeze(-1)) - L
-                
-                xh= qpsolve(L, u, y, self.support_identity, self.opt.channels)
-                return xh.requires_grad_(True)
-            old_xh = xh.clone().detach()
-            xh = foo(xh)
-
-
-            with torch.no_grad():
-                if torch.abs(old_xh - xh).sum() < 1e-4:
-                    print("CONVERGE at step", i+1)
-                    break
-
-
-        return xh.view(
-            xf.shape[0], self.opt.channels, self.opt.width, self.opt.width
+        return xhat.view(
+            xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width
         )
 
     def predict(self, xf):
