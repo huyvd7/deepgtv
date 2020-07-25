@@ -613,7 +613,7 @@ class GTV(nn.Module):
     def predict(self, xf):
         self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
 
-        return forward(xf)
+        return self.forward(xf)
 
 
 def qpsolve(L, u, y, Im, channels=3):
