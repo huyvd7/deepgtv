@@ -547,7 +547,7 @@ class GTV(nn.Module):
         self.support_zmax = torch.ones(1).type(dtype)*0.01
         self.support_identity = torch.eye(self.opt.width**2, self.opt.width**2).type(dtype)
         self.support_L = torch.ones(opt.width**2, 1).type(dtype)
-        self.base_W = torch.zeros(self.opt.batch_size, 3, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
+        self.base_W = torch.zeros(self.opt.batch_size, self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
 
     def forward(self, xf, debug=False, Tmod=False):  # gtvforward
         # u = opt.u
@@ -611,7 +611,9 @@ class GTV(nn.Module):
         )
 
     def predict(self, xf):
-        pass
+        self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
+
+        return forward(xf)
 
 
 def qpsolve(L, u, y, Im, channels=3):
