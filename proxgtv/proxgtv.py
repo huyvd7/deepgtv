@@ -586,10 +586,10 @@ class GTV(nn.Module):
             xf.shape[0], 3, -1
         ).clone()
         Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
-            z.view(xf.shape[0], 3, -1).clone()
+            z.view(xf.shape[0], 3, -1)
         )
         Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
-            z.view(xf.shape[0], 3, -1).clone()
+            z.view(xf.shape[0], 3, -1)
         )
         Z = torch.max(Z, self.support_zmax)
         L = W / Z
