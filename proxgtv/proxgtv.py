@@ -526,6 +526,7 @@ class GTV(nn.Module):
         self.wt = width
         self.width = width
         if self.opt.ver:
+            print("EXPERIMENTAL CNNF")
             self.cnnf = cnnf_2(opt=self.opt)
         else:
             print("ORIGINAL CNNF")
