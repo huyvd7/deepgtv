@@ -67,8 +67,9 @@ def main(t,sigma, args=None):
     # Ignore values outside range for display (or plt gives an error for multichannel input)
     y_est = np.minimum(np.maximum(y_est, 0), 1)
     z_rang = np.minimum(np.maximum(z, 0), 1)
-    plt.imsave('{0}.bmp'.format(t), y_est)
-    y_est = np.array(Image.open('{0}.bmp'.format(t))) / 255
+    opath = 'bm3d_{0}.bmp'.format(t)
+    plt.imsave(opath.format(t), y_est)
+    y_est = np.array(Image.open(opath.format(t))) / 255
 
     psnr = get_psnr(y, y_est)
     print("PSNR 2:", psnr)
