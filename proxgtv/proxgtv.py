@@ -609,7 +609,7 @@ class GTV(nn.Module):
         xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
 
         # GLR 2
-        def glr(y, w, u, debug=False):
+        def glr(y, w, u, debug=False, return_dict=None):
             W = self.base_W.clone()
             z = self.opt.H.matmul(
                 y
@@ -639,13 +639,14 @@ class GTV(nn.Module):
                 return_dict['Lgamma'].append(L)
             return xhat
 
-        xhat2 = glr(xhat, w, u, debug=manual_debug)
         if manual_debug:
+            xhat2 = glr(xhat, w, u, debug=manual_debug, return_dict=return_dict)
             return xhat2.view(
             xhat2.shape[0], self.opt.channels, self.opt.width, self.opt.width
         ), return_dict
 
 
+        xhat2 = glr(xhat, w, u)
 
 
         return xhat2.view(
