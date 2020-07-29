@@ -557,6 +557,7 @@ class GTV(nn.Module):
         u_min = self.opt.u_min
         if debug:
             self.u = u.clone()
+            return_dict = {'Lgamma':list(), 'z':list()}
 
         u = torch.clamp(u, u_min, u_max)
         u = u.unsqueeze(1).unsqueeze(1)
@@ -608,8 +609,11 @@ class GTV(nn.Module):
         xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
 
         # GLR 2
-        def glr(y, w, u):
+        def glr(y, w, u, debug=False):
             W = self.base_W.clone()
+            z = self.opt.H.matmul(
+                y
+            )  
             Z = W.clone()
             W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
                 xf.shape[0], 3, -1
@@ -629,9 +633,13 @@ class GTV(nn.Module):
             L = torch.diag_embed(L1.squeeze(-1)) - L
 
             xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
+
+            if debug:
+                return_dict['z'].append(z)
+                return_dict['Lgamma'].append(L)
             return xhat
 
-        xhat2 = glr(xhat, w, u)
+        xhat2 = glr(xhat, w, u, debug=debug)
  
 
 
