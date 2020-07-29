@@ -550,7 +550,7 @@ class GTV(nn.Module):
         self.support_L = torch.ones(opt.width**2, 1).type(dtype)
         self.base_W = torch.zeros(self.opt.batch_size, self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
 
-    def forward(self, xf, debug=False, Tmod=False):  # gtvforward
+    def forward(self, xf, debug=False, Tmod=False, manual_debug=False):  # gtvforward
         # u = opt.u
         u = self.cnnu.forward(xf)
         u_max = self.opt.u_max
@@ -639,8 +639,11 @@ class GTV(nn.Module):
                 return_dict['Lgamma'].append(L)
             return xhat
 
-        xhat2 = glr(xhat, w, u, debug=debug)
- 
+        xhat2 = glr(xhat, w, u, debug=manual_debug)
+        if manual_debug:
+            return xhat2.view(
+            xhat2.shape[0], self.opt.channels, self.opt.width, self.opt.width
+        ), return_dict
 
 
 
