@@ -607,8 +607,38 @@ class GTV(nn.Module):
 
         xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
 
-        return xhat.view(
-            xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width
+        # GLR 2
+        def glr(y, w, u):
+            W = self.base_W.clone()
+            Z = W.clone()
+            W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
+                xf.shape[0], 3, -1
+            ).clone()
+            W[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = w.view(
+                xf.shape[0], 3, -1
+            ).clone()
+            Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
+                z.view(xf.shape[0], 3, -1)
+            )
+            Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
+                z.view(xf.shape[0], 3, -1)
+            )
+            Z = torch.max(Z, self.support_zmax)
+            L = W / Z
+            L1 = L @ self.support_L
+            L = torch.diag_embed(L1.squeeze(-1)) - L
+
+            xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
+            return xhat
+
+        xhat2 = glr(xhat, w, u)
+ 
+
+
+
+
+        return xhat2.view(
+            xhat2.shape[0], self.opt.channels, self.opt.width, self.opt.width
         )
 
     def predict(self, xf):
