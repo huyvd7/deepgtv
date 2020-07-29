@@ -557,6 +557,7 @@ class GTV(nn.Module):
         u_min = self.opt.u_min
         if debug:
             self.u = u.clone()
+        if manual_debug:
             return_dict = {'Lgamma':list(), 'z':list()}
 
         u = torch.clamp(u, u_min, u_max)
@@ -607,6 +608,9 @@ class GTV(nn.Module):
         ########################
 
         xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
+        if manual_debug:
+            return_dict['z'].append(z)
+            return_dict['Lgamma'].append(L)
 
         # GLR 2
         def glr(y, w, u, debug=False, return_dict=None):
