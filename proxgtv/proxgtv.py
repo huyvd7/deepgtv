@@ -652,7 +652,7 @@ class GTV(nn.Module):
 
 
         xhat2 = glr(xhat, w, u)
-        xhat2 = glr(xhat2, w, u)
+        xhat3 = glr(xhat2, w, u)
 
 
         return xhat3.view(
