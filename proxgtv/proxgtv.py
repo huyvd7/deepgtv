@@ -645,16 +645,18 @@ class GTV(nn.Module):
 
         if manual_debug:
             xhat2 = glr(xhat, w, u, debug=manual_debug, return_dict=return_dict)
-            return xhat2.view(
-            xhat2.shape[0], self.opt.channels, self.opt.width, self.opt.width
+            xhat3 = glr(xhat2, w, u, debug=manual_debug, return_dict=return_dict)
+            return xhat3.view(
+            xhat3.shape[0], self.opt.channels, self.opt.width, self.opt.width
         ), return_dict
 
 
         xhat2 = glr(xhat, w, u)
+        xhat2 = glr(xhat2, w, u)
 
 
-        return xhat2.view(
-            xhat2.shape[0], self.opt.channels, self.opt.width, self.opt.width
+        return xhat3.view(
+            xhat3.shape[0], self.opt.channels, self.opt.width, self.opt.width
         )
 
     def predict(self, xf):
