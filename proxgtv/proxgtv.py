@@ -558,7 +558,7 @@ class GTV(nn.Module):
         if debug:
             self.u = u.clone()
         if manual_debug:
-            return_dict = {'Lgamma':list(), 'z':list(), 'gamma':list()}
+            return_dict = {'Lgamma':list(), 'z':list(), 'gamma':list(), 'x':list(), 'w':list()}
 
         u = torch.clamp(u, u_min, u_max)
         u = u.unsqueeze(1).unsqueeze(1)
@@ -599,6 +599,7 @@ class GTV(nn.Module):
 
         if manual_debug:
             return_dict['gamma'].append(L)
+            return_dict['w'].append(W)
         L1 = L @ self.support_L
         L = torch.diag_embed(L1.squeeze(-1)) - L
         
@@ -613,6 +614,7 @@ class GTV(nn.Module):
         xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
         if manual_debug:
             return_dict['z'].append(z)
+            return_dict['x'].append(xhat)
             return_dict['Lgamma'].append(L)
 
         # GLR 2
@@ -638,6 +640,7 @@ class GTV(nn.Module):
             L = W / Z
             if manual_debug:
                 return_dict['gamma'].append(L)
+                return_dict['w'].append(W)
 
             L1 = L @ self.support_L
             L = torch.diag_embed(L1.squeeze(-1)) - L
@@ -647,6 +650,7 @@ class GTV(nn.Module):
             if debug:
                 return_dict['z'].append(z)
                 return_dict['Lgamma'].append(L)
+                return_dict['x'].append(xhat)
             return xhat
 
         if manual_debug:
