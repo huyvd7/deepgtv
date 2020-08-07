@@ -124,9 +124,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             outputs = gtv(inputs)
             loss = criterion(outputs, labels)
             loss.backward()
-            torch.nn.utils.clip_grad_value_(cnnf_params, 20)
-            torch.nn.utils.clip_grad_value_(cnny_params, 10)
-            torch.nn.utils.clip_grad_value_(cnnu_params, 20)
+            torch.nn.utils.clip_grad_value_(cnnf_params, 1e1)
+            torch.nn.utils.clip_grad_value_(cnny_params, 1)
+            torch.nn.utils.clip_grad_value_(cnnu_params, 1e1)
 
             optimizer.step()
             #optimizer[i%3].step()
@@ -203,10 +203,10 @@ if __name__=="__main__":
         "--lr", default=8e-6
     )
     parser.add_argument(
-        "--delta", default=0.9
+        "--delta", default=0.05
     )
     parser.add_argument(
-        "--eta", default=0.3, type=float
+        "--eta", default=0.05, type=float
     )
     parser.add_argument(
         "--admm_iter", default=4
@@ -220,6 +220,11 @@ if __name__=="__main__":
     parser.add_argument(
         "--umin", default=50, type=float
     )
+    parser.add_argument(
+        "--seed", default=0, type=float
+    )
+    parser.add_argument(
+            "--train", default='gauss_batch')
     args = parser.parse_args()
     if args.cont:
         cont = args.cont
@@ -228,11 +233,16 @@ if __name__=="__main__":
     if args.model:
         model_name = args.model
     else:
-        model_name='GTV.pkl'
+        model_name='DGTV.pkl'
     opt.batch_size = int(args.batch) 
     opt.lr = float(args.lr)
     opt.admm_iter = int(args.admm_iter)
     opt.delta = float(args.delta)
+    opt.eta=args.eta
     opt.u_min=args.umin
     opt.u_max=args.umax
+    opt.ver=True
+    opt.train=args.train
+    torch.manual_seed(args.seed)
+
     main(seed=1, model_name=model_name, cont=cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'])
