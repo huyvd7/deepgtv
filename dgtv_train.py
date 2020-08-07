@@ -133,7 +133,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             running_loss += loss.item()
 
             if epoch==0 and (i+1)%80==0:
-                g = gtv.gtv[0]
+                g = gtv.gtv1
                 with torch.no_grad():
                     histW = g(inputs, debug=1, Tmod=opt.admm_iter + 5)
                 if opt.ver: # experimental version
@@ -156,7 +156,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         
 
         if ((epoch + 1) % 1 == 0) or (epoch + 1) == total_epoch:
-            g = gtv.gtv[0]
+            g = gtv.gtv1
             with torch.no_grad():
                 histW = g(inputs, debug=1, Tmod=opt.admm_iter + 5)
             if opt.ver: # experimental version

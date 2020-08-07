@@ -713,9 +713,20 @@ class DeepGTV(nn.Module):
         super(DeepGTV, self).__init__()
         self.no = no
         self.gtv = list()
-        for i in range(self.no):
-            self.gtv.append(
-                GTV(
+        #for i in range(self.no):
+        #    self.gtv.append(
+        #        GTV(
+        #            width=36,
+        #            prox_iter=prox_iter,
+        #            u_max=u_max,
+        #            u_min=u_min,
+        #            lambda_min=lambda_min,
+        #            lambda_max=lambda_max,
+        #            cuda=cuda,
+        #            opt=opt,
+        #        )
+        #    )
+        self.gtv1 = GTV(
                     width=36,
                     prox_iter=prox_iter,
                     u_max=u_max,
@@ -725,12 +736,25 @@ class DeepGTV(nn.Module):
                     cuda=cuda,
                     opt=opt,
                 )
-            )
+        self.gtv2 = GTV(
+                    width=36,
+                    prox_iter=prox_iter,
+                    u_max=u_max,
+                    u_min=u_min,
+                    lambda_min=lambda_min,
+                    lambda_max=lambda_max,
+                    cuda=cuda,
+                    opt=opt,
+                )
+ 
+
         self.cuda = cuda
         self.opt = opt
         if self.cuda:
-            for gtv in self.gtv:
-                gtv.cuda()
+            #for gtv in self.gtv:
+            #    gtv.cuda()
+            gtv1.cuda()
+            gtv2.cuda()
 
     def load(self, PATHS):
         if self.cuda:
@@ -750,9 +774,11 @@ class DeepGTV(nn.Module):
         return P
 
     def forward(self, sample):
-        P = self.gtv[0](sample)
-        for i in range(1, self.no):
-            P = self.gtv[i](P)
+        #P = self.gtv[0](sample)
+        #for i in range(1, self.no):
+        #    P = self.gtv[i](P)
+        P = self.gtv1(sample)
+        P = self.gtv2(P)
 
         return P
 
