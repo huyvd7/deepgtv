@@ -173,8 +173,6 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             torch.save(gtv.state_dict(), SAVEDIR + str(epoch) +'.'+SAVEPATH)
             torch.save(optimizer.state_dict(), SAVEDIR + str(epoch)+'.'+SAVEPATH + "optim")
 
-            histW = [h.cpu().detach().numpy()[0] for h in histW]
-            print("\t", np.argmin(histW), min(histW), histW)
 
         #scheduler.step() 
         losshist.append(running_loss / (ld))
