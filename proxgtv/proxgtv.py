@@ -753,8 +753,8 @@ class DeepGTV(nn.Module):
         if self.cuda:
             #for gtv in self.gtv:
             #    gtv.cuda()
-            gtv1.cuda()
-            gtv2.cuda()
+            self.gtv1.cuda()
+            self.gtv2.cuda()
 
     def load(self, PATHS):
         if self.cuda:
