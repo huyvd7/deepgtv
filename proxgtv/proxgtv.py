@@ -660,7 +660,12 @@ class GTV(nn.Module):
             xhat2 = glr(xhat, w, u, debug=manual_debug, return_dict=return_dict)
             xhat3 = glr(xhat2, w, u, debug=manual_debug, return_dict=return_dict)
             xhat4 = glr(xhat3, w, u, debug=manual_debug, return_dict=return_dict)
-            return xhat4.view(
+            xhat5 = glr(xhat4, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat6 = glr(xhat5, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat7 = glr(xhat6, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat8 = glr(xhat7, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat9 = glr(xhat8, w, u, debug=manual_debug, return_dict=return_dict)
+            return xhat9.view(
             xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
         ), return_dict
 
@@ -668,9 +673,14 @@ class GTV(nn.Module):
         xhat2 = glr(xhat, w, u)
         xhat3 = glr(xhat2, w, u)
         xhat4 = glr(xhat3, w, u)
+        xhat5 = glr(xhat4, w, u)
+        xhat6 = glr(xhat5, w, u)
+        xhat7 = glr(xhat6, w, u)
+        xhat8 = glr(xhat7, w, u)
+        xhat9 = glr(xhat8, w, u)
+ 
 
-
-        return xhat4.view(
+        return xhat9.view(
             xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
         )
 
