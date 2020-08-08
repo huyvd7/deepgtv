@@ -666,7 +666,7 @@ class GTV(nn.Module):
             xhat8 = glr(xhat7, w, u, debug=manual_debug, return_dict=return_dict)
             xhat9 = glr(xhat8, w, u, debug=manual_debug, return_dict=return_dict)
             return xhat9.view(
-            xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
+            xhat9.shape[0], self.opt.channels, self.opt.width, self.opt.width
         ), return_dict
 
 
@@ -681,7 +681,7 @@ class GTV(nn.Module):
  
 
         return xhat9.view(
-            xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
+            xhat9.shape[0], self.opt.channels, self.opt.width, self.opt.width
         )
 
     def predict(self, xf):
