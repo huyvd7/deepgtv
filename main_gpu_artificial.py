@@ -246,6 +246,7 @@ if __name__=="__main__":
     )
     parser.add_argument(
             "--train", default='gauss_batch')
+
     args = parser.parse_args()
     if args.cont:
         cont = args.cont

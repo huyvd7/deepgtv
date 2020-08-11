@@ -756,13 +756,13 @@ class DeepGTV(nn.Module):
             self.gtv1.cuda()
             self.gtv2.cuda()
 
-    def load(self, PATHS):
+    def load(self, p1, p2):
         if self.cuda:
             device = torch.device("cuda")
         else:
             device = torch.device("cpu")
-        for i, p in enumerate(PATHS):
-            self.gtv[i].load_state_dict(torch.load(p, map_location=device))
+        self.gtv1.load_state_dict(torch.load(p1, map_location=device))
+        self.gtv2.load_state_dict(torch.load(p2, map_location=device))
 
     def predict(self, sample):
         if self.cuda:

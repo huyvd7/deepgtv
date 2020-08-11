@@ -67,7 +67,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         cuda=cuda,
         opt=opt,
     )
-    if cont:
+    if stack:
+        gtv.load(p1=args.stack, p2=args.stack)
+    elif cont:
         gtv.load_state_dict(torch.load(cont))
         print("LOAD PREVIOUS DGTV:", cont)
     if cuda:
@@ -232,6 +234,9 @@ if __name__=="__main__":
     )
     parser.add_argument(
             "--train", default='gauss_batch')
+    parser.add_argument(
+            "--stack", default='None')
+
     args = parser.parse_args()
     if args.cont:
         cont = args.cont
