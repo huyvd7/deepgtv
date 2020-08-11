@@ -559,7 +559,7 @@ class GTV(nn.Module):
             self.u = u.clone()
         if manual_debug:
             return_dict = {'Lgamma':list(), 'z':list(), 'gamma':list(), 'x':list(), 'w':list(),
-                    'Z':list()}
+                    'Z':list(), 'gtv':list()}
 
         u = torch.clamp(u, u_min, u_max)
         u = u.unsqueeze(1).unsqueeze(1)
@@ -576,7 +576,8 @@ class GTV(nn.Module):
         )
         w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))
 
-
+        if manual_debug:
+            return_dict['gtv'].append((z*w).abs().sum())
         #print('E', E[0,0,0])
         #print('Fs', Fs[0,0])
         #print('sum', (-(Fs.sum(axis=1)) / (2 * (1 ** 2)))[0,0])
