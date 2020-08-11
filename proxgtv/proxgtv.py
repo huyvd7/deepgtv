@@ -712,7 +712,7 @@ class DeepGTV(nn.Module):
     ):
         super(DeepGTV, self).__init__()
         self.no = no
-        self.gtv = list()
+        #self.gtv = list()
         #for i in range(self.no):
         #    self.gtv.append(
         #        GTV(
@@ -767,9 +767,11 @@ class DeepGTV(nn.Module):
     def predict(self, sample):
         if self.cuda:
             sample.cuda()
-        P = self.gtv[0](sample)
-        for i in range(1, self.no):
-            P = self.gtv[i](P)
+        #P = self.gtv[0](sample)
+        #for i in range(1, self.no):
+        #    P = self.gtv[i](P)
+        P = self.gtv1(sample)
+        P = self.gtv2(P)
 
         return P
 
