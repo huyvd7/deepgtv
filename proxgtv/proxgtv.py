@@ -575,8 +575,11 @@ class GTV(nn.Module):
             ** 2
         )
         w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))
+
+
+        print(E[0,0,0])
+        print(Fs[0,0])
         if debug:
-            print(Fs)
             print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().data)
             hist = list()
             print("\tprocessed u:", u.mean().data, u.median().data)
@@ -770,8 +773,8 @@ class DeepGTV(nn.Module):
         #P = self.gtv[0](sample)
         #for i in range(1, self.no):
         #    P = self.gtv[i](P)
-        P = self.gtv1(sample)
-        P = self.gtv2(P)
+        P1 = self.gtv1(sample)
+        P = self.gtv2(P1)
 
         return P
 
@@ -779,8 +782,8 @@ class DeepGTV(nn.Module):
         #P = self.gtv[0](sample)
         #for i in range(1, self.no):
         #    P = self.gtv[i](P)
-        P = self.gtv1(sample)
-        P = self.gtv2(P)
+        P1 = self.gtv1(sample)
+        P = self.gtv2(P1)
 
         return P
 
