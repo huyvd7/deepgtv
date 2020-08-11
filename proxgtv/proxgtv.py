@@ -577,8 +577,9 @@ class GTV(nn.Module):
         w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))
 
 
-        print(E[0,0,0])
-        print(Fs[0,0])
+        print('E', E[0,0,0])
+        print('Fs', Fs[0,0])
+        print('W', w[0,0])
         if debug:
             print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().data)
             hist = list()
