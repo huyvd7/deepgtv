@@ -775,8 +775,8 @@ class DeepGTV(nn.Module):
         #P = self.gtv[0](sample)
         #for i in range(1, self.no):
         #    P = self.gtv[i](P)
-        P1 = self.gtv1(sample)
-        P = self.gtv2(P1)
+        P1 = self.gtv1.predict(sample)
+        P = self.gtv2.predict(P1)
 
         return P
 
