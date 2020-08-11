@@ -67,8 +67,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         cuda=cuda,
         opt=opt,
     )
-    if stack:
+    if args.stack:
         gtv.load(p1=args.stack, p2=args.stack)
+        print("Stacked from ", args.stack)
     elif cont:
         gtv.load_state_dict(torch.load(cont))
         print("LOAD PREVIOUS DGTV:", cont)
