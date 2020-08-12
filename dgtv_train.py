@@ -83,6 +83,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     gtv1_params = [i[1] for i in gtv1_params ]
     gtv2_params = list(filter(lambda kv: 'gtv2' in kv[0], gtv.named_parameters()))
     gtv2_params = [i[1] for i in gtv2_params]
+    cnnf_params = list(filter(lambda kv: 'gtv2' in kv[0], gtv.named_parameters()))
+    cnnf_params = [i[1] for i in cnnf_params]
+
 
 
     optimizer = optim.SGD([
@@ -126,8 +129,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             loss = criterion(outputs, labels)
             loss.backward()
             torch.nn.utils.clip_grad_value_(cnnf_params, 1e1)
-            torch.nn.utils.clip_grad_value_(cnny_params, 1)
-            torch.nn.utils.clip_grad_value_(cnnu_params, 1e1)
+            #torch.nn.utils.clip_grad_value_(cnny_params, 1)
+            #torch.nn.utils.clip_grad_value_(cnnu_params, 1e1)
 
             optimizer.step()
             #optimizer[i%3].step()
