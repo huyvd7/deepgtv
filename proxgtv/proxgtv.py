@@ -882,7 +882,7 @@ class DeepGTV(nn.Module):
  
 
         self.opt = opt
-        if self.cuda:
+        if cuda:
             #for gtv in self.gtv:
             #    gtv.cuda()
             self.gtv1.cuda()
