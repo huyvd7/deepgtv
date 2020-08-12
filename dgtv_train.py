@@ -148,6 +148,12 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 with torch.no_grad():
                     us = g.cnnu(inputs)
                     print("\tCNNU stats: ", us.max().data,  us.mean().data,us.min().data)
+                g = gtv.gtv2
+                with torch.no_grad():
+                    histW = g(inputs, debug=1, Tmod=opt.admm_iter + 5)
+                g = gtv.gtv3
+                with torch.no_grad():
+                    histW = g(inputs, debug=1, Tmod=opt.admm_iter + 5)
 
 
 
