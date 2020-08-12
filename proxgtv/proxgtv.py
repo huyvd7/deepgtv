@@ -689,7 +689,7 @@ class GTV(nn.Module):
 
         return self.forward(xf)
 
-    def predict9(self, xf):
+    def predict9(self, xf, manual_debug=True, debug=True):
         self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
 
         # u = opt.u
