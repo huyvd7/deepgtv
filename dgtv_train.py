@@ -85,7 +85,6 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     gtv2_params = [i[1] for i in gtv2_params]
 
 
-    print(len(cnny_params))
     optimizer = optim.SGD([
                 {'params': gtv2_params, 'lr':opt.lr},
                  {'params': gtv1_params , 'lr': opt.lr*50}
