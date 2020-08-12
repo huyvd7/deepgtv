@@ -689,6 +689,129 @@ class GTV(nn.Module):
 
         return self.forward(xf)
 
+    def predict9(self, xf):
+        self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
+
+        # u = opt.u
+        u = self.cnnu.forward(xf)
+        u_max = self.opt.u_max
+        u_min = self.opt.u_min
+        if debug:
+            self.u = u.clone()
+        if manual_debug:
+            return_dict = {'Lgamma':list(), 'z':list(), 'gamma':list(), 'x':list(), 'W':list(),
+                    'Z':list(), 'gtv':list(), 'w':list()}
+
+        u = torch.clamp(u, u_min, u_max)
+        u = u.unsqueeze(1).unsqueeze(1)
+
+        z = self.opt.H.matmul(
+            xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)
+        )  
+
+        ###################
+        E = self.cnnf.forward(xf)
+        Fs = (
+            self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1))
+            ** 2
+        )
+        w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))
+
+        if debug:
+            print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().data)
+            print("\tprocessed u:", u.mean().data, u.median().data)
+        w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
+
+        W = self.base_W.clone()
+        Z = W.clone()
+        W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
+            xf.shape[0], 3, -1
+        ).clone()
+        W[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = w.view(
+            xf.shape[0], 3, -1
+        ).clone()
+        Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
+            z.view(xf.shape[0], 3, -1)
+        )
+        Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
+            z.view(xf.shape[0], 3, -1)
+        )
+        Z = torch.max(Z, self.support_zmax)
+        L = W / Z
+
+        if manual_debug:
+            return_dict['gamma'].append(L)
+            return_dict['w'].append(w)
+            return_dict['W'].append(W)
+        L1 = L @ self.support_L
+        L = torch.diag_embed(L1.squeeze(-1)) - L
+        
+        ########################
+        y = xf.view(xf.shape[0], self.opt.channels, -1, 1)
+        ########################
+
+        xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
+        if manual_debug:
+            return_dict['z'].append(z)
+            return_dict['Z'].append(Z)
+            return_dict['x'].append(xhat)
+            return_dict['Lgamma'].append(L)
+
+        # GLR 2
+        def glr(y, w, u, debug=False, return_dict=None):
+            W = self.base_W.clone()
+            z = self.opt.H.matmul(
+                y
+            )  
+            Z = W.clone()
+            W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
+                xf.shape[0], 3, -1
+            ).clone()
+            W[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = w.view(
+                xf.shape[0], 3, -1
+            ).clone()
+            Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
+                z.view(xf.shape[0], 3, -1)
+            )
+            Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
+                z.view(xf.shape[0], 3, -1)
+            )
+            Z = torch.max(Z, self.support_zmax)
+            L = W / Z
+            if manual_debug:
+                return_dict['gamma'].append(L)
+                return_dict['w'].append(w)
+                return_dict['W'].append(W)
+
+            L1 = L @ self.support_L
+            L = torch.diag_embed(L1.squeeze(-1)) - L
+
+            xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
+
+            if debug:
+                return_dict['z'].append(z)
+                return_dict['Z'].append(Z)
+                return_dict['Lgamma'].append(L)
+                return_dict['x'].append(xhat)
+            return xhat
+
+        if manual_debug:
+            xhat2 = glr(xhat, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat3 = glr(xhat2, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat4 = glr(xhat3, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat5 = glr(xhat4, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat6 = glr(xhat5, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat7 = glr(xhat6, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat8 = glr(xhat7, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat9 = glr(xhat8, w, u, debug=manual_debug, return_dict=return_dict)
+            return xhat9.view(
+            xhat9.shape[0], self.opt.channels, self.opt.width, self.opt.width
+        ), return_dict
+
+        return xhat
+
+
+
 
 def qpsolve(L, u, y, Im, channels=3):
     """
