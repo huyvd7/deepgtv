@@ -75,7 +75,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         print("LOAD PREVIOUS DGTV:", cont)
     if cuda:
         gtv.gtv1.cuda()
-        gtv.gtv2.cuda()
+        #gtv.gtv2.cuda()
         gtv.cuda()
     criterion = nn.MSELoss()
     
@@ -139,7 +139,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             if epoch==0 and (i+1)%80==0:
                 g = gtv.gtv1
                 with torch.no_grad():
-                    histW = g(inputs, debug=1, Tmod=opt.admm_iter + 5)
+                    P1 = g(inputs, debug=1, Tmod=opt.admm_iter + 5)
                 if opt.ver: # experimental version
                     print("\tCNNF stats: ", g.cnnf.layer[0].weight.grad.median())
                 else:
@@ -148,12 +148,10 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 with torch.no_grad():
                     us = g.cnnu(inputs)
                     print("\tCNNU stats: ", us.max().data,  us.mean().data,us.min().data)
-                g = gtv.gtv2
                 with torch.no_grad():
-                    histW = g(inputs, debug=1, Tmod=opt.admm_iter + 5)
-                g = gtv.gtv3
+                    P2 = g(P1, debug=1, Tmod=opt.admm_iter + 5)
                 with torch.no_grad():
-                    histW = g(inputs, debug=1, Tmod=opt.admm_iter + 5)
+                    P3 = g(P2, debug=1, Tmod=opt.admm_iter + 5)
 
 
 
@@ -177,12 +175,10 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             with torch.no_grad():
                 us = g.cnnu(inputs[:10])
                 print("\tCNNU stats: ", us.mean().data, us.max().data, us.min().data)
-            g = gtv.gtv2
             with torch.no_grad():
-                histW = g(inputs, debug=1, Tmod=opt.admm_iter + 5)
-            g = gtv.gtv3
+                P2 = g(P1, debug=1, Tmod=opt.admm_iter + 5)
             with torch.no_grad():
-                histW = g(inputs, debug=1, Tmod=opt.admm_iter + 5)
+                P3 = g(P2, debug=1, Tmod=opt.admm_iter + 5)
 
 
             print("\tsave @ epoch ", epoch + 1)
