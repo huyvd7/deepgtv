@@ -869,13 +869,36 @@ class DeepGTV(nn.Module):
                     cuda=cuda,
                     opt=opt,
                 )
+        self.gtv2 = GTV(
+                    width=36,
+                    prox_iter=prox_iter,
+                    u_max=u_max,
+                    u_min=u_min,
+                    lambda_min=lambda_min,
+                    lambda_max=lambda_max,
+                    cuda=cuda,
+                    opt=opt,
+                )
+        self.gtv3 = GTV(
+                    width=36,
+                    prox_iter=prox_iter,
+                    u_max=u_max,
+                    u_min=u_min,
+                    lambda_min=lambda_min,
+                    lambda_max=lambda_max,
+                    cuda=cuda,
+                    opt=opt,
+                )
+ 
+
 
         self.opt = opt
         if cuda:
             #for gtv in self.gtv:
             #    gtv.cuda()
             self.gtv1.cuda()
-
+            self.gtv2.cuda()
+            self.gtv3.cuda()
 
     def load(self, p1, p2):
         if self.cuda:
@@ -883,7 +906,8 @@ class DeepGTV(nn.Module):
         else:
             device = torch.device("cpu")
         self.gtv1.load_state_dict(torch.load(p1, map_location=device))
-
+        self.gtv2.load_state_dict(torch.load(p2, map_location=device))
+        self.gtv3.load_state_dict(torch.load(p2, map_location=device))
 
     def predict(self, sample):
         if self.cuda:
@@ -892,8 +916,8 @@ class DeepGTV(nn.Module):
         #for i in range(1, self.no):
         #    P = self.gtv[i](P)
         P1 = self.gtv1.predict(sample)
-        P2 = self.gtv1.predict(P1)
-        P = self.gtv1.predict(P2)
+        P2 = self.gtv2.predict(P1)
+        P = self.gtv3.predict(P2)
 
         return P
 
@@ -902,8 +926,8 @@ class DeepGTV(nn.Module):
         #for i in range(1, self.no):
         #    P = self.gtv[i](P)
         P1 = self.gtv1(sample)
-        P2 = self.gtv1(P1)
-        P = self.gtv1(P2)
+        P2 = self.gtv2(P1)
+        P = self.gtv3(P2)
 
         return P
 
