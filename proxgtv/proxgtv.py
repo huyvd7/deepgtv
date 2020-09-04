@@ -559,7 +559,7 @@ class GTV(nn.Module):
             self.u = u.clone()
         if manual_debug:
             return_dict = {'Lgamma':list(), 'z':list(), 'gamma':list(), 'x':list(), 'W':list(),
-                    'Z':list(), 'gtv':list(), 'w':list()}
+                    'Z':list(), 'gtv':list(), 'w':list(), 'f':list()}
 
         u = torch.clamp(u, u_min, u_max)
         u = u.unsqueeze(1).unsqueeze(1)
@@ -570,6 +570,8 @@ class GTV(nn.Module):
 
         ###################
         E = self.cnnf.forward(xf)
+        if manual_debug:
+            return_dict['f'].append(E)
         Fs = (
             self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1))
             ** 2
