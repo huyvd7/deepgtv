@@ -550,7 +550,7 @@ class GTV(nn.Module):
         self.support_L = torch.ones(opt.width**2, 1).type(dtype)
         self.base_W = torch.zeros(self.opt.batch_size, self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
         self.lanczos_order = 5
-        self.support_e1 = torch.zeros(M,1)
+        self.support_e1 = torch.zeros(self.lanczos_order,1)
         self.support_e1[0] = 1
     
     def forward(self, xf, debug=False, Tmod=False, manual_debug=False):  # gtvforward
