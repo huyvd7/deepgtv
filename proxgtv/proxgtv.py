@@ -801,7 +801,7 @@ class GTV(nn.Module):
             L = torch.diag_embed(L1.squeeze(-1)) - L
 
             #xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
-            xhat = lanczos_approx(L, self.lanczos_order, self.support_e1, y.squeeze(-1), u)
+            xhat = lanczos_approx(L, self.lanczos_order, self.support_e1, y, u)
 
             if debug:
                 return_dict['z'].append(z)
