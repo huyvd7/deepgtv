@@ -763,7 +763,7 @@ class GTV(nn.Module):
         ########################
 
         #xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
-        xhat = lanczos_approx(L, self.lanczos_order, self.support_e1, x)
+        xhat = lanczos_approx(L, self.lanczos_order, self.support_e1, y, u)
         if manual_debug:
             return_dict['z'].append(z)
             return_dict['Z'].append(Z)
@@ -1001,12 +1001,12 @@ def planczos(A, order, x):
 def f(x, u=0.5):
     return 1/(1+u*x)
 
-def lanczos_approx(L, order, e1, dx):
+def lanczos_approx(L, order, e1, dx, u):
     v, H_M = planczos(L, M, dx)
 
     H_M_eval, H_M_evec = torch.symeig(H_M, eigenvectors=True)
     H_M_eval[H_M_eval<0] = 0
-    fv = H_M_evec @ torch.diag_embed(f(H_M_eval)) @ H_M_evec.permute(0,1,3,2)
+    fv = H_M_evec @ torch.diag_embed(f(H_M_eval, u)) @ H_M_evec.permute(0,1,3,2)
     approx = torch.norm(bdx, dim=2).type(torch.float64).unsqueeze(-1).unsqueeze(-1) * v @ fv @ e1 
     
     return approx
