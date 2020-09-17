@@ -805,7 +805,7 @@ class GTV(nn.Module):
 
             #xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
             print(y.shape)
-            xhat = lanczos_approx(L, self.lanczos_order, self.support_e1, y, u)
+            xhat = lanczos_approx(L, self.lanczos_order, self.support_e1, y.squeeze(-1), u)
             print(xhat.shape)
             if debug:
                 return_dict['z'].append(z)
