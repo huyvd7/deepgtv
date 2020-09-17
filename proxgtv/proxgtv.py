@@ -14,6 +14,7 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 
 cuda = True if torch.cuda.is_available() else False
+
 if cuda:
     dtype = torch.cuda.FloatTensor
 else:
@@ -972,10 +973,10 @@ def qpsolve(L, u, y, Im, channels=3):
 def planczos(A, order, x):
     N = x.shape[1]
     q =(x/torch.norm(x, dim=2, keepdim=True))
-    V = torch.zeros((x.shape[0], x.shape[1], x.shape[2], order))
+    V = torch.zeros((x.shape[0], x.shape[1], x.shape[2], order)).type(dtype)
     V[:,:,:,0] = q
     q= q.unsqueeze(-1)
-    H = torch.zeros((x.shape[0], x.shape[1], order+1,order))
+    H = torch.zeros((x.shape[0], x.shape[1], order+1,order)).type(dtype)
     r = A @ q
     H[:,:,0,0] = torch.sum(q * r, axis=[-2,-1])
 
