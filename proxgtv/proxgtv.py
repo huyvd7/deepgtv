@@ -974,7 +974,6 @@ def planczos(A, order, x):
     V[:,:,:,0] = q
     q= q.unsqueeze(-1)
     H = torch.zeros((x.shape[0], x.shape[1], order+1,order))
-    print(A.type(), q.type())
     r = A @ q
     H[:,:,0,0] = torch.sum(q * r, axis=[-2,-1])
 
@@ -1008,7 +1007,7 @@ def lanczos_approx(L, order, e1, dx, u):
     H_M_eval, H_M_evec = torch.symeig(H_M, eigenvectors=True)
     H_M_eval[H_M_eval<0] = 0
     fv = H_M_evec @ torch.diag_embed(f(H_M_eval, u)) @ H_M_evec.permute(0,1,3,2)
-    approx = torch.norm(bdx, dim=2).type(torch.float64).unsqueeze(-1).unsqueeze(-1) * v @ fv @ e1 
+    approx = torch.norm(dx, dim=2).type(torch.float64).unsqueeze(-1).unsqueeze(-1) * v @ fv @ e1 
     
     return approx
 
