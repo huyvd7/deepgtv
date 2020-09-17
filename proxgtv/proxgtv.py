@@ -701,7 +701,8 @@ class GTV(nn.Module):
                     'Z':list(), 'gtv':list(), 'w':list(), 'f':list()}
 
         u = torch.clamp(u, u_min, u_max)
-        u = u.unsqueeze(1).unsqueeze(1)
+        #u = u.unsqueeze(1).unsqueeze(1)
+        u=u.unsqueeze(1)
 
         z = self.opt.H.matmul(
             xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)
