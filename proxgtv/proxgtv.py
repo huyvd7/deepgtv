@@ -969,11 +969,11 @@ def qpsolve(L, u, y, Im, channels=3):
 
 def planczos(A, order, x):
     N = x.shape[1]
-    q =(x/torch.norm(x, dim=2, keepdim=True)).type(torch.float64)
-    V = torch.zeros((x.shape[0], x.shape[1], x.shape[2], order)).type(torch.float64)
+    q =(x/torch.norm(x, dim=2, keepdim=True))
+    V = torch.zeros((x.shape[0], x.shape[1], x.shape[2], order))
     V[:,:,:,0] = q
     q= q.unsqueeze(-1)
-    H = torch.zeros((x.shape[0], x.shape[1], order+1,order)).type(torch.float64)
+    H = torch.zeros((x.shape[0], x.shape[1], order+1,order))
     r = A @ q
     H[:,:,0,0] = torch.sum(q * r, axis=[-2,-1])
 
