@@ -974,6 +974,7 @@ def planczos(A, order, x):
     V[:,:,:,0] = q
     q= q.unsqueeze(-1)
     H = torch.zeros((x.shape[0], x.shape[1], order+1,order))
+    print(A.type(), q.type())
     r = A @ q
     H[:,:,0,0] = torch.sum(q * r, axis=[-2,-1])
 
