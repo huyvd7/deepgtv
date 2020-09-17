@@ -1002,7 +1002,7 @@ def f(x, u=0.5):
     return 1/(1+u*x)
 
 def lanczos_approx(L, order, e1, dx, u):
-    v, H_M = planczos(L, M, dx)
+    v, H_M = planczos(L, order, dx)
 
     H_M_eval, H_M_evec = torch.symeig(H_M, eigenvectors=True)
     H_M_eval[H_M_eval<0] = 0
