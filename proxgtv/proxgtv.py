@@ -20,9 +20,9 @@ if cuda:
 else:
     dtype = torch.FloatTensor
 
-dv = torch.device("cuda") if torch.cuda.is_available() else False
-
-class cnnf_2(nn.Module):
+dv = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+        
+)class cnnf_2(nn.Module):
     def __init__(self, opt):
         super(cnnf_2, self).__init__()
         self.layer = nn.Sequential(
@@ -550,7 +550,7 @@ class GTV(nn.Module):
             # self.cnny.cuda()
         print("GTV created on cuda:", cuda)
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
-        self.device = torch.device("cuda") if cuda else False
+        self.device = torch.device("cuda") if cuda else torch.device("cpu")
         self.cnnf.apply(weights_init_normal)
         # self.cnny.apply(weights_init_normal)
         self.cnnu.apply(weights_init_normal)
