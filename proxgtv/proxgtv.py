@@ -455,6 +455,7 @@ class OPT:
         momentum=0.99,
         ver=None,
         train="gauss_batch",
+        cuda=False,
     ):
         self.batch_size = batch_size
         self.width = width
@@ -478,6 +479,12 @@ class OPT:
         self.D = None
         self.train = train
         self.pg_zero = None
+        self.cuda= cuda
+        if cuda:
+            self.dtype = torch.cuda.FloatTensor
+        else:
+            self.dtype = torch.FloatTensor
+
 
     def _print(self):
         print(
@@ -1098,6 +1105,8 @@ class DeepGTV(nn.Module):
 
 
 def supporting_matrix(opt):
+    dtype = opt.dtype
+    cuda = opt.cuda
     width = opt.width
 
     pixel_indices = [i for i in range(width * width)]
