@@ -548,18 +548,18 @@ class GTV(nn.Module):
             self.cnnf.cuda()
             self.cnnu.cuda()
             # self.cnny.cuda()
-
+        print("GTV created on cuda:", cuda)
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.cnnf.apply(weights_init_normal)
         # self.cnny.apply(weights_init_normal)
         self.cnnu.apply(weights_init_normal)
 
-        self.support_zmax = torch.ones(1).type(dtype)*0.01
-        self.support_identity = torch.eye(self.opt.width**2, self.opt.width**2).type(dtype)
-        self.support_L = torch.ones(opt.width**2, 1).type(dtype)
-        self.base_W = torch.zeros(self.opt.batch_size, self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
+        self.support_zmax = torch.ones(1).type(self.dtype)*0.01
+        self.support_identity = torch.eye(self.opt.width**2, self.opt.width**2).type(self.dtype)
+        self.support_L = torch.ones(opt.width**2, 1).type(self.dtype)
+        self.base_W = torch.zeros(self.opt.batch_size, self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(self.dtype)
         self.lanczos_order = 20
-        self.support_e1 = torch.zeros(self.lanczos_order,1).type(dtype)
+        self.support_e1 = torch.zeros(self.lanczos_order,1).type(self.dtype)
         self.support_e1[0] = 1
     
     def forward(self, xf, debug=False, Tmod=False, manual_debug=False):  # gtvforward
