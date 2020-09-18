@@ -22,7 +22,7 @@ else:
 
 dv = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
         
-)class cnnf_2(nn.Module):
+class cnnf_2(nn.Module):
     def __init__(self, opt):
         super(cnnf_2, self).__init__()
         self.layer = nn.Sequential(
