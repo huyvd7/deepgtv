@@ -550,6 +550,7 @@ class GTV(nn.Module):
             # self.cnny.cuda()
         print("GTV created on cuda:", cuda)
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
+        self.device = torch.device("cuda") if torch.cuda.is_available() else False
         self.cnnf.apply(weights_init_normal)
         # self.cnny.apply(weights_init_normal)
         self.cnnu.apply(weights_init_normal)
@@ -775,7 +776,7 @@ class GTV(nn.Module):
         ########################
 
         #xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
-        xhat = lanczos_approx(L, self.lanczos_order, self.support_e1, y.squeeze(-1), u)
+        xhat = self.lanczos_approx(L, self.lanczos_order, self.support_e1, y.squeeze(-1), u)
 
         if manual_debug:
             return_dict['z'].append(z)
@@ -813,7 +814,7 @@ class GTV(nn.Module):
             L = torch.diag_embed(L1.squeeze(-1)) - L
 
             #xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
-            xhat = lanczos_approx(L, self.lanczos_order, self.support_e1, y.squeeze(-1), u)
+            xhat = self.lanczos_approx(L, self.lanczos_order, self.support_e1, y.squeeze(-1), u)
             if debug:
                 return_dict['z'].append(z)
                 return_dict['Z'].append(Z)
@@ -982,6 +983,49 @@ class GTV(nn.Module):
             _t = torch.bmm(t[:, i, :, :], y[:, i, :, :])
             xhat[:, i, :, :] = _t
         return xhat
+
+    def planczos(self, A, order, x):
+        N = x.shape[1]
+        q =(x/torch.norm(x, dim=2, keepdim=True))
+        V = torch.zeros((x.shape[0], x.shape[1], x.shape[2], order), device=self.device)
+        V[:,:,:,0] = q
+        q= q.unsqueeze(-1)
+        H = torch.zeros((x.shape[0], x.shape[1], order+1,order), device=self.device)
+        r = A @ q
+        H[:,:,0,0] = torch.sum(q * r, axis=[-2,-1])
+    
+        r = r - H[:,:,0,0].unsqueeze(-1).unsqueeze(-1)*q
+        H[:,:,1,0] = torch.norm(r, dim=2).squeeze(-1)
+    
+        for k in range(1,order):
+            H[:,:,k-1,k] = H[:,:,k,k-1]
+            v = q.clone()        
+            q = r/H[:,:,k-1,k].unsqueeze(-1).unsqueeze(-1)
+            
+            V[:,:,:,k] = q.squeeze(-1)
+    
+            r = A@q
+            r = r -  H[:,:,0,0].unsqueeze(-1).unsqueeze(-1)*v
+            
+            H[:,:,k,k] = torch.sum(q * r, axis=[-2,-1])   
+            
+            r = r - H[:,:,k,k].unsqueeze(-1).unsqueeze(-1)*q
+            r = r - V@(V.permute(0,1,3,2)@r)
+            H[:,:,k+1,k] = torch.norm(r, dim=2).squeeze(-1)
+            
+        return V,H[:,:,:order,:order]
+    
+    def f(x, u=0.5):
+        return 1/(1+u*x)
+    
+    def lanczos_approx(self, L, order, e1, dx, u):
+        v, H_M = self.planczos(L, order, dx)
+        H_M_eval, H_M_evec = torch.symeig(H_M, eigenvectors=True)
+        H_M_eval[H_M_eval<0] = 0
+        fv = H_M_evec @ torch.diag_embed(f(H_M_eval, u)) @ H_M_evec.permute(0,1,3,2)
+        approx = torch.norm(dx, dim=2).unsqueeze(-1).unsqueeze(-1) * v @ fv @ e1 
+        return approx
+
 
 def planczos(A, order, x):
     N = x.shape[1]
