@@ -20,6 +20,7 @@ if cuda:
 else:
     dtype = torch.FloatTensor
 
+dv = torch.device("cuda") if torch.cuda.is_available() else False
 
 class cnnf_2(nn.Module):
     def __init__(self, opt):
@@ -692,6 +693,8 @@ class GTV(nn.Module):
 
     def forward_approx(self, xf, debug=False, Tmod=False, manual_debug=False):  # gtvapprox
         # u = opt.u
+        #if debug:
+        #    self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
         u = self.cnnu.forward(xf)
         u_max = self.opt.u_max
         u_min = self.opt.u_min
@@ -973,10 +976,10 @@ def qpsolve(L, u, y, Im, channels=3):
 def planczos(A, order, x):
     N = x.shape[1]
     q =(x/torch.norm(x, dim=2, keepdim=True))
-    V = torch.zeros((x.shape[0], x.shape[1], x.shape[2], order)).type(dtype)
+    V = torch.zeros((x.shape[0], x.shape[1], x.shape[2], order), device=dv)
     V[:,:,:,0] = q
     q= q.unsqueeze(-1)
-    H = torch.zeros((x.shape[0], x.shape[1], order+1,order)).type(dtype)
+    H = torch.zeros((x.shape[0], x.shape[1], order+1,order), device=dv)
     r = A @ q
     H[:,:,0,0] = torch.sum(q * r, axis=[-2,-1])
 
@@ -1006,12 +1009,10 @@ def f(x, u=0.5):
 
 def lanczos_approx(L, order, e1, dx, u):
     v, H_M = planczos(L, order, dx)
-
     H_M_eval, H_M_evec = torch.symeig(H_M, eigenvectors=True)
     H_M_eval[H_M_eval<0] = 0
     fv = H_M_evec @ torch.diag_embed(f(H_M_eval, u)) @ H_M_evec.permute(0,1,3,2)
     approx = torch.norm(dx, dim=2).unsqueeze(-1).unsqueeze(-1) * v @ fv @ e1 
-    
     return approx
 
 class DeepGTV(nn.Module):
@@ -1131,6 +1132,7 @@ def supporting_matrix(opt):
     opt.lagrange = lagrange  # .requires_grad_(True)
     opt.D = torch.inverse(2 * opt.I + opt.delta * (opt.H.T.mm(H))).type(dtype).detach()
     opt.pg_zero = torch.zeros(opt.edges, 1).type(dtype)
+    print("OPT created on ", cuda, dtype)
 
 
 def proximal_gradient_descent(x, grad, w, u=1, eta=1, opt=None, debug=False):
