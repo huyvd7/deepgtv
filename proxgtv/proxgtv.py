@@ -839,8 +839,11 @@ class GTV(nn.Module):
             xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
         )
 
-    def predict(self, xf):
-        self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
+    def predict(self, xf, change_dtype=False, new_dtype=False):
+        if change_dtype:
+            self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(new_dtype)
+        else:
+            self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
 
         return self.forward(xf)
 
@@ -1141,7 +1144,7 @@ def supporting_matrix(opt):
     opt.lagrange = lagrange  # .requires_grad_(True)
     opt.D = torch.inverse(2 * opt.I + opt.delta * (opt.H.T.mm(H))).type(dtype).detach()
     opt.pg_zero = torch.zeros(opt.edges, 1).type(dtype)
-    print("OPT created on ", cuda, dtype)
+    print("OPT created on cuda:", cuda, dtype)
 
 
 def proximal_gradient_descent(x, grad, w, u=1, eta=1, opt=None, debug=False):
