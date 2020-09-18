@@ -550,7 +550,7 @@ class GTV(nn.Module):
             # self.cnny.cuda()
         print("GTV created on cuda:", cuda)
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
-        self.device = torch.device("cuda") if torch.cuda.is_available() else False
+        self.device = torch.device("cuda") if cuda else False
         self.cnnf.apply(weights_init_normal)
         # self.cnny.apply(weights_init_normal)
         self.cnnu.apply(weights_init_normal)
