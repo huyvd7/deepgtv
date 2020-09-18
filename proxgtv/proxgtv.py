@@ -635,7 +635,7 @@ class GTV(nn.Module):
         y = xf.view(xf.shape[0], self.opt.channels, -1, 1)
         ########################
 
-        xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
+        xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
         if manual_debug:
             return_dict['z'].append(z)
             return_dict['Z'].append(Z)
@@ -671,7 +671,7 @@ class GTV(nn.Module):
             L1 = L @ self.support_L
             L = torch.diag_embed(L1.squeeze(-1)) - L
 
-            xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
+            xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
 
             if debug:
                 return_dict['z'].append(z)
@@ -774,7 +774,7 @@ class GTV(nn.Module):
         y = xf.view(xf.shape[0], self.opt.channels, -1, 1)
         ########################
 
-        #xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
+        #xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
         xhat = lanczos_approx(L, self.lanczos_order, self.support_e1, y.squeeze(-1), u)
 
         if manual_debug:
@@ -812,7 +812,7 @@ class GTV(nn.Module):
             L1 = L @ self.support_L
             L = torch.diag_embed(L1.squeeze(-1)) - L
 
-            #xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
+            #xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
             xhat = lanczos_approx(L, self.lanczos_order, self.support_e1, y.squeeze(-1), u)
             if debug:
                 return_dict['z'].append(z)
@@ -908,7 +908,7 @@ class GTV(nn.Module):
         y = xf.view(xf.shape[0], self.opt.channels, -1, 1)
         ########################
 
-        xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
+        xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
         if manual_debug:
             return_dict['z'].append(z)
             return_dict['Z'].append(Z)
@@ -944,7 +944,7 @@ class GTV(nn.Module):
             L1 = L @ self.support_L
             L = torch.diag_embed(L1.squeeze(-1)) - L
 
-            xhat = qpsolve(L, u, y, self.support_identity, self.opt.channels)
+            xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
 
             if debug:
                 return_dict['z'].append(z)
