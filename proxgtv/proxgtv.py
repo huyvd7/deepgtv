@@ -971,17 +971,17 @@ class GTV(nn.Module):
 
 
 
-def qpsolve(L, u, y, Im, channels=3):
-    """
-    Solve equation (2) using (6)
-    """
-
-    t = torch.inverse(Im + u * L)
-    xhat = torch.zeros(y.shape).type(dtype)
-    for i in range(channels):
-        _t = torch.bmm(t[:, i, :, :], y[:, i, :, :])
-        xhat[:, i, :, :] = _t
-    return xhat
+    def qpsolve(self, L, u, y, Im, channels=3):
+        """
+        Solve equation (2) using (6)
+        """
+    
+        t = torch.inverse(Im + u * L)
+        xhat = torch.zeros(y.shape).type(self.dtype)
+        for i in range(channels):
+            _t = torch.bmm(t[:, i, :, :], y[:, i, :, :])
+            xhat[:, i, :, :] = _t
+        return xhat
 
 def planczos(A, order, x):
     N = x.shape[1]
