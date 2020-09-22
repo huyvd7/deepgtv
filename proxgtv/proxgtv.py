@@ -608,10 +608,10 @@ class GTV(nn.Module):
         Z = W.clone()
         W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
             xf.shape[0], 3, -1
-        ).clone()
+        )
         W[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = w.view(
             xf.shape[0], 3, -1
-        ).clone()
+        )
         Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
             z.view(xf.shape[0], 3, -1)
         )
@@ -652,10 +652,10 @@ class GTV(nn.Module):
             Z = W.clone()
             W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
                 xf.shape[0], 3, -1
-            ).clone()
+            )
             W[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = w.view(
                 xf.shape[0], 3, -1
-            ).clone()
+            )
             Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
                 z.view(xf.shape[0], 3, -1)
             )
@@ -733,10 +733,6 @@ class GTV(nn.Module):
         if manual_debug:
             #return_dict['gtv'].append((z*w).abs().sum())
             pass
-        #print('E', E[0,0,0])
-        #print('Fs', Fs[0,0])
-        #print('sum', (-(Fs.sum(axis=1)) / (2 * (1 ** 2)))[0,0])
-        #print('W', w[0,0])
         if debug:
             print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().data)
             hist = list()
@@ -747,10 +743,10 @@ class GTV(nn.Module):
         Z = W.clone()
         W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
             xf.shape[0], 3, -1
-        ).clone()
+        )
         W[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = w.view(
             xf.shape[0], 3, -1
-        ).clone()
+        )
         Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
             z.view(xf.shape[0], 3, -1)
         )
@@ -793,10 +789,10 @@ class GTV(nn.Module):
             Z = W.clone()
             W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
                 xf.shape[0], 3, -1
-            ).clone()
+            )
             W[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = w.view(
                 xf.shape[0], 3, -1
-            ).clone()
+            )
             Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
                 z.view(xf.shape[0], 3, -1)
             )
@@ -968,8 +964,6 @@ class GTV(nn.Module):
         ), return_dict
 
         return xhat
-
-
 
 
     def qpsolve(self, L, u, y, Im, channels=3):
