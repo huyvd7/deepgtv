@@ -559,7 +559,7 @@ class GTV(nn.Module):
         self.support_identity = torch.eye(self.opt.width**2, self.opt.width**2).type(self.dtype)
         self.support_L = torch.ones(opt.width**2, 1).type(self.dtype)
         self.base_W = torch.zeros(self.opt.batch_size, self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(self.dtype)
-        self.lanczos_order = 30
+        self.lanczos_order = 20
         self.support_e1 = torch.zeros(self.lanczos_order,1).type(self.dtype)
         self.support_e1[0] = 1
     
@@ -1019,6 +1019,7 @@ class GTV(nn.Module):
         v, H_M = self.planczos(L, order, dx)
         H_M_eval, H_M_evec = torch.symeig(H_M, eigenvectors=True)
         H_M_eval[H_M_eval<0] = 0
+        H_M_eval = torch.clamp(H_M_eval, 0, H_M_eval.max())
         fv = H_M_evec @ torch.diag_embed(f(H_M_eval, u)) @ H_M_evec.permute(0,1,3,2)
         approx = torch.norm(dx, dim=2).unsqueeze(-1).unsqueeze(-1) * v @ fv @ e1 
         return approx
