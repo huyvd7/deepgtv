@@ -213,7 +213,7 @@ if __name__=="__main__":
         "-m", "--model"
     )
     parser.add_argument(
-        "-c", "--cont"
+        "-c", "--cont", default=None
     )
     parser.add_argument(
         "--batch", default=64
@@ -245,13 +245,9 @@ if __name__=="__main__":
     parser.add_argument(
             "--train", default='gauss_batch')
     parser.add_argument(
-            "--stack", default='None')
+            "--stack", default=None)
 
     args = parser.parse_args()
-    if args.cont:
-        cont = args.cont
-    else:
-        cont = None
     if args.model:
         model_name = args.model
     else:
@@ -267,4 +263,4 @@ if __name__=="__main__":
     opt.train=args.train
     torch.manual_seed(args.seed)
 
-    main(seed=1, model_name=model_name, cont=cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'])
+    main(seed=1, model_name=model_name, cont=args.cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'])
