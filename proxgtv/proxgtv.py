@@ -559,7 +559,7 @@ class GTV(nn.Module):
         self.support_identity = torch.eye(self.opt.width**2, self.opt.width**2).type(self.dtype)
         self.support_L = torch.ones(opt.width**2, 1).type(self.dtype)
         self.base_W = torch.zeros(self.opt.batch_size, self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(self.dtype)
-        self.lanczos_order = 20
+        self.lanczos_order = 30
         self.support_e1 = torch.zeros(self.lanczos_order,1).type(self.dtype)
         self.support_e1[0] = 1
     

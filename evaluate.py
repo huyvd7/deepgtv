@@ -93,7 +93,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         for ii, i in enumerate(range(T2.shape[1])):
             if approx:
                 P = gtv.forward_approx(T2[i, :, : opt.channels, :, :].float())
-            P = gtv.predict(T2[i, :, : opt.channels, :, :].float())
+            #P = gtv.predict(T2[i, :, : opt.channels, :, :].float())
             if cuda:
                 P = P.cpu()
             if argref:
