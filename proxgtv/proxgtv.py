@@ -700,6 +700,9 @@ class GTV(nn.Module):
         )
 
     def forward_approx(self, xf, debug=False, Tmod=False, manual_debug=False):  # gtvapprox
+        self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
+
+
         # u = opt.u
         #if debug:
         #    self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
