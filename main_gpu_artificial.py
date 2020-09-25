@@ -113,7 +113,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             #for op in optimizer:
             #    op.zero_grad()
             # forward + backward + optimize
-            outputs = gtv(inputs, debug=0)
+            outputs = gtv.forward_approx(inputs, debug=0)
             loss = criterion(outputs, labels)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(cnnf_params, 1e1)
