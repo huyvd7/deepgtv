@@ -162,13 +162,13 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             with torch.no_grad():
                 histW = g(inputs, debug=1, Tmod=opt.admm_iter + 5)
             if opt.ver: # experimental version
-                print("\tCNNF stats: ", g.cnnf.layer[0].weight.grad.median())
+                print("\tCNNF stats: ", g.cnnf.layer[0].weight.grad.median().item())
             else:
-                print("\tCNNF stats: ", g.cnnf.layer1[0].weight.grad.mean())
-            print("\tCNNU grads: ", g.cnnu.layer[0].weight.grad.mean())
+                print("\tCNNF stats: ", g.cnnf.layer1[0].weight.grad.mean().item())
+            print("\tCNNU grads: ", g.cnnu.layer[0].weight.grad.mean().item())
             with torch.no_grad():
                 us = g.cnnu(inputs[:10])
-                print("\tCNNU stats: ", us.mean().data, us.max().data, us.min().data)
+                print("\tCNNU stats: ", us.mean().item(), us.max().item(), us.min().item())
             with torch.no_grad():
                 P2 = g(P1, debug=1, Tmod=opt.admm_iter + 5)
             with torch.no_grad():

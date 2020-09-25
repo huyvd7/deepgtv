@@ -599,9 +599,9 @@ class GTV(nn.Module):
         #print('sum', (-(Fs.sum(axis=1)) / (2 * (1 ** 2)))[0,0])
         #print('W', w[0,0])
         if debug:
-            print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().data)
+            print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().item())
             hist = list()
-            print("\tprocessed u:", u.mean().data, u.median().data)
+            print("\tprocessed u:", u.mean().item(), u.median().item())
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
 
         W = self.base_W.clone()
@@ -737,9 +737,9 @@ class GTV(nn.Module):
             #return_dict['gtv'].append((z*w).abs().sum())
             pass
         if debug:
-            print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().data)
+            print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().item())
             hist = list()
-            print("\tprocessed u:", u.mean().data, u.median().data)
+            print("\tprocessed u:", u.mean().item(), u.median().item())
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
 
         W = self.base_W.clone()
@@ -876,8 +876,8 @@ class GTV(nn.Module):
         w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))
 
         if debug:
-            print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().data)
-            print("\tprocessed u:", u.mean().data, u.median().data)
+            print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().item())
+            print("\tprocessed u:", u.mean().item(), u.median().item())
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
 
         W = self.base_W.clone()

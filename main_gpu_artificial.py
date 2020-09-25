@@ -128,15 +128,15 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 with torch.no_grad():
                     histW = gtv(inputs, debug=1, Tmod=opt.admm_iter + 5)
                 if opt.ver: # experimental version
-                    print("\tCNNF stats: ", gtv.cnnf.layer[0].weight.grad.median())
+                    print("\tCNNF stats: ", gtv.cnnf.layer[0].weight.grad.median().item())
                 else:
-                    print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
-                print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
+                    print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean().item())
+                print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean().item())
                 pmax = list()
 
                 with torch.no_grad():
                     us = gtv.cnnu(inputs)
-                    print("\tCNNU stats: ", us.max().data,  us.mean().data,us.min().data)
+                    print("\tCNNU stats: ", us.max().item(),  us.mean().item(),us.min().item())
 
 
         tnow = time.time()
