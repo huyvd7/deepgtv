@@ -97,6 +97,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     hist = list()
     losshist = list()
     tstart = time.time()
+    tprev=tstart
 
     opt._print()
     pickle.dump(opt, open( "opt", "wb" ))
@@ -145,12 +146,14 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                     print("\tCNNU stats: ", us.max().data,  us.mean().data,us.min().data)
 
 
+        tnow = time.time()
         print(
             time.ctime(),
-            '[{0}] \x1b[31mLOSS\x1b[0m: {1:.3f}, time elapsed: {2:.1f} secs'.format(
-                epoch + 1, running_loss / (ld), time.time() - tstart
+            '[{0}] \x1b[31mLOSS\x1b[0m: {1:.3f}, time elapsed: {2:.1f} secs, epoch time: {2:.1f} secs'.format(
+                epoch + 1, running_loss / (ld), tnow - tstart, tnow-tprev
             )
         )
+        tprev=tnow
         
 
         if ((epoch + 1) % 1 == 0) or (epoch + 1) == total_epoch:
