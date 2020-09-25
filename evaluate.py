@@ -22,7 +22,7 @@ else:
     dtype = torch.FloatTensor
 
 
-def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, Tmod=9, opt=None):
+def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, Tmod=9, opt=None, approx=True):
     try:
         from skimage.metrics import structural_similarity as compare_ssim
     except Exception:
@@ -87,8 +87,12 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
 
     s2 = int(T2.shape[-1])
     dummy = torch.zeros(T2.shape)
+    if approx:
+        gtv.lanczos_order=30
     with torch.no_grad():
         for ii, i in enumerate(range(T2.shape[1])):
+            if approx:
+                P = gtv.forward_approx(T2[i, :, : opt.channels, :, :].float())
             P = gtv.predict(T2[i, :, : opt.channels, :, :].float())
             if cuda:
                 P = P.cpu()

@@ -142,7 +142,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         print(
             time.ctime(),
             '[{0}] \x1b[31mLOSS\x1b[0m: {1:.3f}, time elapsed: {2:.1f} secs, epoch time: {3:.1f} secs'.format(
-                epoch + 1, running_loss / (i+1), tnow - tstart, tnow-tprev
+                epoch + 1, running_loss / (ld*(i+1)), tnow - tstart, tnow-tprev
             )
         )
         tprev=tnow
@@ -173,7 +173,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 
 
         #scheduler.step() 
-        losshist.append(running_loss / (i+1))
+        losshist.append(running_loss / (ld*(i+1)))
         if (epoch+1) in [100000]:
             print("CHANGE LR")
             current_lr /= 5
