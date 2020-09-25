@@ -75,7 +75,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         print("LOAD PREVIOUS DGTV:", cont)
     if cuda:
         gtv.gtv1.cuda()
-        gtv.gtv2.cuda()
+        #gtv.gtv2.cuda()
         gtv.cuda()
     criterion = nn.MSELoss()
     
@@ -139,7 +139,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             if epoch==0 and (i+1)%80==0:
                 g = gtv.gtv1
                 with torch.no_grad():
-                    histW = g(inputs, debug=1, Tmod=opt.admm_iter + 5)
+                    P1 = g(inputs, debug=1, Tmod=opt.admm_iter + 5)
                 if opt.ver: # experimental version
                     print("\tCNNF stats: ", g.cnnf.layer[0].weight.grad.median())
                 else:
@@ -148,12 +148,10 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 with torch.no_grad():
                     us = g.cnnu(inputs)
                     print("\tCNNU stats: ", us.max().data,  us.mean().data,us.min().data)
-                g = gtv.gtv2
                 with torch.no_grad():
-                    histW = g(inputs, debug=1, Tmod=opt.admm_iter + 5)
-                g = gtv.gtv3
+                    P2 = g(P1, debug=1, Tmod=opt.admm_iter + 5)
                 with torch.no_grad():
-                    histW = g(inputs, debug=1, Tmod=opt.admm_iter + 5)
+                    P3 = g(P2, debug=1, Tmod=opt.admm_iter + 5)
 
 
 
@@ -177,12 +175,10 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             with torch.no_grad():
                 us = g.cnnu(inputs[:10])
                 print("\tCNNU stats: ", us.mean().data, us.max().data, us.min().data)
-            g = gtv.gtv2
             with torch.no_grad():
-                histW = g(inputs, debug=1, Tmod=opt.admm_iter + 5)
-            g = gtv.gtv3
+                P2 = g(P1, debug=1, Tmod=opt.admm_iter + 5)
             with torch.no_grad():
-                histW = g(inputs, debug=1, Tmod=opt.admm_iter + 5)
+                P3 = g(P2, debug=1, Tmod=opt.admm_iter + 5)
 
 
             print("\tsave @ epoch ", epoch + 1)
@@ -217,7 +213,7 @@ if __name__=="__main__":
         "-m", "--model"
     )
     parser.add_argument(
-        "-c", "--cont", default=None
+        "-c", "--cont"
     )
     parser.add_argument(
         "--batch", default=64
@@ -249,9 +245,13 @@ if __name__=="__main__":
     parser.add_argument(
             "--train", default='gauss_batch')
     parser.add_argument(
-            "--stack", default=None)
+            "--stack", default='None')
 
     args = parser.parse_args()
+    if args.cont:
+        cont = args.cont
+    else:
+        cont = None
     if args.model:
         model_name = args.model
     else:
@@ -267,4 +267,4 @@ if __name__=="__main__":
     opt.train=args.train
     torch.manual_seed(args.seed)
 
-    main(seed=1, model_name=model_name, cont=args.cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'])
+    main(seed=1, model_name=model_name, cont=cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'])
