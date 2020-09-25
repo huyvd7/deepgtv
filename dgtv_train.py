@@ -79,25 +79,17 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         gtv.cuda()
     criterion = nn.MSELoss()
     
-    gtv1_params = list(filter(lambda kv: 'gtv1' in kv[0] , gtv.named_parameters()))
-    gtv1_params = [i[1] for i in gtv1_params ]
-    gtv2_params = list(filter(lambda kv: 'gtv2' in kv[0], gtv.named_parameters()))
-    gtv2_params = [i[1] for i in gtv2_params]
-    cnnf_params = list(filter(lambda kv: 'gtv2' in kv[0], gtv.named_parameters()))
+    #gtv1_params = list(filter(lambda kv: 'gtv1' in kv[0] , gtv.named_parameters()))
+    #gtv1_params = [i[1] for i in gtv1_params ]
+    cnnf_params = list(filter(lambda kv: 'cnnf' in kv[0], gtv.named_parameters()))
     cnnf_params = [i[1] for i in cnnf_params]
 
 
 
     optimizer = optim.SGD([
-                {'params': gtv2_params, 'lr':opt.lr},
-                 {'params': gtv1_params , 'lr': opt.lr*50}
+                {'params': cnnf_params, 'lr':opt.lr},
              ], lr=opt.lr, momentum=opt.momentum)
 
-    #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
-    #optimizer_f = optim.SGD(cnnf_params, lr=opt.lr*50, momentum=opt.momentum)
-    #optimizer_u = optim.SGD(cnnf_params, lr=opt.lr*40, momentum=opt.momentum)
-    #optimizer_y = optim.SGD(cnnf_params, lr=opt.lr, momentum=opt.momentum)
-    #optimizer = [optimizer_f, optimizer_u, optimizer_y]
     if cont:
         try:
             optimizer.load_state_dict(torch.load(cont+'optim'))
