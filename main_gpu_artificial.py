@@ -198,7 +198,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     ax.set(ylim=[0, ax.get_ylim()[1] *1.05 ])
     fig.savefig("loss.png")
 
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.05, u=50, lr=8e-6, momentum=0.9, u_max=65, u_min=50)
+opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.05, u=50, lr=8e-6, momentum=0.9, u_max=65, u_min=50, cuda=True if torch.cuda.is_available() else False)
 #batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=50, lr=8e-6, momentum=0.9, u_max=65, u_min=50)
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
