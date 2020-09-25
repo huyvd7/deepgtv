@@ -972,11 +972,11 @@ class GTV(nn.Module):
         """
     
         t = torch.inverse(Im + u * L)
-        #xhat = torch.zeros(y.shape).type(self.dtype)
-        #for i in range(channels):
-        #    _t = torch.bmm(t[:, i, :, :], y[:, i, :, :])
-        #    xhat[:, i, :, :] = _t
-        return t@y
+        xhat = torch.zeros(y.shape).type(self.dtype)
+        for i in range(channels):
+            _t = torch.bmm(t[:, i, :, :], y[:, i, :, :])
+            xhat[:, i, :, :] = _t
+        return xhat
 
     def planczos(self, A, order, x):
         N = x.shape[1]
