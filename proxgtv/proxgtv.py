@@ -1018,7 +1018,6 @@ class GTV(nn.Module):
     def lanczos_approx(self, L, order, e1, dx, u):
         v, H_M = self.planczos(L, order, dx)
         H_M_eval, H_M_evec = torch.symeig(H_M, eigenvectors=True)
-        H_M_eval[H_M_eval<0] = 0
         H_M_eval = torch.clamp(H_M_eval, 0, H_M_eval.max().item())
         fv = H_M_evec @ torch.diag_embed(f(H_M_eval, u)) @ H_M_evec.permute(0,1,3,2)
         approx = torch.norm(dx, dim=2).unsqueeze(-1).unsqueeze(-1) * v @ fv @ e1 
