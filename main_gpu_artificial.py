@@ -131,12 +131,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 else:
                     print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
                 print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
-                #print("\tMLP1 grad: ", gtv.mlp1.fc[0].weight.grad.mean())
-                #print("\tMLP2 grad: ", gtv.mlp2.fc[0].weight.grad.mean())
                 pmax = list()
-                #for p in gtv.parameters():
-                #    pmax.append(p.grad.max())
-                #print("\tmax gradients", max(pmax))
+
                 with torch.no_grad():
                     us = gtv.cnnu(inputs)
                     print("\tCNNU stats: ", us.max().data,  us.mean().data,us.min().data)
@@ -145,8 +141,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         tnow = time.time()
         print(
             time.ctime(),
-            '[{0}] \x1b[31mLOSS\x1b[0m: {1:.3f}, time elapsed: {2:.1f} secs, epoch time: {2:.1f} secs'.format(
-                epoch + 1, running_loss / (ld), tnow - tstart, tnow-tprev
+            '[{0}] \x1b[31mLOSS\x1b[0m: {1:.3f}, time elapsed: {2:.1f} secs, epoch time: {3:.1f} secs'.format(
+                epoch + 1, running_loss / (i+1), tnow - tstart, tnow-tprev
             )
         )
         tprev=tnow
@@ -161,9 +157,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
             #print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
             print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
-            #print("\tMLP1 grad: ", gtv.mlp1.fc[0].weight.grad.mean())
-            #print("\tMLP2 grad: ", gtv.mlp2.fc[0].weight.grad.mean())
-            #print("\tMLP3 grad: ", gtv.mlp3.fc[0].weight.grad.mean())
+
             pmax = list()
             for p in gtv.parameters():
                 pmax.append(p.grad.max())
@@ -179,7 +173,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 
 
         #scheduler.step() 
-        losshist.append(running_loss / (ld))
+        losshist.append(running_loss / (i+1))
         if (epoch+1) in [100000]:
             print("CHANGE LR")
             current_lr /= 5
