@@ -74,6 +74,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         .unfold(0, 36, stride)
         .unfold(1, 36, stride)
     ).type(dtype)
+    print(T2.shape)
 
     if argref:
         T1r = torch.nn.functional.pad(
@@ -87,10 +88,9 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
 
     s2 = int(T2.shape[-1])
     dummy = torch.zeros(T2.shape)
-    #if approx:
-    #    gtv.lanczos_order=30
     with torch.no_grad():
         for ii, i in enumerate(range(T2.shape[1])):
+            print(T2[i, :, : opt.channels, :, :].shape)
             if approx:
                 P = gtv.forward_approx(T2[i, :, : opt.channels, :, :].float())
             else:
