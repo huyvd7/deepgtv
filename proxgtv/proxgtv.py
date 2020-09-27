@@ -269,14 +269,14 @@ class RENOIR_Dataset(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        # uid = np.random.randint(0, 8)
+        uid = np.random.randint(0, 8)
         uid = 0
         nimg_name = os.path.join(self.npath, self.nimg_name[idx])
         nimg = cv2.imread(nimg_name)
-        # nimg = data_aug(nimg, uid)
+        nimg = data_aug(nimg, uid)
         rimg_name = os.path.join(self.rpath, self.rimg_name[idx])
         rimg = cv2.imread(rimg_name)
-        # rimg = data_aug(rimg, uid)
+        rimg = data_aug(rimg, uid)
 
         sample = {"nimg": nimg, "rimg": rimg}
 
