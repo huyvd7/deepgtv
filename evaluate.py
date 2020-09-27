@@ -88,33 +88,37 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
 
     s2 = int(T2.shape[-1])
     dummy = torch.zeros(T2.shape)
+    MAX_PATCH = 30
     with torch.no_grad():
         for ii, i in enumerate(range(T2.shape[1])):
-            print(T2[i, :, : opt.channels, :, :].shape)
-            if approx:
-                P = gtv.forward_approx(T2[i, :, : opt.channels, :, :].float())
-            else:
-                P = gtv.predict(T2[i, :, : opt.channels, :, :].float())
-            if cuda:
-                P = P.cpu()
-            if argref:
-                img1 = T2r[i, :, : opt.channels, : shape[-1], : shape[-1]].float()
-                img2 = P[:, : opt.channels, : shape[-1], : shape[-1]]
-                psnrs.append(cv2.PSNR(img1.detach().numpy(), img2.detach().numpy()))
-                _tref = img1.detach().numpy()
-                _d = img2.detach().numpy()
-                for iii in range(_d.shape[0]):
-                    (_score2, _) = compare_ssim(
-                        _tref[i].transpose(1, 2, 0),
-                        _d[i].transpose(1, 2, 0),
-                        full=True,
-                        multichannel=True,
-                    )
-                    score2.append(_score2)
-            if verbose>0:
-                print("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
-            dummy[i] = P
-            del P
+
+            for jj in range(0, T2.shape[1] , MAX_PATCH):
+                print(T2[i, :, : opt.channels, :, :].shape)
+                print(T2[i, jj:(jj+MAX_PATCH) : opt.channels, :, :].shape)
+                if approx:
+                    P = gtv.forward_approx(T2[i, jj:(jj+MAX_PATCH) : opt.channels, :, :].float())
+                else:
+                    P = gtv.predict(T2[i, jj:(jj+MAX_PATCH), : opt.channels, :, :].float())
+                if cuda:
+                    P = P.cpu()
+                if argref:
+                    img1 = T2r[i, jj:(jj+MAX_PATCH), : opt.channels, : shape[-1], : shape[-1]].float()
+                    img2 = P[:, : opt.channels, : shape[-1], : shape[-1]]
+                    psnrs.append(cv2.PSNR(img1.detach().numpy(), img2.detach().numpy()))
+                    _tref = img1.detach().numpy()
+                    _d = img2.detach().numpy()
+                    for iii in range(_d.shape[0]):
+                        (_score2, _) = compare_ssim(
+                            _tref[i].transpose(1, 2, 0),
+                            _d[i].transpose(1, 2, 0),
+                            full=True,
+                            multichannel=True,
+                        )
+                        score2.append(_score2)
+                if verbose>0:
+                    print("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
+                dummy[i, jj:(jj+MAX_PATCH] = P
+                del P
     if verbose:
         print("\nPrediction time: ", time.time() - tstart)
     else:
