@@ -74,7 +74,6 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         .unfold(0, 36, stride)
         .unfold(1, 36, stride)
     ).type(dtype)
-    print(T2.shape)
 
     if argref:
         T1r = torch.nn.functional.pad(
@@ -93,8 +92,6 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         for ii, i in enumerate(range(T2.shape[1])):
 
             for jj in range(0, T2.shape[1] , MAX_PATCH):
-                print(T2[i, :, : opt.channels, :, :].shape)
-                print(T2[i, jj:(jj+MAX_PATCH) : opt.channels, :, :].shape)
                 if approx:
                     P = gtv.forward_approx(T2[i, jj:(jj+MAX_PATCH) : opt.channels, :, :].float())
                 else:
