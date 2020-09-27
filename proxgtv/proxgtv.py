@@ -270,7 +270,7 @@ class RENOIR_Dataset(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
         uid = np.random.randint(0, 8)
-        uid = 0
+        #uid = 0
         nimg_name = os.path.join(self.npath, self.nimg_name[idx])
         nimg = cv2.imread(nimg_name)
         nimg = data_aug(nimg, uid)
