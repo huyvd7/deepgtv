@@ -106,8 +106,8 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
                     _d = img2.detach().numpy()
                     for iii in range(_d.shape[0]):
                         (_score2, _) = compare_ssim(
-                            _tref[i].transpose(1, 2, 0),
-                            _d[i].transpose(1, 2, 0),
+                            _tref[iii].transpose(1, 2, 0),
+                            _d[iii].transpose(1, 2, 0),
                             full=True,
                             multichannel=True,
                         )
