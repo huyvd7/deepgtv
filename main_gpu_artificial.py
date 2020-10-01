@@ -102,7 +102,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
     opt._print()
     pickle.dump(opt, open( "opt", "wb" ))
     ld = len(dataset)
-    
+    gtv.half().to('cuda') 
 
     scaler = torch.cuda.amp.GradScaler()
     for epoch in range(total_epoch):  # loop over the dataset multiple times
