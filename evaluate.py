@@ -193,7 +193,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     #global opt
     supporting_matrix(opt)
     opt._print()
-    width = args.width
+    width = args.train_width
     gtv = GTV(
         width=width,
         prox_iter=1,
@@ -285,7 +285,9 @@ if __name__=="__main__":
     #global opt
     parser = argparse.ArgumentParser()
     
-    
+    parser.add_argument(
+        "-w", "--width", help="Resize image to a square image with given width"
+    )
     parser.add_argument(
         "-m", "--model"
     )
@@ -296,7 +298,7 @@ if __name__=="__main__":
         "--multi", default=30, type=int, help='# of patches evaluation in parallel'
     )
     parser.add_argument(
-        "--width", default=36, type=int, help='patch size that GTV was trained'
+        "--train_width", default=36, type=int, help='patch size that GTV was trained'
     )
     parser.add_argument(
         "--opt", default='opt'
