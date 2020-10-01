@@ -272,12 +272,13 @@ def _main(imgw=324, sigma=25, args=None):
     shutil.rmtree(refp, ignore_errors=True)
     os.makedirs(noisyp)
     os.makedirs(refp)
-    stride=18
+    stride=args.stride
+    psize=args.patch_size
     for i_batch, s in enumerate(dataloader):
         print(i_batch, s['nimg'].size(),
               s['rimg'].size(), len(s['nimg']), s['nn'], s['rn'])
-        T1 = s['nimg'].unfold(2, 36, stride).unfold(3, 36, stride).reshape(1, 3, -1, 36, 36).squeeze()
-        T2 = s['rimg'].unfold(2, 36, stride).unfold(3, 36, stride).reshape(1, 3, -1, 36, 36).squeeze()
+        T1 = s['nimg'].unfold(2, psize, stride).unfold(3, psize, stride).reshape(1, 3, -1, psize, psize).squeeze()
+        T2 = s['rimg'].unfold(2, psize, stride).unfold(3, psize, stride).reshape(1, 3, -1, psize, psize).squeeze()
         nnn = s['nn'][0].split('.')[0]
         rn = s['rn'][0].split('.')[0]
         total = 0
@@ -304,6 +305,12 @@ if __name__=="__main__":
     )
     parser.add_argument(
         "--sigma", default=25
+    )
+    parser.add_argument(
+        "--stride", default=18
+    )
+    parser.add_argument(
+        "--patch_size", default=36
     )
     parser.add_argument(
         "--train", default='../'
