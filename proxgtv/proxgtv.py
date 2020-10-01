@@ -178,7 +178,7 @@ class cnnu(nn.Module):
         return x.size()
 
     def linear_input_neurons(self):
-        size = self.size_after_relu(torch.rand(1, 1, self.opt.width, self.opt.width)) 
+        size = self.size_after_relu(torch.rand(1, self.opt.channels, self.opt.width, self.opt.width)) 
         m = 1
         for i in size:
             m *= i
