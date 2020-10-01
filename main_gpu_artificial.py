@@ -120,7 +120,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
             # forward + backward + optimize
             #outputs = gtv.forward_approx(inputs, debug=0)
             outputs = gtv(inputs, debug=0)
-            #loss = criterion(outputs, labels)
+            loss = criterion(outputs, labels)
             #with torch.cuda.amp.autocast():
             #    loss = criterion(outputs, labels)
             #scaler.scale(loss).backward()
