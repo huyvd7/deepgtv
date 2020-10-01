@@ -103,7 +103,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
     ld = len(dataset)
     
 
-    scaler = torch.cuda.amp.GradScaler()
+    #scaler = torch.cuda.amp.GradScaler()
     for epoch in range(total_epoch):  # loop over the dataset multiple times
         # running_loss_inside = 0.0
         running_loss = 0.0
@@ -120,17 +120,18 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
             # forward + backward + optimize
             #outputs = gtv.forward_approx(inputs, debug=0)
             outputs = gtv(inputs, debug=0)
-            with torch.cuda.amp.autocast():
-                loss = criterion(outputs, labels)
-            scaler.scale(loss).backward()
+            #loss = criterion(outputs, labels)
+            #with torch.cuda.amp.autocast():
+            #    loss = criterion(outputs, labels)
+            #scaler.scale(loss).backward()
 
-            #loss.backward()
+            loss.backward()
             torch.nn.utils.clip_grad_norm_(cnnf_params, 1e1)
             torch.nn.utils.clip_grad_norm_(cnnu_params, 1e1)
 
-            scaler.step(optimizer)
-            #optimizer.step()
-            scaler.update()
+            #scaler.step(optimizer)
+            optimizer.step()
+            #scaler.update()
             running_loss += loss.item()
 
             if epoch==0 and (i+1)%80==0:
