@@ -235,7 +235,8 @@ def _main(imgw=324, sigma=25, args=None):
     os.makedirs(gaussp)
     os.makedirs(noisyp)
     os.makedirs(refp)
-
+    print("Noisy images: ", noisyp)
+    print("Ref images: ", refp)
     for i, data in enumerate(dataloader, 0): 
         print(data['rn'])
         inputs = data['nimg'].float().type(dtype).squeeze(0)
