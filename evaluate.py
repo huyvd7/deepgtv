@@ -22,7 +22,7 @@ else:
     dtype = torch.FloatTensor
 
 
-def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, Tmod=9, opt=None, approx=False, agrs=None):
+def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, Tmod=9, opt=None, approx=False, args=None):
     try:
         from skimage.metrics import structural_similarity as compare_ssim
     except Exception:
