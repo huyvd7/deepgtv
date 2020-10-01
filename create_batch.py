@@ -243,11 +243,11 @@ def _main(imgw=324, sigma=25, args=None):
         img = inputs.cpu().detach().numpy().astype(np.uint8)
         img = img.transpose(1, 2, 0)
         if noisetype!='gauss':
-            plt.imsave('{0}{1}_g.bmp'.format(noisyp, testset[i]), img )
+            plt.imsave('{0}/{1}_g.bmp'.format(noisyp, testset[i]), img )
         inputs = data['rimg'].float().type(dtype).squeeze(0)
         img = inputs.cpu().detach().numpy().astype(np.uint8)
         img = img.transpose(1, 2, 0)
-        plt.imsave('{0}{1}_r.bmp'.format(refp, testset[i]), img )
+        plt.imsave('{0}/{1}_r.bmp'.format(refp, testset[i]), img )
     if noisetype =='gauss': 
         bm3d_res = {'psnr':list(), 'mse':list()}
         for t in ['10', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
