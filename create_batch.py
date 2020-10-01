@@ -250,7 +250,7 @@ def _main(imgw=324, sigma=25, args=None):
     if noisetype =='gauss': 
         bm3d_res = {'psnr':list(), 'mse':list()}
         for t in ['10', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
-            _psnr, _mse = main(t, sigma=sigma)
+            _psnr, _mse = main(t, sigma=sigma, args=args)
             bm3d_res['psnr'].append(_psnr)
             bm3d_res['mse'].append(_mse)
         print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
