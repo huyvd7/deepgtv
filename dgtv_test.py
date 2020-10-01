@@ -27,8 +27,8 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         from skimage.metrics import structural_similarity as compare_ssim
     except Exception:
         from skimage.measure import compare_ssim
-    print(inp)
     sample = cv2.imread(inp)
+    print(inp, sample.shape)
     if width==None:
         width = sample.shape[0]
     else:
