@@ -14,6 +14,8 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 from proxgtv.proxgtv import * 
 import pickle
+from apex.fp16_utils import *
+from apex import amp, optimizers
 
 def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, args=None):
     debug = 0
@@ -99,6 +101,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
     opt._print()
     pickle.dump(opt, open( "opt", "wb" ))
     ld = len(dataset)
+    
+    gtv, optimizer = amp.initialize(gtv, optimizer, opt_level='O2')
     for epoch in range(total_epoch):  # loop over the dataset multiple times
         # running_loss_inside = 0.0
         running_loss = 0.0
@@ -116,7 +120,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
             #outputs = gtv.forward_approx(inputs, debug=0)
             outputs = gtv(inputs, debug=0)
             loss = criterion(outputs, labels)
-            loss.backward()
+            with amp.scale_loss(loss, optimizer) as scaled_loss:                      
+                scaled_loss.backward()
+            #loss.backward()
             torch.nn.utils.clip_grad_norm_(cnnf_params, 1e1)
             torch.nn.utils.clip_grad_norm_(cnnu_params, 1e1)
 
