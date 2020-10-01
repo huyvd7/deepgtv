@@ -17,6 +17,7 @@ cuda = True if torch.cuda.is_available() else False
 
 if cuda:
     dtype = torch.cuda.FloatTensor
+    dtype = torch.cuda.float16
 else:
     dtype = torch.FloatTensor
 
@@ -493,7 +494,8 @@ class OPT:
         self.pg_zero = None
         self.cuda= cuda
         if cuda:
-            self.dtype = torch.cuda.FloatTensor
+            #self.dtype = torch.cuda.FloatTensor
+            self.dtype = torch.cuda.float16
         else:
             self.dtype = torch.FloatTensor
 
@@ -561,7 +563,8 @@ class GTV(nn.Module):
             self.cnnu.cuda()
             # self.cnny.cuda()
         print("GTV created on cuda:", cuda)
-        self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
+        #self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
+        self.dtype = torch.cuda.float16 if cuda else torch.FloatTensor
         self.device = torch.device("cuda") if cuda else torch.device("cpu")
         self.cnnf.apply(weights_init_normal)
         # self.cnny.apply(weights_init_normal)
@@ -712,7 +715,7 @@ class GTV(nn.Module):
         )
 
     def forward_approx(self, xf, debug=False, Tmod=False, manual_debug=False):  # gtvapprox
-        self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
+        self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(self.dtype)
 
 
         # u = opt.u
@@ -855,12 +858,12 @@ class GTV(nn.Module):
         if change_dtype:
             self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(new_dtype)
         else:
-            self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
+            self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(self.dtype)
 
         return self.forward(xf)
 
     def predict9(self, xf, manual_debug=True, debug=True):
-        self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
+        self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(self.dtype)
 
         # u = opt.u
         u = self.cnnu.forward(xf)

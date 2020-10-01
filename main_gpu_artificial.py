@@ -23,7 +23,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
     torch.autograd.set_detect_anomaly(True)
     print("CUDA: ", cuda)
     if cuda:
-        dtype = torch.cuda.FloatTensor
+        #dtype = torch.cuda.FloatTensor
+        dtype = torch.cuda.float16
         print(torch.cuda.get_device_name(0))
     else:
         dtype = torch.FloatTensor
