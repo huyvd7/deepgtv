@@ -87,7 +87,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
 
     s2 = int(T2.shape[-1])
     dummy = torch.zeros(T2.shape)
-    MAX_PATCH = 30
+    MAX_PATCH = args.multi
     with torch.no_grad():
         for ii, i in enumerate(range(T2.shape[1])):
 
@@ -228,7 +228,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         print("image #", t)
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
-        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, opt=opt)
+        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, opt=opt, args=args)
         traineva["psnr"].append(_psnr)
         traineva["ssim"].append(_ssim)
         traineva["ssim2"].append(_ssim2)
@@ -258,7 +258,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         print("image #", t)
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
-        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, opt=opt)
+        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, opt=opt, args=args)
         testeva["psnr"].append(_psnr)
         testeva["ssim"].append(_ssim)
         testeva["ssim2"].append(_ssim2)
@@ -294,6 +294,10 @@ if __name__=="__main__":
     parser.add_argument(
         "--stride", default=18, type=int
     )
+    parser.add_argument(
+        "--multi", default=30, type=int, help='# of patches evaluation in parallel'
+    )
+
     parser.add_argument(
         "--opt", default='opt'
     )
