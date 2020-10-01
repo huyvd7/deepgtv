@@ -157,6 +157,7 @@ class cnnu(nn.Module):
             nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
         )
 
+        self.opt=opt
         self.u_min = u_min
         self.fc = nn.Sequential(
             nn.Linear(3 * 3 * 32, 1 * 1 * 32),
@@ -168,6 +169,7 @@ class cnnu(nn.Module):
     def forward(self, x):
         out = self.layer(x)
         out = out.view(out.shape[0], -1)
+        print(out.shape)
         out = self.fc(out)
         return out
 
