@@ -17,7 +17,6 @@ cuda = True if torch.cuda.is_available() else False
 
 if cuda:
     dtype = torch.cuda.FloatTensor
-    dtype = torch.float16
 else:
     dtype = torch.FloatTensor
 
@@ -494,8 +493,7 @@ class OPT:
         self.pg_zero = None
         self.cuda= cuda
         if cuda:
-            #self.dtype = torch.cuda.FloatTensor
-            self.dtype = torch.float16
+            self.dtype = torch.cuda.FloatTensor
         else:
             self.dtype = torch.FloatTensor
 
@@ -563,19 +561,18 @@ class GTV(nn.Module):
             self.cnnu.cuda()
             # self.cnny.cuda()
         print("GTV created on cuda:", cuda)
-        #self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
-        self.dtype = torch.float16 if cuda else torch.FloatTensor
+        self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.device = torch.device("cuda") if cuda else torch.device("cpu")
         self.cnnf.apply(weights_init_normal)
         # self.cnny.apply(weights_init_normal)
         self.cnnu.apply(weights_init_normal)
 
-        self.support_zmax = torch.ones(1).type(self.dtype).to('cuda')*0.01
-        self.support_identity = torch.eye(self.opt.width**2, self.opt.width**2).type(self.dtype).to('cuda')
-        self.support_L = torch.ones(opt.width**2, 1).type(self.dtype).to('cuda')
-        self.base_W = torch.zeros(self.opt.batch_size, self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(self.dtype).to('cuda')
+        self.support_zmax = torch.ones(1).type(self.dtype)*0.01
+        self.support_identity = torch.eye(self.opt.width**2, self.opt.width**2).type(self.dtype)
+        self.support_L = torch.ones(opt.width**2, 1).type(self.dtype)
+        self.base_W = torch.zeros(self.opt.batch_size, self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(self.dtype)
         self.lanczos_order = 20
-        self.support_e1 = torch.zeros(self.lanczos_order,1).type(self.dtype).to('cuda')
+        self.support_e1 = torch.zeros(self.lanczos_order,1).type(self.dtype)
         self.support_e1[0] = 1
     
     def forward(self, xf, debug=False, Tmod=False, manual_debug=False):  # gtvforward
@@ -709,13 +706,13 @@ class GTV(nn.Module):
         xhat3 = glr(xhat2, w, u)
         xhat4 = glr(xhat3, w, u)
 
-        print(torch.isnan(xhat4).any())
+
         return xhat4.view(
             xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
         )
 
     def forward_approx(self, xf, debug=False, Tmod=False, manual_debug=False):  # gtvapprox
-        self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(self.dtype)
+        self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
 
 
         # u = opt.u
@@ -858,12 +855,12 @@ class GTV(nn.Module):
         if change_dtype:
             self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(new_dtype)
         else:
-            self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(self.dtype)
+            self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
 
         return self.forward(xf)
 
     def predict9(self, xf, manual_debug=True, debug=True):
-        self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(self.dtype)
+        self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
 
         # u = opt.u
         u = self.cnnu.forward(xf)
@@ -989,9 +986,9 @@ class GTV(nn.Module):
         Solve equation (2) using (6)
         """
     
-        t = torch.inverse(Im.type(torch.cuda.FloatTensor) + u.type(torch.cuda.FloatTensor) * L.type(torch.cuda.FloatTensor))
+        t = torch.inverse(Im + u * L)
 
-        return (t@y.type(torch.cuda.FloatTensor)).half()
+        return t@y
 
     def planczos(self, A, order, x):
         N = x.shape[1]
@@ -1176,10 +1173,10 @@ def supporting_matrix(opt):
     H_dim1 = width ** 2
     # unique_A_pair = np.unique(np.sort(A_pair, axis=1), axis=0)
 
-    I = torch.eye(width ** 2, width ** 2).type(dtype).to('cuda')
-    lagrange = torch.zeros(opt.edges, 1).type(dtype).to('cuda')
-    A = torch.zeros(width ** 2, width ** 2).type(dtype).to('cuda')
-    H = torch.zeros(H_dim0, H_dim1).type(dtype).to('cuda')
+    I = torch.eye(width ** 2, width ** 2).type(dtype)
+    lagrange = torch.zeros(opt.edges, 1).type(dtype)
+    A = torch.zeros(width ** 2, width ** 2).type(dtype)
+    H = torch.zeros(H_dim0, H_dim1).type(dtype)
     for e, p in enumerate(A_pair):
         H[e, p[0]] = 1
         H[e, p[1]] = -1
@@ -1189,11 +1186,14 @@ def supporting_matrix(opt):
     opt.I = I  # .type(dtype).requires_grad_(True)
     opt.pairs = A_pair
     opt.H = H  # .type(dtype).requires_grad_(True)
-    opt.connectivity_full = A.requires_grad_(True).to('cuda')
+    opt.connectivity_full = A.requires_grad_(True)
     opt.connectivity_idx = torch.where(A > 0)
 
     for e, p in enumerate(A_pair):
         A[p[1], p[0]] = 1
+    opt.lagrange = lagrange  # .requires_grad_(True)
+    opt.D = torch.inverse(2 * opt.I + opt.delta * (opt.H.T.mm(H))).type(dtype).detach()
+    opt.pg_zero = torch.zeros(opt.edges, 1).type(dtype)
     print("OPT created on cuda:", cuda, dtype)
 
 

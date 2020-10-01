@@ -23,8 +23,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
     torch.autograd.set_detect_anomaly(True)
     print("CUDA: ", cuda)
     if cuda:
-        #dtype = torch.cuda.FloatTensor
-        dtype = torch.float16
+        dtype = torch.cuda.FloatTensor
         print(torch.cuda.get_device_name(0))
     else:
         dtype = torch.FloatTensor
@@ -102,7 +101,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
     opt._print()
     pickle.dump(opt, open( "opt", "wb" ))
     ld = len(dataset)
-    #gtv.half().to('cuda') 
+    
 
     scaler = torch.cuda.amp.GradScaler()
     for epoch in range(total_epoch):  # loop over the dataset multiple times
@@ -111,8 +110,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
         for i, data in enumerate(dataloader, 0):  # start index at 0
             # get the inputs; data is a list of [inputs, labels]
             #print(data["nimg"].shape)
-            inputs = data["nimg"][:, : opt.channels, :, :].float().type(dtype).to('cuda')
-            labels = data["rimg"][:, : opt.channels, :, :].float().type(dtype).to('cuda')
+            inputs = data["nimg"][:, : opt.channels, :, :].float().type(dtype)
+            labels = data["rimg"][:, : opt.channels, :, :].float().type(dtype)
             # zero the parameter gradients
 
             optimizer.zero_grad()
