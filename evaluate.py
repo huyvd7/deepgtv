@@ -191,6 +191,7 @@ def patch_merge(P, stride=36, shape=None, shapeorg=None):
 def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_path=None, noise_type='gauss', Tmod=None, opt=None, args=None):
     # INITIALIZE
     #global opt
+    opt.width=args.train_width
     supporting_matrix(opt)
     opt._print()
     width = args.train_width
