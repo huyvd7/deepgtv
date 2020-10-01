@@ -297,7 +297,9 @@ if __name__=="__main__":
     parser.add_argument(
         "--multi", default=30, type=int, help='# of patches evaluation in parallel'
     )
-
+    parser.add_argument(
+        "--width", default=36, type=int, help='patch size that GTV was trained'
+    )
     parser.add_argument(
         "--opt", default='opt'
     )
