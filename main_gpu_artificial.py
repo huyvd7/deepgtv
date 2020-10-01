@@ -123,6 +123,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
             outputs = gtv(inputs, debug=0)
             with torch.cuda.amp.autocast():
                 loss = criterion(outputs, labels)
+                print(loss)
             scaler.scale(loss).backward()
 
             #loss.backward()
