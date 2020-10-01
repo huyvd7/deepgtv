@@ -495,7 +495,7 @@ class OPT:
         self.cuda= cuda
         if cuda:
             #self.dtype = torch.cuda.FloatTensor
-            self.dtype = torch.cuda.float16
+            self.dtype = torch.float16
         else:
             self.dtype = torch.FloatTensor
 
