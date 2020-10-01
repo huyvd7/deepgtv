@@ -193,7 +193,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     #global opt
     supporting_matrix(opt)
     opt._print()
-    width = opt.width
+    width = args.width
     gtv = GTV(
         width=width,
         prox_iter=1,
