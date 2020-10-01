@@ -709,7 +709,7 @@ class GTV(nn.Module):
         xhat3 = glr(xhat2, w, u)
         xhat4 = glr(xhat3, w, u)
 
-
+        print(torch.isnan(xhat4).any())
         return xhat4.view(
             xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
         )
