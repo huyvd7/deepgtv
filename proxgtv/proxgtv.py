@@ -17,7 +17,7 @@ cuda = True if torch.cuda.is_available() else False
 
 if cuda:
     dtype = torch.cuda.FloatTensor
-    dtype = torch.cuda.float16
+    dtype = torch.float16
 else:
     dtype = torch.FloatTensor
 
@@ -564,7 +564,7 @@ class GTV(nn.Module):
             # self.cnny.cuda()
         print("GTV created on cuda:", cuda)
         #self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
-        self.dtype = torch.cuda.float16 if cuda else torch.FloatTensor
+        self.dtype = torch.float16 if cuda else torch.FloatTensor
         self.device = torch.device("cuda") if cuda else torch.device("cpu")
         self.cnnf.apply(weights_init_normal)
         # self.cnny.apply(weights_init_normal)
