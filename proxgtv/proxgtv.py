@@ -140,26 +140,27 @@ class cnnu(nn.Module):
         super(cnnu, self).__init__()
         self.layer = nn.Sequential(
             # nn.Conv2d(3, 32, kernel_size=3, stride=2, padding=1),
-            nn.Conv2d(opt.channels, 32, kernel_size=2, stride=2, padding=0),
+            nn.Conv2d(opt.channels, 32, kernel_size=3, stride=2, padding=1),
             # nn.ReLU(),
             nn.LeakyReLU(0.05),
-            nn.Conv2d(32, 32, kernel_size=2, stride=1, padding=0),
-            # nn.ReLU(),
-            nn.LeakyReLU(0.05),
-            nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
-            nn.Conv2d(32, 32, kernel_size=2, stride=1, padding=0),
+            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
             # nn.ReLU(),
             nn.LeakyReLU(0.05),
             nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
-            nn.Conv2d(32, 32, kernel_size=2, stride=1, padding=0),
+            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
+            # nn.ReLU(),
+            nn.LeakyReLU(0.05),
+            nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
+            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
             # nn.ReLU(),
             nn.LeakyReLU(0.05),
             nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
         )
 
         self.opt=opt
+        self.u_min = u_min
         self.fc = nn.Sequential(
-            nn.Linear(3 * 3 * 32, 1 * 1 * 32),
+            nn.Linear(self.linear_input_neurons(), 1 * 1 * 32),
             nn.Linear(1 * 1 * 32, 1),
             nn.ReLU()
             # nn.LeakyReLU(0.05),
@@ -167,11 +168,22 @@ class cnnu(nn.Module):
 
     def forward(self, x):
         out = self.layer(x)
-        print(out.shape)
         out = out.view(out.shape[0], -1)
+        print(out.shape)
         out = self.fc(out)
         return out
+    def size_after_relu(self, x):
+        x = self.layer(x)
 
+        return x.size()
+
+    def linear_input_neurons(self):
+        size = self.size_after_relu(torch.rand(1, 1, self.opt.width, self.opt.width)) 
+        m = 1
+        for i in size:
+            m *= i
+
+        return int(m)
 
 class cnny(nn.Module):
     """
