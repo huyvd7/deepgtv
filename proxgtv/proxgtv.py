@@ -1190,7 +1190,7 @@ def supporting_matrix(opt):
     opt.pairs = A_pair
     opt.H = H  # .type(dtype).requires_grad_(True)
     opt.connectivity_full = A.requires_grad_(True).to('cuda')
-    opt.connectivity_idx = torch.where(A > 0).to('cuda')
+    opt.connectivity_idx = torch.where(A > 0)
 
     for e, p in enumerate(A_pair):
         A[p[1], p[0]] = 1
