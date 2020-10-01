@@ -169,7 +169,6 @@ class cnnu(nn.Module):
     def forward(self, x):
         out = self.layer(x)
         out = out.view(out.shape[0], -1)
-        print(out.shape)
         out = self.fc(out)
         return out
     def size_after_relu(self, x):
