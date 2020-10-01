@@ -102,7 +102,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
     pickle.dump(opt, open( "opt", "wb" ))
     ld = len(dataset)
     
-    gtv, optimizer = amp.initialize(gtv, optimizer, opt_level='O2')
+
+    scaler = torch.cuda.amp.GradScaler()
     for epoch in range(total_epoch):  # loop over the dataset multiple times
         # running_loss_inside = 0.0
         running_loss = 0.0
@@ -119,20 +120,22 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
             # forward + backward + optimize
             #outputs = gtv.forward_approx(inputs, debug=0)
             outputs = gtv(inputs, debug=0)
-            loss = criterion(outputs, labels)
-            with amp.scale_loss(loss, optimizer) as scaled_loss:                      
-                scaled_loss.backward()
+            with torch.cuda.amp.autocast():
+                loss = criterion(outputs, labels)
+            scaler.scale(loss).backward()
+
             #loss.backward()
             torch.nn.utils.clip_grad_norm_(cnnf_params, 1e1)
             torch.nn.utils.clip_grad_norm_(cnnu_params, 1e1)
 
-            optimizer.step()
-            #optimizer[i%3].step()
+            scaler.step(optimizer)
+            #optimizer.step()
+            scaler.update()
             running_loss += loss.item()
 
             if epoch==0 and (i+1)%80==0:
                 with torch.no_grad():
-                    histW = gtv(inputs, debug=1, Tmod=opt.admm_iter + 5)
+                    histW = gtv(inputs, debug=1, Tmod=5)
                 if opt.ver: # experimental version
                     print("\tCNNF stats: ", gtv.cnnf.layer[0].weight.grad.median().item())
                 else:
@@ -157,7 +160,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
 
         if ((epoch + 1) % 1 == 0) or (epoch + 1) == total_epoch:
             with torch.no_grad():
-                histW = gtv(inputs, debug=1, Tmod=opt.admm_iter + 5)
+                histW = gtv(inputs, debug=1, Tmod= 5)
             if opt.ver: # experimental version
                 print("\tCNNF stats: ", gtv.cnnf.layer[0].weight.grad.mean())
             else:
@@ -198,7 +201,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
     ax.set(ylim=[0, ax.get_ylim()[1] *1.05 ])
     fig.savefig("loss.png")
 
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.05, u=50, lr=8e-6, momentum=0.9, u_max=65, u_min=50, cuda=True if torch.cuda.is_available() else False)
+opt = OPT(batch_size = 50, channels=3, u=50, lr=8e-6, momentum=0.9, u_max=65, u_min=50, cuda=True if torch.cuda.is_available() else False)
 #batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=50, lr=8e-6, momentum=0.9, u_max=65, u_min=50)
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
@@ -214,15 +217,6 @@ if __name__=="__main__":
     )
     parser.add_argument(
         "--lr", default=8e-6, type=float
-    )
-    parser.add_argument(
-        "--delta", default=0.05
-    )
-    parser.add_argument(
-        "--eta", default=0.05, type=float
-    )
-    parser.add_argument(
-        "--admm_iter", default=4
     )
     parser.add_argument(
         "--epoch", default=200
@@ -253,9 +247,6 @@ if __name__=="__main__":
         model_name='GTV.pkl'
     opt.batch_size = int(args.batch) 
     opt.lr = float(args.lr)
-    opt.admm_iter = int(args.admm_iter)
-    opt.delta = float(args.delta)
-    opt.eta=args.eta
     opt.u_min=args.umin
     opt.u_max=args.umax
     opt.ver=True

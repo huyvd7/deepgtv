@@ -223,8 +223,6 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     #trainset = ["10", "1", "7", "8", "9"]
     traineva = {'psnr':list(), 'ssim':list(), 'ssim2':list(), 'psnr2':list(), 'mse':list()}
     stride=args.stride
-    if not Tmod:
-        Tmod = opt.admm_iter
     for t in trainset:
         print("image #", t)
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
@@ -308,9 +306,6 @@ if __name__=="__main__":
         "-p", "--image_path"
     )
     parser.add_argument(
-        "--Tmod", default=9
-    )
-    parser.add_argument(
         "--delta", default=0.9
     )
     args = parser.parse_args()
@@ -329,4 +324,4 @@ if __name__=="__main__":
     else:
         image_path = 'gauss'
     opt.delta = float(args.delta)
-    _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss', Tmod=int(args.Tmod), opt=opt, args=args)
+    _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss', Tmod=0, opt=opt, args=args)
