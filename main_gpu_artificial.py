@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from proxgtv.proxgtv import * 
 import pickle
 
-def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, args=args):
+def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, args=None):
     debug = 0
     cuda = True if torch.cuda.is_available() else False
     torch.autograd.set_detect_anomaly(True)
