@@ -590,6 +590,7 @@ class GTV(nn.Module):
                     'Z':list(), 'gtv':list(), 'w':list(), 'f':list()}
 
         u = torch.clamp(u, u_min, u_max)
+        print(u)
         u = u.unsqueeze(1).unsqueeze(1)
 
         z = self.opt.H.matmul(
