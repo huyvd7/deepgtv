@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 def main(t,sigma, args=None):
     # Experiment specifications
     #imagename = 'image_Lena512rgb.png'
-    imagepath = 'gauss\\'
+    imagepath = args.path
     imagename = imagepath+ 'ref\\' + t + '_r.bmp'
     # Load noise-free image
     y = np.array(Image.open(imagename)) / 255
@@ -225,9 +225,9 @@ def _main(imgw=324, sigma=25, args=None):
     dataloader = DataLoader(
         dataset, batch_size=1, shuffle=False#, pin_memory=True
     )
-    gaussp = 'gauss\\'
-    noisyp = 'gauss\\noisy\\'
-    refp = 'gauss\\ref\\'
+    gaussp=args.path
+    noisyp = os.path.join(gaussp, 'noisy')
+    refp   = os.path.join(gaussp, 'ref')
 
     shutil.rmtree(gaussp, ignore_errors=True)
     shutil.rmtree(noisyp, ignore_errors=True)
@@ -255,7 +255,7 @@ def _main(imgw=324, sigma=25, args=None):
             bm3d_res['mse'].append(_mse)
         print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
 
-    dataset = RENOIR_Dataset2(img_dir='gauss\\',
+    dataset = RENOIR_Dataset2(img_dir=args.path,
                              transform = transforms.Compose([standardize2(),
                                                 ToTensor2()])
                             )
@@ -266,8 +266,8 @@ def _main(imgw=324, sigma=25, args=None):
     # mkdir gauss_batch/noisy
     # mkdir gauss_batch/ref
     
-    noisyp = 'gauss_batch\\noisy'
-    refp =   'gauss_batch\\ref'
+    noisyp = args.path + '_batch\\noisy'
+    refp =   args.path + '_batch\\ref'
     shutil.rmtree(noisyp, ignore_errors=True)
     shutil.rmtree(refp, ignore_errors=True)
     os.makedirs(noisyp)
@@ -311,6 +311,9 @@ if __name__=="__main__":
     )
     parser.add_argument(
         "--patch_size", default=36
+    )
+    parser.add_argument(
+        "--path", default='gauss'
     )
     parser.add_argument(
         "--train", default='../'
