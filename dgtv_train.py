@@ -44,7 +44,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         subset = [i + "_" for i in subset]
     dataset = RENOIR_Dataset(
         img_dir=os.path.join(
-            "gauss_batch"
+            opt.train
         ),
         transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
         subset=subset,
@@ -182,11 +182,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 
         #scheduler.step() 
         losshist.append(running_loss / (ld*(i+1)))
-        if (epoch+1) in [100000]:
-            print("CHANGE LR")
-            current_lr /= 5
-            optimizer = optim.SGD(gtv.parameters(), lr=current_lr, momentum=opt.momentum)
-    torch.save(gtv.state_dict(), SAVEDIR + str(epoch) +'.'+SAVEPATH)
+        torch.save(gtv.state_dict(), SAVEDIR + str(epoch) +'.'+SAVEPATH)
     torch.save(optimizer.state_dict(), SAVEDIR + str(epoch)+'.'+SAVEPATH + "optim")
            
     print("Total running time: {0:.3f}".format(time.time() - tstart))
