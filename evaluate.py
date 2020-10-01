@@ -22,7 +22,7 @@ else:
     dtype = torch.FloatTensor
 
 
-def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, Tmod=9, opt=None, approx=False):
+def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, Tmod=9, opt=None, approx=False, agrs=None):
     try:
         from skimage.metrics import structural_similarity as compare_ssim
     except Exception:
@@ -71,8 +71,8 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     shapex = T1.shape
     T2 = (
         torch.from_numpy(T1.detach().numpy().transpose(1, 2, 0))
-        .unfold(0, 36, stride)
-        .unfold(1, 36, stride)
+        .unfold(0, opt.width, stride)
+        .unfold(1, opt.width, stride)
     ).type(dtype)
 
     if argref:
@@ -81,8 +81,8 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         )
         T2r = (
             torch.from_numpy(T1r.detach().numpy().transpose(1, 2, 0))
-            .unfold(0, 36, stride)
-            .unfold(1, 36, stride)
+            .unfold(0, opt.width, stride)
+            .unfold(1, opt.width, stride)
         )
 
     s2 = int(T2.shape[-1])
@@ -188,13 +188,14 @@ def patch_merge(P, stride=36, shape=None, shapeorg=None):
 
     return (R / Rc)[:, : shapeorg[-1], : shapeorg[-1]]
 
-def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_path=None, noise_type='gauss', Tmod=None, opt=None):
+def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_path=None, noise_type='gauss', Tmod=None, opt=None, args=None):
     # INITIALIZE
     #global opt
     supporting_matrix(opt)
     opt._print()
+    width = opt.width
     gtv = GTV(
-        width=36,
+        width=width,
         prox_iter=1,
         u_max=10,
         u_min=0.5,
@@ -204,7 +205,6 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         opt=opt
         
     )
-    width = 36
     PATH = model_name
     device = torch.device("cuda") if cuda else torch.device("cpu")
     gtv.load_state_dict(torch.load(PATH, map_location=device))
@@ -219,7 +219,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     
     #trainset = ["10", "1", "7", "8", "9"]
     traineva = {'psnr':list(), 'ssim':list(), 'ssim2':list(), 'psnr2':list(), 'mse':list()}
-    stride=18
+    stride=args.stride
     if not Tmod:
         Tmod = opt.admm_iter
     for t in trainset:
@@ -290,6 +290,9 @@ if __name__=="__main__":
         "-m", "--model"
     )
     parser.add_argument(
+        "--stride", default=18, type=int
+    )
+    parser.add_argument(
         "--opt", default='opt'
     )
     parser.add_argument(
@@ -317,4 +320,4 @@ if __name__=="__main__":
     else:
         image_path = 'gauss'
     opt.delta = float(args.delta)
-    _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss', Tmod=int(args.Tmod), opt=opt)
+    _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss', Tmod=int(args.Tmod), opt=opt, args=args)
