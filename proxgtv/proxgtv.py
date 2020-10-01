@@ -989,9 +989,9 @@ class GTV(nn.Module):
         Solve equation (2) using (6)
         """
     
-        t = torch.inverse(Im + u * L)
+        t = torch.inverse(Im.type(torch.cuda.FloatTensor) + u.type(torch.cuda.FloatTensor) * L.type(torch.cuda.FloatTensor))
 
-        return t@y
+        return (t@y).half()
 
     def planczos(self, A, order, x):
         N = x.shape[1]
