@@ -1176,10 +1176,10 @@ def supporting_matrix(opt):
     H_dim1 = width ** 2
     # unique_A_pair = np.unique(np.sort(A_pair, axis=1), axis=0)
 
-    I = torch.eye(width ** 2, width ** 2).type(dtype)
-    lagrange = torch.zeros(opt.edges, 1).type(dtype)
-    A = torch.zeros(width ** 2, width ** 2).type(dtype)
-    H = torch.zeros(H_dim0, H_dim1).type(dtype)
+    I = torch.eye(width ** 2, width ** 2).type(dtype).to('cuda')
+    lagrange = torch.zeros(opt.edges, 1).type(dtype).to('cuda')
+    A = torch.zeros(width ** 2, width ** 2).type(dtype).to('cuda')
+    H = torch.zeros(H_dim0, H_dim1).type(dtype).to('cuda')
     for e, p in enumerate(A_pair):
         H[e, p[0]] = 1
         H[e, p[1]] = -1
@@ -1189,14 +1189,11 @@ def supporting_matrix(opt):
     opt.I = I  # .type(dtype).requires_grad_(True)
     opt.pairs = A_pair
     opt.H = H  # .type(dtype).requires_grad_(True)
-    opt.connectivity_full = A.requires_grad_(True)
-    opt.connectivity_idx = torch.where(A > 0)
+    opt.connectivity_full = A.requires_grad_(True).to('cuda')
+    opt.connectivity_idx = torch.where(A > 0).to('cuda')
 
     for e, p in enumerate(A_pair):
         A[p[1], p[0]] = 1
-    opt.lagrange = lagrange  # .requires_grad_(True)
-    opt.D = torch.inverse(2 * opt.I + opt.delta * (opt.H.T.mm(H))).type(dtype).detach()
-    opt.pg_zero = torch.zeros(opt.edges, 1).type(dtype)
     print("OPT created on cuda:", cuda, dtype)
 
 
