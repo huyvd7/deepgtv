@@ -710,7 +710,6 @@ class GTV(nn.Module):
         xhat4 = glr(xhat3, w, u)
 
 
-        print(xhat4)
         return xhat4.view(
             xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
         )
