@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 def main(t,sigma, args=None):
     # Experiment specifications
     #imagename = 'image_Lena512rgb.png'
-    imagepath = args.path
+    imagepath = args.path + '\\'
     imagename = imagepath+ 'ref\\' + t + '_r.bmp'
     # Load noise-free image
     y = np.array(Image.open(imagename)) / 255
