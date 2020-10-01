@@ -308,10 +308,10 @@ if __name__=="__main__":
         "--sigma", default=25
     )
     parser.add_argument(
-        "--stride", default=18
+        "--stride", default=18, type=int
     )
     parser.add_argument(
-        "--patch_size", default=36
+        "--patch_size", default=36, type=int
     )
     parser.add_argument(
         "--path", default='gauss'
