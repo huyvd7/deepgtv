@@ -590,7 +590,6 @@ class GTV(nn.Module):
                     'Z':list(), 'gtv':list(), 'w':list(), 'f':list()}
 
         u = torch.clamp(u, u_min, u_max)
-        print(u)
         u = u.unsqueeze(1).unsqueeze(1)
 
         z = self.opt.H.matmul(
@@ -711,6 +710,7 @@ class GTV(nn.Module):
         xhat4 = glr(xhat3, w, u)
 
 
+        print(xhat4)
         return xhat4.view(
             xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
         )
