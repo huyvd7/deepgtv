@@ -991,7 +991,7 @@ class GTV(nn.Module):
     
         t = torch.inverse(Im.type(torch.cuda.FloatTensor) + u.type(torch.cuda.FloatTensor) * L.type(torch.cuda.FloatTensor))
 
-        return (t@y).half()
+        return (t@y.type(torch.cuda.FloatTensor)).half()
 
     def planczos(self, A, order, x):
         N = x.shape[1]
