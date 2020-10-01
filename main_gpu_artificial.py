@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from proxgtv.proxgtv import * 
 import pickle
 
-def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
+def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, args=args):
     debug = 0
     cuda = True if torch.cuda.is_available() else False
     torch.autograd.set_detect_anomaly(True)
@@ -51,12 +51,12 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         dataset, batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=4, drop_last=True
     )
 
-    width = 36
+    width = args.width
     supporting_matrix(opt)
     total_epoch = epoch
     print("Dataset: ", len(dataset))
     gtv = GTV(
-        width=36,
+        width=args.width,
         prox_iter=1,
         u_max=10,
         u_min=0.5,
@@ -207,7 +207,7 @@ if __name__=="__main__":
         "--batch", default=64
     )
     parser.add_argument(
-        "--lr", default=8e-6
+        "--lr", default=8e-6, type=float
     )
     parser.add_argument(
         "--delta", default=0.05
@@ -231,6 +231,9 @@ if __name__=="__main__":
         "--seed", default=0, type=float
     )
     parser.add_argument(
+        "--width", default=36, type=int
+    )
+    parser.add_argument(
             "--train", default='gauss_batch')
 
     args = parser.parse_args()
@@ -251,6 +254,7 @@ if __name__=="__main__":
     opt.u_max=args.umax
     opt.ver=True
     opt.train=args.train
+    opt.width=args.width
     torch.manual_seed(args.seed)
 
-    main(seed=1, model_name=model_name, cont=cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'])
+    main(seed=1, model_name=model_name, cont=cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'], args=args)
