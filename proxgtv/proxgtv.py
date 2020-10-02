@@ -455,11 +455,7 @@ class OPT:
         batch_size=100,
         width=36,
         connectivity="8",
-        admm_iter=1,
-        prox_iter=1,
-        delta=1,
         channels=3,
-        eta=0.1,
         u=1,
         u_max=100,
         u_min=10,
@@ -477,13 +473,9 @@ class OPT:
         self.pairs = None
         self.H = None
         self.connectivity = connectivity
-        self.admm_iter = admm_iter
-        self.prox_iter = prox_iter
         self.channels = channels
-        self.eta = eta
         self.u = u
         self.lr = lr
-        self.delta = delta
         self.momentum = momentum
         self.u_max = u_max
         self.u_min = u_min
@@ -504,16 +496,8 @@ class OPT:
             self.batch_size,
             ", width =",
             self.width,
-            ", admm_iter =",
-            self.admm_iter,
-            ", prox_iter =",
-            self.prox_iter,
-            ", delta =",
-            self.delta,
             ", channels =",
             self.channels,
-            ", eta =",
-            self.eta,
             ", u_min =",
             self.u_min,
             ", u_max =",

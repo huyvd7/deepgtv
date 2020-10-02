@@ -132,7 +132,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             if epoch==0 and (i+1)%80==0:
                 g = gtv.gtv1
                 with torch.no_grad():
-                    P1 = g(inputs, debug=1, Tmod=opt.admm_iter + 5)
+                    P1 = g(inputs, debug=1, Tmod= 5)
                 if opt.ver: # experimental version
                     print("\tCNNF stats: ", g.cnnf.layer[0].weight.grad.median())
                 else:
@@ -142,9 +142,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                     us = g.cnnu(inputs)
                     print("\tCNNU stats: ", us.max().data,  us.mean().data,us.min().data)
                 with torch.no_grad():
-                    P2 = g(P1, debug=1, Tmod=opt.admm_iter + 5)
+                    P2 = g(P1, debug=1, Tmod= 5)
                 with torch.no_grad():
-                    P3 = g(P2, debug=1, Tmod=opt.admm_iter + 5)
+                    P3 = g(P2, debug=1, Tmod= 5)
 
 
         tnow = time.time()
@@ -160,7 +160,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         if ((epoch + 1) % 1 == 0) or (epoch + 1) == total_epoch:
             g = gtv.gtv1
             with torch.no_grad():
-                histW = g(inputs, debug=1, Tmod=opt.admm_iter + 5)
+                histW = g(inputs, debug=1, Tmod= 5)
             if opt.ver: # experimental version
                 print("\tCNNF stats: ", g.cnnf.layer[0].weight.grad.median().item())
             else:
@@ -170,9 +170,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 us = g.cnnu(inputs[:10])
                 print("\tCNNU stats: ", us.mean().item(), us.max().item(), us.min().item())
             with torch.no_grad():
-                P2 = g(P1, debug=1, Tmod=opt.admm_iter + 5)
+                P2 = g(P1, debug=1, Tmod= 5)
             with torch.no_grad():
-                P3 = g(P2, debug=1, Tmod=opt.admm_iter + 5)
+                P3 = g(P2, debug=1, Tmod= 5)
 
 
             print("\tsave @ epoch ", epoch + 1)
@@ -194,7 +194,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     ax.plot(ma_vec)
     fig.savefig("loss.png")
 
-opt = OPT(batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=50, lr=8e-6, momentum=0.9, u_max=65, u_min=50, cuda=True if torch.cuda.is_available() else False)
+opt = OPT(batch_size = 50,  channels=3,  u=50, lr=8e-6, momentum=0.9, u_max=65, u_min=50, cuda=True if torch.cuda.is_available() else False)
 #batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=50, lr=8e-6, momentum=0.9, u_max=65, u_min=50)
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
