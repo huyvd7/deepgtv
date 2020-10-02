@@ -1109,12 +1109,9 @@ class DeepGTV(nn.Module):
         #        )
         #    )
         self.gtv1 = GTV(
-                    width=36,
-                    prox_iter=prox_iter,
+                    width=width,
                     u_max=u_max,
                     u_min=u_min,
-                    lambda_min=lambda_min,
-                    lambda_max=lambda_max,
                     cuda=cuda,
                     opt=opt,
                 )

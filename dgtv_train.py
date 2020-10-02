@@ -53,12 +53,12 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         dataset, batch_size=batch_size, shuffle=True   , pin_memory=True, num_workers=4, drop_last=True
     )
 
-    width = 36
+    width = args.width
     supporting_matrix(opt)
     total_epoch = epoch
     print("Dataset: ", len(dataset))
     gtv = DeepGTV(
-        width=36,
+        width=args.width,
         prox_iter=1,
         u_max=10,
         u_min=0.5,
@@ -236,6 +236,9 @@ if __name__=="__main__":
             "--train", default='gauss_batch')
     parser.add_argument(
             "--stack", default=None)
+    parser.add_argument(
+        "--width", default=36, type=int
+    )
 
     args = parser.parse_args()
     if args.model:
@@ -251,6 +254,7 @@ if __name__=="__main__":
     opt.u_max=args.umax
     opt.ver=True
     opt.train=args.train
+    opt.width=args.width
     torch.manual_seed(args.seed)
 
     main(seed=1, model_name=model_name, cont=args.cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'])
