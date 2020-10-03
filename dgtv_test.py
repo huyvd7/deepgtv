@@ -190,6 +190,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     opt.width=args.train_width
     supporting_matrix(opt)
     opt._print()
+    width = args.train_width
     gtv = DeepGTV(
         width=width,
         prox_iter=1,
