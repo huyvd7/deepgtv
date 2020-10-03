@@ -22,7 +22,7 @@ else:
     dtype = torch.FloatTensor
 
 
-def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, Tmod=9, opt=None, args=args):
+def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, Tmod=9, opt=None, args=None):
     try:
         from skimage.metrics import structural_similarity as compare_ssim
     except Exception:
@@ -221,7 +221,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         print("image #", t)
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
-        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, opt=opt)
+        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, opt=opt, args=args)
         traineva["psnr"].append(_psnr)
         traineva["ssim"].append(_ssim)
         traineva["ssim2"].append(_ssim2)
@@ -251,7 +251,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         print("image #", t)
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
-        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, opt=opt)
+        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, opt=opt, args=args)
         testeva["psnr"].append(_psnr)
         testeva["ssim"].append(_ssim)
         testeva["ssim2"].append(_ssim2)
