@@ -34,7 +34,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     else:
         sample = cv2.resize(sample, (width, width))
     sample = cv2.cvtColor(sample, cv2.COLOR_BGR2RGB)
-    sample = sample.transpose((2, 0, 1))/255.0
+    sample = sample.transpose((2, 0, 1))
     shape = sample.shape
 
     if normalize:
@@ -134,17 +134,19 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     #    #_d = (d - d.min()) * (1 / (d.max() - d.min()))
     #    _d = d/255
     #    new_d.append(_d)
-    #d = np.minimum(np.maximum(ds, 0), 255)
-    d = np.minimum(np.maximum(ds, 0), 1)
+    d = np.minimum(np.maximum(ds, 0), 255)
     print("RANGE: ", d.min(), d.max(), d.shape)
-    #d = d.transpose(1, 2, 0)/255
-    d = d.transpose(1, 2, 0)
+    #d = np.array(new_d).transpose(1, 2, 0)
+    d = d.transpose(1, 2, 0)/255
     if 0:
         opath = args.output
     else:
         filename = inp.split("/")[-1]
         opath = "./{0}_{1}".format(prefix, filename)
         opath = opath[:-3] + "png"
+    #if argref:
+    #    mse = ((d-(tref/255.0))**2).mean()*255
+    #    print("MSE: {:.6f}".format(mse))
     d = np.minimum(np.maximum(d, 0), 1)
     plt.imsave(opath, d)
     if argref:

@@ -557,7 +557,6 @@ class GTV(nn.Module):
         self.lanczos_order = 20
         self.support_e1 = torch.zeros(self.lanczos_order,1).type(self.dtype)
         self.support_e1[0] = 1
-        self.weight_sigma=0.3
     
     def forward(self, xf, debug=False, Tmod=False, manual_debug=False):  # gtvforward
         # u = opt.u
@@ -585,8 +584,7 @@ class GTV(nn.Module):
             self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1))
             ** 2
         )
-        #w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))
-        w = torch.exp(-(Fs.sum(axis=1)) / (self.weight_sigma**2))
+        w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))
 
         if manual_debug:
             #return_dict['gtv'].append((z*w).abs().sum())
@@ -728,7 +726,7 @@ class GTV(nn.Module):
             self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1))
             ** 2
         )
-        w = torch.exp(-(Fs.sum(axis=1)) / (self.weight_sigma**2))
+        w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))
 
         if manual_debug:
             #return_dict['gtv'].append((z*w).abs().sum())
@@ -870,7 +868,8 @@ class GTV(nn.Module):
             self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1))
             ** 2
         )
-        w = torch.exp(-(Fs.sum(axis=1)) / (self.weight_sigma**2))
+        w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))
+
         if debug:
             print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().item())
             print("\tprocessed u:", u.mean().item(), u.median().item())
