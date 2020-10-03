@@ -28,13 +28,13 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     except Exception:
         from skimage.measure import compare_ssim
 
-    sample = cv2.imread(inp)/255
+    sample = cv2.imread(inp)
     if width==None:
         width = sample.shape[0]
     else:
         sample = cv2.resize(sample, (width, width))
     sample = cv2.cvtColor(sample, cv2.COLOR_BGR2RGB)
-    sample = sample.transpose((2, 0, 1))
+    sample = sample.transpose((2, 0, 1))/255.0
     shape = sample.shape
 
     if normalize:
