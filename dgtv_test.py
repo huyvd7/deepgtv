@@ -22,7 +22,7 @@ else:
     dtype = torch.FloatTensor
 
 
-def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, Tmod=9, opt=None, args=None):
+def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, opt=None, args=None):
     try:
         from skimage.metrics import structural_similarity as compare_ssim
     except Exception:
@@ -184,7 +184,7 @@ def patch_merge(P, stride=36, shape=None, shapeorg=None):
 
     return (R / Rc)[:, : shapeorg[-1], : shapeorg[-1]]
 
-def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_path=None, noise_type='gauss', Tmod=None, opt=None):
+def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_path=None, noise_type='gauss', opt=None):
     # INITIALIZE
     #global opt
     opt.width=args.train_width
@@ -215,8 +215,6 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     #trainset = ["10", "1", "7", "8", "9"]
     traineva = {'psnr':list(), 'ssim':list(), 'ssim2':list(), 'psnr2':list(), 'mse':list()}
     stride=args.stride
-    if not Tmod:
-        Tmod = opt.admm_iter
     for t in trainset:
         print("image #", t)
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
@@ -315,4 +313,4 @@ if __name__=="__main__":
         image_path = args.image_path
     else:
         image_path = 'gauss'
-    _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss', Tmod=int(args.Tmod), opt=opt)
+    _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss' , opt=opt)
