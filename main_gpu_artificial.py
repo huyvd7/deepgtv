@@ -14,8 +14,6 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 from proxgtv.proxgtv import * 
 import pickle
-from apex.fp16_utils import *
-from apex import amp, optimizers
 
 def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, args=None):
     debug = 0
