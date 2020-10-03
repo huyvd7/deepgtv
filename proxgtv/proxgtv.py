@@ -482,7 +482,6 @@ class OPT:
         self.ver = ver
         self.D = None
         self.train = train
-        self.pg_zero = None
         self.cuda= cuda
         if cuda:
             self.dtype = torch.cuda.FloatTensor
@@ -558,6 +557,7 @@ class GTV(nn.Module):
         self.lanczos_order = 20
         self.support_e1 = torch.zeros(self.lanczos_order,1).type(self.dtype)
         self.support_e1[0] = 1
+        self.weight_sigma=0.3
     
     def forward(self, xf, debug=False, Tmod=False, manual_debug=False):  # gtvforward
         # u = opt.u
@@ -585,7 +585,8 @@ class GTV(nn.Module):
             self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1))
             ** 2
         )
-        w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))
+        #w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))
+        w = torch.exp(-(Fs.sum(axis=1)) / (self.weight_sigma**2))
 
         if manual_debug:
             #return_dict['gtv'].append((z*w).abs().sum())
@@ -727,7 +728,7 @@ class GTV(nn.Module):
             self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1))
             ** 2
         )
-        w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))
+        w = torch.exp(-(Fs.sum(axis=1)) / (self.weight_sigma**2))
 
         if manual_debug:
             #return_dict['gtv'].append((z*w).abs().sum())
@@ -869,8 +870,7 @@ class GTV(nn.Module):
             self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1))
             ** 2
         )
-        w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))
-
+        w = torch.exp(-(Fs.sum(axis=1)) / (self.weight_sigma**2))
         if debug:
             print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().item())
             print("\tprocessed u:", u.mean().item(), u.median().item())
@@ -1172,20 +1172,7 @@ def supporting_matrix(opt):
 
     for e, p in enumerate(A_pair):
         A[p[1], p[0]] = 1
-    opt.lagrange = lagrange  # .requires_grad_(True)
-    opt.D = torch.inverse(2 * opt.I + opt.delta * (opt.H.T.mm(H))).type(dtype).detach()
-    opt.pg_zero = torch.zeros(opt.edges, 1).type(dtype)
     print("OPT created on cuda:", cuda, dtype)
-
-
-def proximal_gradient_descent(x, grad, w, u=1, eta=1, opt=None, debug=False):
-    v = x - eta * grad
-    # masks1 = ((v.abs() - (eta * w * u).abs()) > 0)#.type(dtype).requires_grad_(True)
-    # masks2 = ((v.abs() - (eta * w * u).abs()) <= 0)#.type(dtype).requires_grad_(True)
-    # v = v - masks1 * eta * w * u * torch.sign(v)
-    # v = v - masks2 * v
-    v = torch.sign(v) * torch.max(v.abs() - (eta * w * u), opt.pg_zero)
-    return v
 
 
 def _norm(x, newmin, newmax):

@@ -83,11 +83,6 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
                  {'params': cnnu_params , 'lr': opt.lr}
              ], lr=opt.lr, momentum=opt.momentum)
 
-    #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
-    #optimizer_f = optim.SGD(cnnf_params, lr=opt.lr*50, momentum=opt.momentum)
-    #optimizer_u = optim.SGD(cnnf_params, lr=opt.lr*40, momentum=opt.momentum)
-    #optimizer_y = optim.SGD(cnnf_params, lr=opt.lr, momentum=opt.momentum)
-    #optimizer = [optimizer_f, optimizer_u, optimizer_y]
     if cont:
         optimizer.load_state_dict(torch.load(cont+'optim'))
         print("LOAD PREVIOUS OPTIMIZER:", cont+'optim')
