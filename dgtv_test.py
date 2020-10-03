@@ -187,10 +187,11 @@ def patch_merge(P, stride=36, shape=None, shapeorg=None):
 def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_path=None, noise_type='gauss', Tmod=None, opt=None):
     # INITIALIZE
     #global opt
+    opt.width=args.train_width
     supporting_matrix(opt)
     opt._print()
     gtv = DeepGTV(
-        width=36,
+        width=width,
         prox_iter=1,
         u_max=10,
         u_min=0.5,
@@ -199,7 +200,6 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         cuda=cuda,
         opt=opt,
     )
-    width = 36
     PATH = model_name
     device = torch.device("cuda") if cuda else torch.device("cpu")
     gtv.load_state_dict(torch.load(PATH, map_location=device))
@@ -291,13 +291,13 @@ if __name__=="__main__":
         "-p", "--image_path"
     )
     parser.add_argument(
-        "--Tmod", default=9
-    )
-    parser.add_argument(
-        "--delta", default=0.9
-    )
-    parser.add_argument(
         "--stride", default=18, type=int
+    )
+    parser.add_argument(
+        "--multi", default=30, type=int, help='# of patches evaluation in parallel'
+    )
+    parser.add_argument(
+        "--train_width", default=36, type=int, help='patch size that GTV was trained'
     )
 
     args = parser.parse_args()
