@@ -214,7 +214,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     
     #trainset = ["10", "1", "7", "8", "9"]
     traineva = {'psnr':list(), 'ssim':list(), 'ssim2':list(), 'psnr2':list(), 'mse':list()}
-    stride=18
+    stride=args.stride
     if not Tmod:
         Tmod = opt.admm_iter
     for t in trainset:
@@ -296,6 +296,10 @@ if __name__=="__main__":
     parser.add_argument(
         "--delta", default=0.9
     )
+    parser.add_argument(
+        "--stride", default=18, type=int
+    )
+
     args = parser.parse_args()
     opt = pickle.load(open(args.opt, "rb"))
     if args.width:
