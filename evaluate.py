@@ -28,7 +28,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     except Exception:
         from skimage.measure import compare_ssim
 
-    sample = cv2.imread(inp)
+    sample = cv2.imread(inp)/255
     if width==None:
         width = sample.shape[0]
     else:
