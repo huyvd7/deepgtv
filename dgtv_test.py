@@ -203,6 +203,9 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     PATH = model_name
     device = torch.device("cuda") if cuda else torch.device("cpu")
     gtv.load_state_dict(torch.load(PATH, map_location=device))
+    width = gtv.opt.width
+    opt.width=width
+
     if not image_path:
         image_path = "..\\all\\all\\"
     if noise_type=='gauss':
