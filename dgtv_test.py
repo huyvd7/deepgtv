@@ -22,7 +22,7 @@ else:
     dtype = torch.FloatTensor
 
 
-def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, Tmod=9, opt=None):
+def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, Tmod=9, opt=None, args=args):
     try:
         from skimage.metrics import structural_similarity as compare_ssim
     except Exception:
@@ -71,8 +71,8 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     shapex = T1.shape
     T2 = (
         torch.from_numpy(T1.detach().numpy().transpose(1, 2, 0))
-        .unfold(0, 36, stride)
-        .unfold(1, 36, stride)
+        .unfold(0, opt.width, stride)
+        .unfold(1, opt.width, stride)
     ).type(dtype)
 
     if argref:
@@ -81,13 +81,14 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         )
         T2r = (
             torch.from_numpy(T1r.detach().numpy().transpose(1, 2, 0))
-            .unfold(0, 36, stride)
-            .unfold(1, 36, stride)
+            .unfold(0, opt.width, stride)
+            .unfold(1, opt.width, stride)
         )
 
     s2 = int(T2.shape[-1])
     dummy = torch.zeros(T2.shape)
-    MAX_PATCH=30
+    MAX_PATCH=args.multi
+
     with torch.no_grad():
         for ii, i in enumerate(range(T2.shape[1])):
             for jj in range(0, T2.shape[1] , MAX_PATCH):
