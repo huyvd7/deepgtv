@@ -80,6 +80,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
                  {'params': cnnf_params , 'lr': opt.lr},
                  {'params': cnnu_params , 'lr': opt.lr}
              ], lr=opt.lr, momentum=opt.momentum)
+    optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
+
 
     if cont:
         optimizer.load_state_dict(torch.load(cont+'optim'))
@@ -119,8 +121,10 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
             #scaler.scale(loss).backward()
 
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(cnnf_params, 1e1)
-            torch.nn.utils.clip_grad_norm_(cnnu_params, 1e1)
+            #torch.nn.utils.clip_grad_norm_(cnnf_params, 1e1)
+            #torch.nn.utils.clip_grad_norm_(cnnu_params, 1e1)
+            torch.nn.utils.clip_grad_norm_(gtv.parameters(), 1e1)
+
 
             #scaler.step(optimizer)
             optimizer.step()
