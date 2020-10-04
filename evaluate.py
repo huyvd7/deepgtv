@@ -86,8 +86,10 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         )
 
     s2 = int(T2.shape[-1])
-    dummy = torch.zeros(T2.shape).type(dtype)
     MAX_PATCH = args.multi
+    oT2s0=T2.shape[0]
+    T2  = T2.view(-1,opt.channels,opt.width,opt.width)
+    dummy = torch.zeros(T2.shape).type(dtype)
     print(T2.shape)
     with torch.no_grad():
         #for ii, i in enumerate(range(T2.shape[1])):
@@ -102,8 +104,10 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         #            print("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
         #        dummy[i, jj:(jj+MAX_PATCH)] = P
         #        del P
-        P = gtv.predict(T2.float().contiguous().view(-1,3,opt.width,opt.width))
-        dummy=P
+        for ii, i in enumerate(range(0, T2.shape[0], MAX_PATCH)):
+            P = gtv.predict(T2[i:(i+MAX_PATCH),:,:,:].float().contiguous())
+            dummy[i:(i+MAX_PATCH)=P
+    dummy=dummy.view(oT2s0, -1, opt.channels,opt.width,opt.width)
     dummy=dummy.cpu()
     if verbose:
         print("\nPrediction time: ", time.time() - tstart)
