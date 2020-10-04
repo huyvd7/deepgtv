@@ -90,18 +90,20 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     MAX_PATCH = args.multi
     print(T2.shape)
     with torch.no_grad():
-        for ii, i in enumerate(range(T2.shape[1])):
+        #for ii, i in enumerate(range(T2.shape[1])):
 
-            for jj in range(0, T2.shape[1] , MAX_PATCH):
-                if approx:
-                    P = gtv.forward_approx(T2[i, jj:(jj+MAX_PATCH) : opt.channels, :, :].float().contiguous())
-                else:
-                    P = gtv.predict(T2[i, jj:(jj+MAX_PATCH), : opt.channels, :, :].float().contiguous())
+        #    for jj in range(0, T2.shape[1] , MAX_PATCH):
+        #        if approx:
+        #            P = gtv.forward_approx(T2[i, jj:(jj+MAX_PATCH) : opt.channels, :, :].float().contiguous())
+        #        else:
+        #            P = gtv.predict(T2[i, jj:(jj+MAX_PATCH), : opt.channels, :, :].float().contiguous())
 
-                if verbose>0:
-                    print("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
-                dummy[i, jj:(jj+MAX_PATCH)] = P
-                del P
+        #        if verbose>0:
+        #            print("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
+        #        dummy[i, jj:(jj+MAX_PATCH)] = P
+        #        del P
+        P = gtv.predict(T2.float().contiguous().view(-1,3,opt.width,opt.width)
+        dummy=P
     dummy=dummy.cpu()
     if verbose:
         print("\nPrediction time: ", time.time() - tstart)
