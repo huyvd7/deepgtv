@@ -238,7 +238,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         img1 = cv2.imread(inp)[:, :, : opt.channels]
         img2 = cv2.imread(argref)[:, :, : opt.channels]
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
-        print("Original ", cv2.PSNR(img1, img2), score)
+        print("Original {0:.5f} {1:.5f}".format( cv2.PSNR(img1, img2), score))
     print("========================")
     #print("MEAN PSNR: {:.2f}".format(np.mean(traineva["psnr"])))
     print("MEAN SSIM: {:.2f}".format(np.mean(traineva["ssim"])))
@@ -268,7 +268,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         img1 = cv2.imread(inp)[:, :, : opt.channels]
         img2 = cv2.imread(argref)[:, :, : opt.channels]
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
-        print("Original ", cv2.PSNR(img1, img2), score)
+        print("Original {0:.5f} {1:.5f}".format( cv2.PSNR(img1, img2), score))
     print("========================")
     #print("MEAN PSNR: {:.2f}".format(np.mean(testeva["psnr"])))
     print("MEAN SSIM: {:.2f}".format(np.mean(testeva["ssim"])))
