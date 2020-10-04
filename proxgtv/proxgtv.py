@@ -577,7 +577,7 @@ class GTV(nn.Module):
         #w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))
         #w = torch.exp(-(Fs.sum(axis=1)) / (self.weight_sigma**2))
         w = torch.exp(-(Fs.sum(axis=1)) / (s**2))
-
+        print(w.shape,s.shape)
         if manual_debug:
             #return_dict['gtv'].append((z*w).abs().sum())
             pass
