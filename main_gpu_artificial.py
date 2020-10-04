@@ -135,10 +135,13 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
                 else:
                     print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean().item())
                 print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean().item())
+                print("\tCNNU grads: ", gtv.cnns.layer[0].weight.grad.mean().item())
                 pmax = list()
 
                 with torch.no_grad():
                     us = gtv.cnnu(inputs)
+                    print("\tCNNU stats: ", us.max().item(),  us.mean().item(),us.min().item())
+                    us = gtv.cnns(inputs)
                     print("\tCNNU stats: ", us.max().item(),  us.mean().item(),us.min().item())
 
 
