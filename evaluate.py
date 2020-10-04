@@ -96,22 +96,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
                     P = gtv.forward_approx(T2[i, jj:(jj+MAX_PATCH) : opt.channels, :, :].float().contiguous())
                 else:
                     P = gtv.predict(T2[i, jj:(jj+MAX_PATCH), : opt.channels, :, :].float().contiguous())
-                #if cuda:
-                #    P = P.cpu()
-                #if argref:
-                #    img1 = T2r[i, jj:(jj+MAX_PATCH), : opt.channels, : shape[-1], : shape[-1]].float()
-                #    img2 = P[:, : opt.channels, : shape[-1], : shape[-1]]
-                #    psnrs.append(cv2.PSNR(img1.detach().numpy(), img2.detach().numpy()))
-                #    _tref = img1.detach().numpy()
-                #    _d = img2.detach().numpy()
-                #    for iii in range(_d.shape[0]):
-                #        (_score2, _) = compare_ssim(
-                #            _tref[iii].transpose(1, 2, 0),
-                #            _d[iii].transpose(1, 2, 0),
-                #            full=True,
-                #            multichannel=True,
-                #        )
-                #        score2.append(_score2)
+
                 if verbose>0:
                     print("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
                 dummy[i, jj:(jj+MAX_PATCH)] = P
@@ -161,8 +146,12 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         print("SSIM: {:.5f}".format(score))
     print("Saved ", opath)
     if argref:
+#        return (
+#            np.mean(np.array(psnrs)), score, np.mean(np.array(score2)), psnr2 , mse, d
+#        )  # psnr, ssim, denoised image
+
         return (
-            np.mean(np.array(psnrs)), score, np.mean(np.array(score2)), psnr2 , mse, d
+            0, score, 0, psnr2 , mse, d
         )  # psnr, ssim, denoised image
     return d
 
