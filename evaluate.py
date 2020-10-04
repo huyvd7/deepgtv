@@ -88,6 +88,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     s2 = int(T2.shape[-1])
     dummy = torch.zeros(T2.shape).type(dtype)
     MAX_PATCH = args.multi
+    print(T2.shape)
     with torch.no_grad():
         for ii, i in enumerate(range(T2.shape[1])):
 
