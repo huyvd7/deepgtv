@@ -86,7 +86,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         )
 
     s2 = int(T2.shape[-1])
-    dummy = torch.zeros(T2.shape)
+    dummy = torch.zeros(T2.shape, type=dtype)
     MAX_PATCH = args.multi
     with torch.no_grad():
         for ii, i in enumerate(range(T2.shape[1])):
@@ -114,8 +114,9 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
                 #        score2.append(_score2)
                 if verbose>0:
                     print("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
-                dummy[i, jj:(jj+MAX_PATCH)] = P.cpu()
+                dummy[i, jj:(jj+MAX_PATCH)] = P
                 del P
+    dummy=dummy.cpu()
     if verbose:
         print("\nPrediction time: ", time.time() - tstart)
     else:
