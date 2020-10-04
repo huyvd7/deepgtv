@@ -547,7 +547,7 @@ class GTV(nn.Module):
     def forward(self, xf, debug=False, Tmod=False, manual_debug=False):  # gtvforward
         s = self.cnns.forward(xf)
         s = torch.clamp(s, 0.01, 0.99)
-        s = s.unsqueeze(1).unsqueeze(1)
+        s = s.unsqueeze(1)
 
        # u = opt.u
         u = self.cnnu.forward(xf)
