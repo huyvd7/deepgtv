@@ -422,24 +422,6 @@ def get_w(ij, F):
     return W  # .type(dtype)
 
 
-def gauss(d, epsilon=1):
-    """
-    Compute (3)
-    """
-
-    return torch.exp(-d / (2 * epsilon ** 2))
-
-
-def graph_construction(opt, F):
-    """
-    Construct Laplacian matrix
-    """
-    #     Fs = F.unsqueeze(-1).repeat(1, 1, 1, F.shape[-1])
-    Fs = (opt.H.matmul(F) ** 2).requires_grad_(True)
-    W = gauss(Fs.sum(axis=1)).requires_grad_(True)
-    return W
-
-
 def weights_init_normal(m):
     """
     Initialize weights of convolutional layers
@@ -557,7 +539,7 @@ class GTV(nn.Module):
         self.lanczos_order = 20
         self.support_e1 = torch.zeros(self.lanczos_order,1).type(self.dtype)
         self.support_e1[0] = 1
-        self.weight_sigma=0.3
+        self.weight_sigma=0.2
     
     def forward(self, xf, debug=False, Tmod=False, manual_debug=False):  # gtvforward
         # u = opt.u
