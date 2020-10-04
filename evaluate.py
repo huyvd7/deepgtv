@@ -106,7 +106,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         #        del P
         for ii, i in enumerate(range(0, T2.shape[0], MAX_PATCH)):
             P = gtv.predict(T2[i:(i+MAX_PATCH),:,:,:].float().contiguous())
-            dummy[i:(i+MAX_PATCH)=P
+            dummy[i:(i+MAX_PATCH)]=P
     dummy=dummy.view(oT2s0, -1, opt.channels,opt.width,opt.width)
     dummy=dummy.cpu()
     if verbose:
