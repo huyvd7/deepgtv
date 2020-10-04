@@ -136,7 +136,6 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
                     print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean().item())
                 print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean().item())
                 print("\tCNNS grads: ", gtv.cnns.layer[0].weight.grad.mean().item())
-                pmax = list()
 
                 with torch.no_grad():
                     us = gtv.cnnu(inputs)
@@ -164,6 +163,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
                 print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
             #print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
             print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
+            print("\tCNNS grads: ", gtv.cnns.layer[0].weight.grad.mean().item())
 
             pmax = list()
             for p in gtv.parameters():
@@ -172,19 +172,14 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
             with torch.no_grad():
                 us = gtv.cnnu(inputs[:10])
                 print("\tCNNU stats: ", us.mean().data, us.max().data, us.min().data)
-
+                us = gtv.cnns(inputs)
+                print("\tCNNS stats: ", us.max().item(),  us.mean().item(),us.min().item())
 
             print("\tsave @ epoch ", epoch + 1)
             torch.save(gtv.state_dict(), SAVEDIR + str(epoch) +'.'+SAVEPATH)
             torch.save(optimizer.state_dict(), SAVEDIR + str(epoch)+'.'+SAVEPATH + "optim")
 
-
-        #scheduler.step() 
         losshist.append(running_loss / (ld*(i+1)))
-        if (epoch+1) in [100000]:
-            print("CHANGE LR")
-            current_lr /= 5
-            optimizer = optim.SGD(gtv.parameters(), lr=current_lr, momentum=opt.momentum)
     torch.save(gtv.state_dict(), SAVEDIR + str(epoch) +'.'+SAVEPATH)
     torch.save(optimizer.state_dict(), SAVEDIR + str(epoch)+'.'+SAVEPATH + "optim")
            
