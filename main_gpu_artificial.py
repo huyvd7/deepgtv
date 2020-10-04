@@ -104,14 +104,10 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
         running_loss = 0.0
         for i, data in enumerate(dataloader, 0):  # start index at 0
             # get the inputs; data is a list of [inputs, labels]
-            #print(data["nimg"].shape)
             inputs = data["nimg"][:, : opt.channels, :, :].float().type(dtype)
             labels = data["rimg"][:, : opt.channels, :, :].float().type(dtype)
             # zero the parameter gradients
-
             optimizer.zero_grad()
-            #for op in optimizer:
-            #    op.zero_grad()
             # forward + backward + optimize
             #outputs = gtv.forward_approx(inputs, debug=0)
             outputs = gtv(inputs, debug=0)
@@ -162,11 +158,11 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
             with torch.no_grad():
                 histW = gtv(inputs, debug=1, Tmod= 5)
             if opt.ver: # experimental version
-                print("\tCNNF stats: ", gtv.cnnf.layer[0].weight.grad.mean())
+                print("\tCNNF stats: ", gtv.cnnf.layer[0].weight.grad.mean().item())
             else:
-                print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
+                print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean().item())
             #print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
-            print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean())
+            print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean().item())
             print("\tCNNS grads: ", gtv.cnns.layer[0].weight.grad.mean().item())
 
             pmax = list()
