@@ -102,7 +102,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         #            print("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
         #        dummy[i, jj:(jj+MAX_PATCH)] = P
         #        del P
-        P = gtv.predict(T2.float().contiguous().view(-1,3,opt.width,opt.width)
+        P = gtv.predict(T2.float().contiguous().view(-1,3,opt.width,opt.width))
         dummy=P
     dummy=dummy.cpu()
     if verbose:
