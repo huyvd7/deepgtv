@@ -518,7 +518,7 @@ class GTV(nn.Module):
         self.opt = opt
         self.wt = width
         self.width = width
-        if self.opt.ver:
+        if self.opt.ver or 1:
             print("EXPERIMENTAL CNNF")
             self.cnnf = cnnf_2(opt=self.opt)
         else:
