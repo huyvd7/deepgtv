@@ -686,10 +686,17 @@ class GTV(nn.Module):
         #xhat2 = glr(xhat, w, u)
         #xhat3 = glr(xhat2, w, u)
         #xhat4 = glr(xhat3, w, u)
-        xhat4=xhat
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
 
-        return xhat4.view(
-            xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
+        return xhat.view(
+            xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width
         )
 
     def forward_approx(self, xf, debug=False, Tmod=False, manual_debug=False):  # gtvapprox
