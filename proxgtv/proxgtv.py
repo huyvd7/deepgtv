@@ -683,10 +683,10 @@ class GTV(nn.Module):
         ), return_dict
 
 
-        xhat2 = glr(xhat, w, u)
-        xhat3 = glr(xhat2, w, u)
-        xhat4 = glr(xhat3, w, u)
-
+        #xhat2 = glr(xhat, w, u)
+        #xhat3 = glr(xhat2, w, u)
+        #xhat4 = glr(xhat3, w, u)
+        xhat4=xhat
 
         return xhat4.view(
             xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
