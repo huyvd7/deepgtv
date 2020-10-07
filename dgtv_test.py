@@ -133,9 +133,9 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         patch_merge(dummy, stride=stride, shape=shapex, shapeorg=shape).detach().numpy()
     )
 
-    ds = np.array(dummy).copy()
-    logger.info("RANGE: {0} - {1}".format(d.min(), d.max()))
+    #ds = np.array(dummy).copy()
     d = d.transpose(1, 2, 0)/255
+    logger.info("RANGE: {0} - {1}".format(d.min(), d.max()))
     if 0:
         opath = args.output
     else:
