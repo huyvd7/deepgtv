@@ -133,7 +133,8 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         patch_merge(dummy, stride=stride, shape=shapex, shapeorg=shape).detach().numpy()
     )
 
-    #ds = np.array(dummy).copy()
+    ds = np.array(dummy).copy()
+    d = np.minimum(np.maximum(ds, 0), 255)
     d = d.transpose(1, 2, 0)/255
     logger.info("RANGE: {0} - {1}".format(d.min(), d.max()))
     if 0:
