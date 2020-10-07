@@ -16,14 +16,6 @@ from proxgtv.proxgtv import *
 import pickle
 import logging
 import sys
-logging.basicConfig(filename='log/main_gpu_artificial_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
-                            filemode='a',
-                            format='%(asctime)s %(name)s %(levelname)s %(message)s',
-                            datefmt='%H:%M:%S',
-                            level=logging.NOTSET)
-
-logger = logging.getLogger('root')
-logger.addHandler(logging.StreamHandler(sys.stdout))
 
 def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, args=None):
     debug = 0
@@ -170,8 +162,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
                 opt.logger.info("\tCNNF stats: {0:.5f}".format( gtv.cnnf.layer[0].weight.grad.median().item()))
             else:
                 opt.logger.info("\tCNNF stats: {0:.5f}".format( gtv.cnnf.layer1[0].weight.grad.mean().item()))
-                opt.logger.info("\tCNNU grads: {0:.5f}".format( gtv.cnnu.layer[0].weight.grad.mean().item()))
-                opt.logger.info("\tCNNS grads: {0:.5f}".format( gtv.cnns.layer[0].weight.grad.mean().item()))
+            opt.logger.info("\tCNNU grads: {0:.5f}".format( gtv.cnnu.layer[0].weight.grad.mean().item()))
+            opt.logger.info("\tCNNS grads: {0:.5f}".format( gtv.cnns.layer[0].weight.grad.mean().item()))
 
             pmax = list()
             for p in gtv.parameters():
@@ -254,6 +246,16 @@ if __name__=="__main__":
     opt.train=args.train
     opt.width=args.width
     torch.manual_seed(args.seed)
+    logging.basicConfig(filename='log/main_gpu_artificial_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
+                            filemode='a',
+                            format='%(asctime)s %(name)s %(levelname)s %(message)s',
+                            datefmt='%H:%M:%S',
+                            level=logging.NOTSET)
+
+    logger = logging.getLogger('root')
+    logger.addHandler(logging.StreamHandler(sys.stdout))
+
+
     opt.logger=logger
     logger.info("Train GTV")
     main(seed=1, model_name=model_name, cont=cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'], args=args)

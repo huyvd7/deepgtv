@@ -23,21 +23,13 @@ if cuda:
 else:
     dtype = torch.FloatTensor
 
-logging.basicConfig(filename='dgtv_test_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
-                            filemode='a',
-                            format='%(asctime)s %(name)s %(levelname)s %(message)s',
-                            datefmt='%H:%M:%S',
-                            level=logging.NOTSET)
-
-logger = logging.getLogger('root')
-logger.addHandler(logging.StreamHandler(sys.stdout))
-def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, opt=None, args=None):
+def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, opt=None, args=None,logger=None):
     try:
         from skimage.metrics import structural_similarity as compare_ssim
     except Exception:
         from skimage.measure import compare_ssim
     sample = cv2.imread(inp)
-    logger.info(inp)
+    #logger.info(inp)
     if width==None:
         width = sample.shape[0]
     else:
@@ -142,22 +134,14 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     )
 
     ds = np.array(dummy).copy()
-    new_d = list()
-    for d in ds:
-        #_d = (d - d.min()) * (1 / (d.max() - d.min()))
-        _d = d/255
-        new_d.append(_d)
     logger.info("RANGE: {0} - {1}".format(d.min(), d.max()))
-    d = np.array(new_d).transpose(1, 2, 0)
+    d = d.transpose(1, 2, 0)/255
     if 0:
         opath = args.output
     else:
         filename = inp.split("/")[-1]
         opath = "./{0}_{1}".format(prefix, filename)
         opath = opath[:-3] + "png"
-    #if argref:
-    #    mse = ((d-(tref/255.0))**2).mean()*255
-    #    logger.info("MSE: {:.6f}".format(mse))
     d = np.minimum(np.maximum(d, 0), 1)
     plt.imsave(opath, d)
     if argref:
@@ -199,7 +183,7 @@ def patch_merge(P, stride=36, shape=None, shapeorg=None):
 
     return (R / Rc)[:, : shapeorg[-1], : shapeorg[-1]]
 
-def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_path=None, noise_type='gauss', opt=None):
+def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_path=None, noise_type='gauss', opt=None, logger=None):
     # INITIALIZE
     #global opt
     opt.width=args.train_width
@@ -237,8 +221,9 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     for t in trainset:
         logger.info("image #{0}".format( t))
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
+        logger.info(inp)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
-        _, _ssim, _, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, opt=opt, args=args)
+        _, _ssim, _, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, opt=opt, args=args, logger=logger)
         #traineva["psnr"].append(_psnr)
         traineva["ssim"].append(_ssim)
         #traineva["ssim2"].append(_ssim2)
@@ -267,8 +252,9 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     for t in testset:
         logger.info("image #{0}".format( t))
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
+        logger.info(inp)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
-        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, opt=opt, args=args)
+        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, opt=opt, args=args, logger=logger)
         #testeva["psnr"].append(_psnr)
         testeva["ssim"].append(_ssim)
         #testeva["ssim2"].append(_ssim2)
@@ -332,6 +318,15 @@ if __name__=="__main__":
         image_path = args.image_path
     else:
         image_path = 'gauss'
+    logging.basicConfig(filename='dgtv_test_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
+                            filemode='a',
+                            format='%(asctime)s %(name)s %(levelname)s %(message)s',
+                            datefmt='%H:%M:%S',
+                            level=logging.NOTSET)
+
+    logger = logging.getLogger('root')
+    logger.addHandler(logging.StreamHandler(sys.stdout))
+
     opt.logger=logger
     logger.info("DGTV evaluation")
-    _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss' , opt=opt)
+    _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss' , opt=opt, logger=logger)
