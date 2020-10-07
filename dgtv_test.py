@@ -74,7 +74,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     if argref:
         T1r = ref
     else:
-        logger.info(T1.shape)
+        logger.info(str(T1.shape))
 
     m = T1.shape[-1]
     T1 = torch.nn.functional.pad(T1, (0, stride, 0, stride), mode="constant", value=0)
@@ -131,9 +131,9 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     dummy=dummy.view(oT2s0, -1, opt.channels,opt.width,opt.width)
     dummy=dummy.cpu()
     if verbose:
-        logger.info("\nPrediction time: ", time.time() - tstart)
+        logger.info("\nPrediction time: {0}".format( time.time() - tstart))
     else:
-        logger.info("Prediction time: ", time.time() - tstart)
+        logger.info("\nPrediction time: {0}".format( time.time() - tstart))
     if argref:
         #logger.info("PSNR: {:.2f}".format(np.mean(np.array(psnrs))))
         pass
@@ -148,7 +148,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         #_d = (d - d.min()) * (1 / (d.max() - d.min()))
         _d = d/255
         new_d.append(_d)
-    logger.info("RANGE: ", d.min(), d.max(), d.shape)
+    logger.info("RANGE: {0} - {1}".format(d.min(), d.max()))
     d = np.array(new_d).transpose(1, 2, 0)
     if 0:
         opath = args.output
@@ -170,7 +170,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         logger.info("PSNR: {:.5f}".format(psnr2))
         (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
         logger.info("SSIM: {:.5f}".format(score))
-    logger.info("Saved ", opath)
+    logger.info("Saved {0}".format( opath))
     if argref:
         return (
             0, score, 0, psnr2 , mse, d
@@ -236,7 +236,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     traineva = {'psnr':list(), 'ssim':list(), 'ssim2':list(), 'psnr2':list(), 'mse':list()}
     stride=args.stride
     for t in trainset:
-        logger.info("image #", t)
+        logger.info("image #{0}".format( t))
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
         _, _ssim, _, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, opt=opt, args=args)
@@ -253,7 +253,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         img1 = cv2.imread(inp)[:, :, : opt.channels]
         img2 = cv2.imread(argref)[:, :, : opt.channels]
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
-        logger.info("Original ", cv2.PSNR(img1, img2), score)
+        logger.info("Original {0:.2f} {1:.2f}".format( cv2.PSNR(img1, img2), score))
     logger.info("========================")
     #logger.info("MEAN PSNR: {:.2f}".format(np.mean(traineva["psnr"])))
     logger.info("MEAN SSIM: {:.2f}".format(np.mean(traineva["ssim"])))
@@ -283,7 +283,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         img1 = cv2.imread(inp)[:, :, : opt.channels]
         img2 = cv2.imread(argref)[:, :, : opt.channels]
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
-        logger.info("Original ", cv2.PSNR(img1, img2), score)
+        logger.info("Original {0:.2f} {1:.2f}".format( cv2.PSNR(img1, img2), score))
     logger.info("========================")
     #logger.info("MEAN PSNR: {:.2f}".format(np.mean(testeva["psnr"])))
     logger.info("MEAN SSIM: {:.2f}".format(np.mean(testeva["ssim"])))
