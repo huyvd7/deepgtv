@@ -579,7 +579,7 @@ class GTV(nn.Module):
         #print('sum', (-(Fs.sum(axis=1)) / (2 * (1 ** 2)))[0,0])
         #print('W', w[0,0])
         if debug:
-            self.logger.info("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0}".format( w[0, :, :].sum().item()))
+            self.logger.info("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0:.6f}".format( w[0, :, :].sum().item()))
             hist = list()
             self.logger.info("\tprocessed u: Mean {0:.4f} Median {1:.4f}".format( u.mean().item(), u.median().item()))
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
@@ -724,7 +724,7 @@ class GTV(nn.Module):
             #return_dict['gtv'].append((z*w).abs().sum())
             pass
         if debug:
-            self.logger.info("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0}".format( w[0, :, :].sum().item()))
+            self.logger.info("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0:.6f}".format( w[0, :, :].sum().item()))
             hist = list()
             self.logger.info("\tprocessed u: Mean {0:.4f} Median {1:.4f}".format( u.mean().item(), u.median().item()))
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
@@ -862,7 +862,7 @@ class GTV(nn.Module):
         )
         w = torch.exp(-(Fs.sum(axis=1)) / (self.weight_sigma**2))
         if debug:
-            self.logger.info("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0}".format( w[0, :, :].sum().item()))
+            self.logger.info("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0:.6f}".format( w[0, :, :].sum().item()))
             hist = list()
             self.logger.info("\tprocessed u: Mean {0:.4f} Median {1:.4f}".format( u.mean().item(), u.median().item()))
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
