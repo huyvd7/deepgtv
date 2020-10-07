@@ -139,8 +139,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             if epoch==0 and (i+1)%80==0:
                 g = gtv.gtv1
                 with torch.no_grad():
-                    P1, P2, P3 = gtv(inputs[:10])
-                    opt.logger.info("LOSS: {0:.8f} {1:.8f} {2:.8f}".format( (P1-labels[:10]).norm().item(), (P2-labels[:10]).norm().item(), (P3-labels[:10]).norm().item()))
+                    P1, P2, P3 = gtv(inputs)
+                    opt.logger.info("LOSS: {0:.8f} {1:.8f} {2:.8f}".format( (P1-labels).norm().item(), (P2-labels).norm().item(), (P3-labels).norm().item()))
                     P1 = g(inputs, debug=1, Tmod= 5)
                 if opt.ver: # experimental version
                     opt.logger.info("\tCNNF stats: {0:.5f}".format( g.cnnf.layer[0].weight.grad.median().item()))
