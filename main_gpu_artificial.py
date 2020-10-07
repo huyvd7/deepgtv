@@ -119,7 +119,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
             loss.backward()
             #torch.nn.utils.clip_grad_norm_(cnnf_params, 1e1)
             #torch.nn.utils.clip_grad_norm_(cnnu_params, 1e1)
-            torch.nn.utils.clip_grad_norm_(gtv.parameters(), 1e1)
+            torch.nn.utils.clip_grad_norm_(gtv.parameters(), 5e1)
 
 
             #scaler.step(optimizer)

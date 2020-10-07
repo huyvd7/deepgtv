@@ -88,32 +88,37 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     s2 = int(T2.shape[-1])
     dummy = torch.zeros(T2.shape)
     MAX_PATCH=args.multi
-
+    oT2s0=T2.shape[0]
     with torch.no_grad():
-        for ii, i in enumerate(range(T2.shape[1])):
-            for jj in range(0, T2.shape[1] , MAX_PATCH):
-                P = gtv.predict(T2[i, jj:(jj+MAX_PATCH), : opt.channels, :, :].float())
-                if cuda:
-                    P = P.cpu()
-                if argref:
-                    img1 = T2r[i, jj:(jj+MAX_PATCH), : opt.channels, : shape[-1], : shape[-1]].float()
-                    img2 = P[:, : opt.channels, : shape[-1], : shape[-1]]
+        #for ii, i in enumerate(range(T2.shape[1])):
+        #    for jj in range(0, T2.shape[1] , MAX_PATCH):
+        #        P = gtv.predict(T2[i, jj:(jj+MAX_PATCH), : opt.channels, :, :].float())
+        #        if cuda:
+        #            P = P.cpu()
+        #        if argref:
+        #            img1 = T2r[i, jj:(jj+MAX_PATCH), : opt.channels, : shape[-1], : shape[-1]].float()
+        #            img2 = P[:, : opt.channels, : shape[-1], : shape[-1]]
 
-                    psnrs.append(cv2.PSNR(img1.detach().numpy(), img2.detach().numpy()))
-                    _tref = img1.detach().numpy()
-                    _d = img2.detach().numpy()
-                    for iii in range(_d.shape[0]):
-                        (_score2, _) = compare_ssim(
-                            _tref[iii].transpose(1, 2, 0),
-                            _d[iii].transpose(1, 2, 0),
-                            full=True,
-                            multichannel=True,
-                        )
-                        score2.append(_score2)
-                if verbose>0:
-                    print("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
-                dummy[i, jj:(jj+MAX_PATCH)] = P
-                del P
+        #            psnrs.append(cv2.PSNR(img1.detach().numpy(), img2.detach().numpy()))
+        #            _tref = img1.detach().numpy()
+        #            _d = img2.detach().numpy()
+        #            for iii in range(_d.shape[0]):
+        #                (_score2, _) = compare_ssim(
+        #                    _tref[iii].transpose(1, 2, 0),
+        #                    _d[iii].transpose(1, 2, 0),
+        #                    full=True,
+        #                    multichannel=True,
+        #                )
+        #                score2.append(_score2)
+        #        if verbose>0:
+        #            print("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
+        #        dummy[i, jj:(jj+MAX_PATCH)] = P
+        #        del P
+        for ii, i in enumerate(range(0, T2.shape[0], MAX_PATCH)):
+            P = gtv.predict(T2[i:(i+MAX_PATCH),:,:,:].float().contiguous())
+            dummy[i:(i+MAX_PATCH)]=P
+    dummy=dummy.view(oT2s0, -1, opt.channels,opt.width,opt.width)
+    dummy=dummy.cpu()
     if verbose:
         print("\nPrediction time: ", time.time() - tstart)
     else:
@@ -157,8 +162,8 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     print("Saved ", opath)
     if argref:
         return (
-            np.mean(np.array(psnrs)), score, np.mean(np.array(score2)), psnr2 , mse, d
-        )  # psnr, ssim, denoised image
+            0, score, 0, psnr2 , mse, d
+        )# psnr, ssim, denoised image
     return d
 
 
@@ -223,7 +228,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         print("image #", t)
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
-        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, opt=opt, args=args)
+        _, _ssim, _, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, opt=opt, args=args)
         traineva["psnr"].append(_psnr)
         traineva["ssim"].append(_ssim)
         traineva["ssim2"].append(_ssim2)
@@ -239,9 +244,9 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
         print("Original ", cv2.PSNR(img1, img2), score)
     print("========================")
-    print("MEAN PSNR: {:.2f}".format(np.mean(traineva["psnr"])))
+    #print("MEAN PSNR: {:.2f}".format(np.mean(traineva["psnr"])))
     print("MEAN SSIM: {:.2f}".format(np.mean(traineva["ssim"])))
-    print("MEAN SSIM2 (patch-based SSIM): {:.2f}".format(np.mean(traineva["ssim2"])))
+    #print("MEAN SSIM2 (patch-based SSIM): {:.2f}".format(np.mean(traineva["ssim2"])))
     print("MEAN PSNR2 (image-based PSNR): {:.2f}".format(np.mean(traineva['psnr2'])))
     print("MEAN MSE (image-based MSE): {:.2f}".format(np.mean(traineva['mse'])))
     print("========================")
@@ -269,9 +274,9 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
         print("Original ", cv2.PSNR(img1, img2), score)
     print("========================")
-    print("MEAN PSNR: {:.2f}".format(np.mean(testeva["psnr"])))
+    #print("MEAN PSNR: {:.2f}".format(np.mean(testeva["psnr"])))
     print("MEAN SSIM: {:.2f}".format(np.mean(testeva["ssim"])))
-    print("MEAN SSIM2 (patch-based SSIM): {:.2f}".format(np.mean(testeva["ssim2"])))
+    #print("MEAN SSIM2 (patch-based SSIM): {:.2f}".format(np.mean(testeva["ssim2"])))
     print("MEAN PSNR2 (image-based PSNR): {:.2f}".format(np.mean(testeva['psnr2'])))
     print("MEAN MSE (image-based MSE): {:.2f}".format(np.mean(testeva['mse'])))
     print("========================")
