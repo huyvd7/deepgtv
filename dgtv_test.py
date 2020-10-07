@@ -122,9 +122,9 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     dummy=dummy.view(oT2s0, -1, opt.channels,opt.width,opt.width)
     dummy=dummy.cpu()
     if verbose:
-        logger.info("\nPrediction time: {0}".format( time.time() - tstart))
+        logger.info("Prediction time: {0}".format( time.time() - tstart))
     else:
-        logger.info("\nPrediction time: {0}".format( time.time() - tstart))
+        logger.info("Prediction time: {0}".format( time.time() - tstart))
     if argref:
         #logger.info("PSNR: {:.2f}".format(np.mean(np.array(psnrs))))
         pass
