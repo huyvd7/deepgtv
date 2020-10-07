@@ -453,6 +453,7 @@ class OPT:
         ver=None,
         train="gauss_batch",
         cuda=False,
+        logger=None
     ):
         self.batch_size = batch_size
         self.width = width
@@ -476,10 +477,10 @@ class OPT:
             self.dtype = torch.cuda.FloatTensor
         else:
             self.dtype = torch.FloatTensor
-
+        self.logger=logger
 
     def _print(self):
-        print(
+        self.logger(
             "batch_size =",
             self.batch_size,
             ", width =",
@@ -519,10 +520,10 @@ class GTV(nn.Module):
         self.wt = width
         self.width = width
         if self.opt.ver or 1:
-            print("EXPERIMENTAL CNNF")
+            opt.logger("EXPERIMENTAL CNNF")
             self.cnnf = cnnf_2(opt=self.opt)
         else:
-            print("ORIGINAL CNNF")
+            opt.logger("ORIGINAL CNNF")
             self.cnnf = cnnf(opt=self.opt)
         self.cnnu = cnnu(u_min=u_min, opt=self.opt)
         self.cnns = cnnu(u_min=u_min, opt=self.opt)
@@ -534,7 +535,7 @@ class GTV(nn.Module):
             self.cnnu.cuda()
             self.cnns.cuda()
             # self.cnny.cuda()
-        print("GTV created on cuda:", cuda)
+        opt.logger("GTV created on cuda:", cuda)
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.device = torch.device("cuda") if cuda else torch.device("cpu")
         self.cnnf.apply(weights_init_normal)
@@ -592,9 +593,9 @@ class GTV(nn.Module):
         #print('sum', (-(Fs.sum(axis=1)) / (2 * (1 ** 2)))[0,0])
         #print('W', w[0,0])
         if debug:
-            print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().item())
+            self.logger("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0}".format( w[0, :, :].sum().item()))
             hist = list()
-            print("\tprocessed u:", u.mean().item(), u.median().item())
+            self.logger("\tprocessed u: Mean {0:.4f} Median {1:.4f}".format( u.mean().item(), u.median().item()))
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
 
         W = self.base_W.clone()
@@ -737,9 +738,9 @@ class GTV(nn.Module):
             #return_dict['gtv'].append((z*w).abs().sum())
             pass
         if debug:
-            print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().item())
+            self.logger("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0}".format( w[0, :, :].sum().item()))
             hist = list()
-            print("\tprocessed u:", u.mean().item(), u.median().item())
+            self.logger("\tprocessed u: Mean {0:.4f} Median {1:.4f}".format( u.mean().item(), u.median().item()))
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
 
         W = self.base_W.clone()
@@ -875,8 +876,9 @@ class GTV(nn.Module):
         )
         w = torch.exp(-(Fs.sum(axis=1)) / (self.weight_sigma**2))
         if debug:
-            print("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m", w[0, :, :].sum().item())
-            print("\tprocessed u:", u.mean().item(), u.median().item())
+            self.logger("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0}".format( w[0, :, :].sum().item()))
+            hist = list()
+            self.logger("\tprocessed u: Mean {0:.4f} Median {1:.4f}".format( u.mean().item(), u.median().item()))
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
 
         W = self.base_W.clone()
@@ -1175,7 +1177,7 @@ def supporting_matrix(opt):
 
     for e, p in enumerate(A_pair):
         A[p[1], p[0]] = 1
-    print("OPT created on cuda:", cuda, dtype)
+    opt.logger("OPT created on cuda: {0} {1}".format( cuda, dtype))
 
 
 def _norm(x, newmin, newmax):

@@ -21,6 +21,16 @@ if cuda:
 else:
     dtype = torch.FloatTensor
 
+logging.basicConfig(filename='evaluate_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
+                            filemode='a',
+                            format='%(asctime)s %(name)s %(levelname)s %(message)s',
+                            datefmt='%H:%M:%S',
+                            level=logging.NOTSET)
+
+logging.info("Running DGTV evaluation")
+
+logger = logging.getLogger('root')
+
 
 def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, Tmod=9, opt=None, approx=False, args=None):
     try:
@@ -322,4 +332,6 @@ if __name__=="__main__":
     else:
         image_path = 'gauss'
     opt.delta = float(args.delta)
+
+    opt.logger=logger
     _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss', Tmod=0, opt=opt, args=args)
