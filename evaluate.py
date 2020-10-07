@@ -1,4 +1,5 @@
 import scipy.sparse as ss
+import sys
 import pickle
 import torch
 import numpy as np
@@ -28,10 +29,9 @@ logging.basicConfig(filename='evaluate_{0}.log'.format(time.strftime("%Y-%m-%d-%
                             datefmt='%H:%M:%S',
                             level=logging.NOTSET)
 
-logging.info("Running DGTV evaluation")
-
+logging.info("GTV evaluation")
 logger = logging.getLogger('root')
-
+logger.addHandler(logging.StreamHandler(sys.stdout))
 
 def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, Tmod=9, opt=None, approx=False, args=None):
     try:

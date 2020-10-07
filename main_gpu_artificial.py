@@ -16,16 +16,16 @@ from proxgtv.proxgtv import *
 import pickle
 import logging
 import sys
-logging.basicConfig(filename='main_gpu_artificial_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
+logging.basicConfig(filename='log/main_gpu_artificial_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
                             filemode='a',
                             format='%(asctime)s %(name)s %(levelname)s %(message)s',
                             datefmt='%H:%M:%S',
                             level=logging.NOTSET)
 
-logging.info("Running DGTV evaluation")
-
+logging.info("Train GTV")
 logger = logging.getLogger('root')
 logger.addHandler(logging.StreamHandler(sys.stdout))
+
 def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, args=None):
     debug = 0
     cuda = True if torch.cuda.is_available() else False
