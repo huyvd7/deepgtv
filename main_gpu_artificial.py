@@ -258,4 +258,5 @@ if __name__=="__main__":
 
     opt.logger=logger
     logger.info("Train GTV")
+    logger.info(sys.argv)
     main(seed=1, model_name=model_name, cont=cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'], args=args)

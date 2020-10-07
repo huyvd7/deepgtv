@@ -280,4 +280,5 @@ if __name__=="__main__":
     logger.addHandler(logging.StreamHandler(sys.stdout))
     opt.logger=logger
     logger.info("Train DGTV")
+    logger.info(sys.argv)
     main(seed=1, model_name=model_name, cont=args.cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'])
