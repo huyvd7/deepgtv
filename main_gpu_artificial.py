@@ -14,6 +14,7 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 from proxgtv.proxgtv import * 
 import pickle
+import logging
 logging.basicConfig(filename='main_gpu_artificial_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
                             filemode='a',
                             format='%(asctime)s %(name)s %(levelname)s %(message)s',
