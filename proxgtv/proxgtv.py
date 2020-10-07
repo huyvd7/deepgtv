@@ -1118,14 +1118,16 @@ class DeepGTV(nn.Module):
 
         return P
 
-    def forward(self, sample):
-        #P = self.gtv[0](sample)
-        #for i in range(1, self.no):
-        #    P = self.gtv[i](P)
-        P1 = self.gtv1(sample)
-        P2 = self.gtv1(P1)
-        P = self.gtv1(P2)
-
+    def forward(self, sample, debug=False):
+        if not debug:
+            P = self.gtv1(sample)
+            P = self.gtv1(P)
+            P = self.gtv1(P)
+        else:
+            P1 = self.gtv1(sample)
+            P2 = self.gtv1(P1)
+            P3 = self.gtv1(P2)
+            return P1, P2, P3
         return P
 
 
