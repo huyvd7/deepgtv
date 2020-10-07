@@ -318,7 +318,7 @@ if __name__=="__main__":
         image_path = args.image_path
     else:
         image_path = 'gauss'
-    logging.basicConfig(filename='dgtv_test_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
+    logging.basicConfig(filename='log/dgtv_test_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
                             filemode='a',
                             format='%(asctime)s %(name)s %(levelname)s %(message)s',
                             datefmt='%H:%M:%S',

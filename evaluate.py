@@ -311,7 +311,7 @@ if __name__=="__main__":
     else:
         image_path = 'gauss'
     opt.delta = float(args.delta)
-    logging.basicConfig(filename='evaluate_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
+    logging.basicConfig(filename='log/evaluate_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
                             filemode='a',
                             format='%(asctime)s %(name)s %(levelname)s %(message)s',
                             datefmt='%H:%M:%S',
