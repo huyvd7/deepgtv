@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 from proxgtv.proxgtv import * 
 import pickle
 import logging
+import sys
 logging.basicConfig(filename='main_gpu_artificial_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
                             filemode='a',
                             format='%(asctime)s %(name)s %(levelname)s %(message)s',
@@ -24,7 +25,7 @@ logging.basicConfig(filename='main_gpu_artificial_{0}.log'.format(time.strftime(
 logging.info("Running DGTV evaluation")
 
 logger = logging.getLogger('root')
-
+logger.addHandler(logging.StreamHandler(sys.stdout))
 def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, args=None):
     debug = 0
     cuda = True if torch.cuda.is_available() else False
