@@ -502,6 +502,7 @@ class GTV(nn.Module):
         super(GTV, self).__init__()
 
         self.opt = opt
+        self.logger=opt.logger
         self.wt = width
         self.width = width
         if self.opt.ver or 1:
