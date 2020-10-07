@@ -480,22 +480,7 @@ class OPT:
         self.logger=logger
 
     def _print(self):
-        self.logger.info(
-            "batch_size =",
-            self.batch_size,
-            ", width =",
-            self.width,
-            ", channels =",
-            self.channels,
-            ", u_min =",
-            self.u_min,
-            ", u_max =",
-            self.u_max,
-            ", lr =",
-            self.lr,
-            ", momentum =",
-            self.momentum,
-        )
+        self.logger.info("batch_size = {0}, width = {1}, channels = {2}, u_min = {3}, u_max = {4}, lr = {5}, momentum = {6}".format(self.batch_size, self.width, self,channels, self.u_min, self.u_max, self.lr, self.momentum))
 
 
 class GTV(nn.Module):
