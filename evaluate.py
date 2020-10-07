@@ -14,6 +14,7 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 import argparse
 from main_gpu_artificial import *
+import logging
 
 cuda = True if torch.cuda.is_available() else False
 if cuda:

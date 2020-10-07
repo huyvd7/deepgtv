@@ -14,6 +14,15 @@ import torchvision.transforms as transforms
 import torch.optim as optim
 import matplotlib.pyplot as plt
 from proxgtv.proxgtv import * 
+logging.basicConfig(filename='dgtv_train_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
+                            filemode='a',
+                            format='%(asctime)s %(name)s %(levelname)s %(message)s',
+                            datefmt='%H:%M:%S',
+                            level=logging.NOTSET)
+
+logging.info("Running DGTV evaluation")
+
+logger = logging.getLogger('root')
 
 def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     debug = 0

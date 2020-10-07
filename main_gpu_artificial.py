@@ -29,7 +29,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
     debug = 0
     cuda = True if torch.cuda.is_available() else False
     torch.autograd.set_detect_anomaly(True)
-    opt.logger.info("CUDA: ", cuda)
+    opt.logger.info("CUDA: {0}".format( cuda))
     if cuda:
         dtype = torch.cuda.FloatTensor
         opt.logger.info(torch.cuda.get_device_name(0))
