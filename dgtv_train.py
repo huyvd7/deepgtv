@@ -71,7 +71,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     )
     if args.stack:
         gtv.load(p1=args.stack, p2=args.stack)
-        opt.logger.info("Stacked from ", args.stack)
+        opt.logger.info("Stacked from {0}".format( args.stack))
     else:
         opt.logger.info("Train DGTV from scratch")
 
