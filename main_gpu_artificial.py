@@ -22,7 +22,6 @@ logging.basicConfig(filename='log/main_gpu_artificial_{0}.log'.format(time.strft
                             datefmt='%H:%M:%S',
                             level=logging.NOTSET)
 
-logging.info("Train GTV")
 logger = logging.getLogger('root')
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
@@ -256,4 +255,5 @@ if __name__=="__main__":
     opt.width=args.width
     torch.manual_seed(args.seed)
     opt.logger=logger
+    logger.info("Train GTV")
     main(seed=1, model_name=model_name, cont=cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'], args=args)

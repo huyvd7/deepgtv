@@ -29,7 +29,6 @@ logging.basicConfig(filename='evaluate_{0}.log'.format(time.strftime("%Y-%m-%d-%
                             datefmt='%H:%M:%S',
                             level=logging.NOTSET)
 
-logging.info("GTV evaluation")
 logger = logging.getLogger('root')
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
@@ -335,4 +334,5 @@ if __name__=="__main__":
     opt.delta = float(args.delta)
 
     opt.logger=logger
+    logger.info("GTV evaluation")
     _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss', Tmod=0, opt=opt, args=args)

@@ -22,7 +22,6 @@ logging.basicConfig(filename='dgtv_train_{0}.log'.format(time.strftime("%Y-%m-%d
                             datefmt='%H:%M:%S',
                             level=logging.NOTSET)
 
-logging.info("Train DGTV")
 logger = logging.getLogger('root')
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
@@ -267,5 +266,6 @@ if __name__=="__main__":
     opt.train=args.train
     opt.width=args.width
     torch.manual_seed(args.seed)
-
+    opt.logger=logger
+    logger.info("Train DGTV")
     main(seed=1, model_name=model_name, cont=args.cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'])
