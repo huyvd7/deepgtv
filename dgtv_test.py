@@ -14,6 +14,7 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 import argparse
 from main_gpu_artificial import *
+import logging 
 
 cuda = True if torch.cuda.is_available() else False
 if cuda:
@@ -21,6 +22,15 @@ if cuda:
 else:
     dtype = torch.FloatTensor
 
+logging.basicConfig(filename='dgtv_test_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
+                            filemode='a',
+                            format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                            datefmt='%H:%M:%S',
+                            level=logging.DEBUG)
+
+logging.info("Running DGTV evaluation")
+
+logger = logging.getLogger('root')
 
 def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, opt=None, args=None):
     try:
@@ -28,7 +38,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     except Exception:
         from skimage.measure import compare_ssim
     sample = cv2.imread(inp)
-    print(inp)
+    logger.info(inp)
     if width==None:
         width = sample.shape[0]
     else:
@@ -64,7 +74,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     if argref:
         T1r = ref
     else:
-        print(T1.shape)
+        logger.info(T1.shape)
 
     m = T1.shape[-1]
     T1 = torch.nn.functional.pad(T1, (0, stride, 0, stride), mode="constant", value=0)
@@ -112,7 +122,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         #                )
         #                score2.append(_score2)
         #        if verbose>0:
-        #            print("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
+        #            logger.info("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
         #        dummy[i, jj:(jj+MAX_PATCH)] = P
         #        del P
         for ii, i in enumerate(range(0, T2.shape[0], MAX_PATCH)):
@@ -121,11 +131,11 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     dummy=dummy.view(oT2s0, -1, opt.channels,opt.width,opt.width)
     dummy=dummy.cpu()
     if verbose:
-        print("\nPrediction time: ", time.time() - tstart)
+        logger.info("\nPrediction time: ", time.time() - tstart)
     else:
-        print("Prediction time: ", time.time() - tstart)
+        logger.info("Prediction time: ", time.time() - tstart)
     if argref:
-        #print("PSNR: {:.2f}".format(np.mean(np.array(psnrs))))
+        #logger.info("PSNR: {:.2f}".format(np.mean(np.array(psnrs))))
         pass
 
     dummy = (
@@ -138,7 +148,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         #_d = (d - d.min()) * (1 / (d.max() - d.min()))
         _d = d/255
         new_d.append(_d)
-    print("RANGE: ", d.min(), d.max(), d.shape)
+    logger.info("RANGE: ", d.min(), d.max(), d.shape)
     d = np.array(new_d).transpose(1, 2, 0)
     if 0:
         opath = args.output
@@ -148,19 +158,19 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         opath = opath[:-3] + "png"
     #if argref:
     #    mse = ((d-(tref/255.0))**2).mean()*255
-    #    print("MSE: {:.6f}".format(mse))
+    #    logger.info("MSE: {:.6f}".format(mse))
     d = np.minimum(np.maximum(d, 0), 1)
     plt.imsave(opath, d)
     if argref:
         mse = ((d-(tref/255.0))**2).mean()*255
-        print("MSE: {:.5f}".format(mse))
+        logger.info("MSE: {:.5f}".format(mse))
         d = cv2.imread(opath)
         d = cv2.cvtColor(d, cv2.COLOR_BGR2RGB)
         psnr2 = cv2.PSNR(tref,d)
-        print("PSNR: {:.5f}".format(psnr2))
+        logger.info("PSNR: {:.5f}".format(psnr2))
         (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
-        print("SSIM: {:.5f}".format(score))
-    print("Saved ", opath)
+        logger.info("SSIM: {:.5f}".format(score))
+    logger.info("Saved ", opath)
     if argref:
         return (
             0, score, 0, psnr2 , mse, d
@@ -220,13 +230,13 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     else:
         npref ='_n'
 
-    print("EVALUATING TRAIN SET")
+    logger.info("EVALUATING TRAIN SET")
     
     #trainset = ["10", "1", "7", "8", "9"]
     traineva = {'psnr':list(), 'ssim':list(), 'ssim2':list(), 'psnr2':list(), 'mse':list()}
     stride=args.stride
     for t in trainset:
-        print("image #", t)
+        logger.info("image #", t)
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
         _, _ssim, _, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, opt=opt, args=args)
@@ -243,20 +253,20 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         img1 = cv2.imread(inp)[:, :, : opt.channels]
         img2 = cv2.imread(argref)[:, :, : opt.channels]
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
-        print("Original ", cv2.PSNR(img1, img2), score)
-    print("========================")
-    #print("MEAN PSNR: {:.2f}".format(np.mean(traineva["psnr"])))
-    print("MEAN SSIM: {:.2f}".format(np.mean(traineva["ssim"])))
-    #print("MEAN SSIM2 (patch-based SSIM): {:.2f}".format(np.mean(traineva["ssim2"])))
-    print("MEAN PSNR2 (image-based PSNR): {:.2f}".format(np.mean(traineva['psnr2'])))
-    print("MEAN MSE (image-based MSE): {:.2f}".format(np.mean(traineva['mse'])))
-    print("========================")
+        logger.info("Original ", cv2.PSNR(img1, img2), score)
+    logger.info("========================")
+    #logger.info("MEAN PSNR: {:.2f}".format(np.mean(traineva["psnr"])))
+    logger.info("MEAN SSIM: {:.2f}".format(np.mean(traineva["ssim"])))
+    #logger.info("MEAN SSIM2 (patch-based SSIM): {:.2f}".format(np.mean(traineva["ssim2"])))
+    logger.info("MEAN PSNR2 (image-based PSNR): {:.2f}".format(np.mean(traineva['psnr2'])))
+    logger.info("MEAN MSE (image-based MSE): {:.2f}".format(np.mean(traineva['mse'])))
+    logger.info("========================")
     
-    print("EVALUATING TEST SET")
+    logger.info("EVALUATING TEST SET")
     #testset = ["2", "3", "4", "5", "6"]
     testeva = {'psnr':list(), 'ssim':list(), 'ssim2':list(), 'psnr2':list(), 'mse':list()}
     for t in testset:
-        print("image #", t)
+        logger.info("image #", t)
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
         _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, opt=opt, args=args)
@@ -273,14 +283,14 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         img1 = cv2.imread(inp)[:, :, : opt.channels]
         img2 = cv2.imread(argref)[:, :, : opt.channels]
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
-        print("Original ", cv2.PSNR(img1, img2), score)
-    print("========================")
-    #print("MEAN PSNR: {:.2f}".format(np.mean(testeva["psnr"])))
-    print("MEAN SSIM: {:.2f}".format(np.mean(testeva["ssim"])))
-    #print("MEAN SSIM2 (patch-based SSIM): {:.2f}".format(np.mean(testeva["ssim2"])))
-    print("MEAN PSNR2 (image-based PSNR): {:.2f}".format(np.mean(testeva['psnr2'])))
-    print("MEAN MSE (image-based MSE): {:.2f}".format(np.mean(testeva['mse'])))
-    print("========================")
+        logger.info("Original ", cv2.PSNR(img1, img2), score)
+    logger.info("========================")
+    #logger.info("MEAN PSNR: {:.2f}".format(np.mean(testeva["psnr"])))
+    logger.info("MEAN SSIM: {:.2f}".format(np.mean(testeva["ssim"])))
+    #logger.info("MEAN SSIM2 (patch-based SSIM): {:.2f}".format(np.mean(testeva["ssim2"])))
+    logger.info("MEAN PSNR2 (image-based PSNR): {:.2f}".format(np.mean(testeva['psnr2'])))
+    logger.info("MEAN MSE (image-based MSE): {:.2f}".format(np.mean(testeva['mse'])))
+    logger.info("========================")
     return traineva, testeva
 if __name__=="__main__":
     #global opt

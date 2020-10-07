@@ -29,6 +29,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         from skimage.measure import compare_ssim
 
     sample = cv2.imread(inp)
+    print(inp)
     if width==None:
         width = sample.shape[0]
     else:
