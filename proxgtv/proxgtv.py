@@ -480,7 +480,7 @@ class OPT:
         self.logger=logger
 
     def _print(self):
-        self.logger(
+        self.logger.info(
             "batch_size =",
             self.batch_size,
             ", width =",
@@ -520,10 +520,10 @@ class GTV(nn.Module):
         self.wt = width
         self.width = width
         if self.opt.ver or 1:
-            opt.logger("EXPERIMENTAL CNNF")
+            opt.logger.info("EXPERIMENTAL CNNF")
             self.cnnf = cnnf_2(opt=self.opt)
         else:
-            opt.logger("ORIGINAL CNNF")
+            opt.logger.info("ORIGINAL CNNF")
             self.cnnf = cnnf(opt=self.opt)
         self.cnnu = cnnu(u_min=u_min, opt=self.opt)
         self.cnns = cnnu(u_min=u_min, opt=self.opt)
@@ -535,7 +535,7 @@ class GTV(nn.Module):
             self.cnnu.cuda()
             self.cnns.cuda()
             # self.cnny.cuda()
-        opt.logger("GTV created on cuda:", cuda)
+        opt.logger.info("GTV created on cuda: {0}".format( cuda))
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.device = torch.device("cuda") if cuda else torch.device("cpu")
         self.cnnf.apply(weights_init_normal)
@@ -593,9 +593,9 @@ class GTV(nn.Module):
         #print('sum', (-(Fs.sum(axis=1)) / (2 * (1 ** 2)))[0,0])
         #print('W', w[0,0])
         if debug:
-            self.logger("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0}".format( w[0, :, :].sum().item()))
+            self.logger.info("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0}".format( w[0, :, :].sum().item()))
             hist = list()
-            self.logger("\tprocessed u: Mean {0:.4f} Median {1:.4f}".format( u.mean().item(), u.median().item()))
+            self.logger.info("\tprocessed u: Mean {0:.4f} Median {1:.4f}".format( u.mean().item(), u.median().item()))
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
 
         W = self.base_W.clone()
@@ -738,9 +738,9 @@ class GTV(nn.Module):
             #return_dict['gtv'].append((z*w).abs().sum())
             pass
         if debug:
-            self.logger("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0}".format( w[0, :, :].sum().item()))
+            self.logger.info("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0}".format( w[0, :, :].sum().item()))
             hist = list()
-            self.logger("\tprocessed u: Mean {0:.4f} Median {1:.4f}".format( u.mean().item(), u.median().item()))
+            self.logger.info("\tprocessed u: Mean {0:.4f} Median {1:.4f}".format( u.mean().item(), u.median().item()))
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
 
         W = self.base_W.clone()
@@ -876,9 +876,9 @@ class GTV(nn.Module):
         )
         w = torch.exp(-(Fs.sum(axis=1)) / (self.weight_sigma**2))
         if debug:
-            self.logger("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0}".format( w[0, :, :].sum().item()))
+            self.logger.info("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0}".format( w[0, :, :].sum().item()))
             hist = list()
-            self.logger("\tprocessed u: Mean {0:.4f} Median {1:.4f}".format( u.mean().item(), u.median().item()))
+            self.logger.info("\tprocessed u: Mean {0:.4f} Median {1:.4f}".format( u.mean().item(), u.median().item()))
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
 
         W = self.base_W.clone()
@@ -1177,7 +1177,7 @@ def supporting_matrix(opt):
 
     for e, p in enumerate(A_pair):
         A[p[1], p[0]] = 1
-    opt.logger("OPT created on cuda: {0} {1}".format( cuda, dtype))
+    opt.logger.info("OPT created on cuda: {0} {1}".format( cuda, dtype))
 
 
 def _norm(x, newmin, newmax):

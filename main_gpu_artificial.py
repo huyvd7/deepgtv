@@ -14,15 +14,24 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 from proxgtv.proxgtv import * 
 import pickle
+logging.basicConfig(filename='evaluate_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
+                            filemode='a',
+                            format='%(asctime)s %(name)s %(levelname)s %(message)s',
+                            datefmt='%H:%M:%S',
+                            level=logging.NOTSET)
+
+logging.info("Running DGTV evaluation")
+
+logger = logging.getLogger('root')
 
 def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, args=None):
     debug = 0
     cuda = True if torch.cuda.is_available() else False
     torch.autograd.set_detect_anomaly(True)
-    print("CUDA: ", cuda)
+    opt.logger.info("CUDA: ", cuda)
     if cuda:
         dtype = torch.cuda.FloatTensor
-        print(torch.cuda.get_device_name(0))
+        opt.logger.info(torch.cuda.get_device_name(0))
     else:
         dtype = torch.FloatTensor
 
@@ -36,7 +45,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
     if not subset:
         _subset = ["10", "1", "7", "8", "9"]
         #_subset = ["1", "3", "5", "7", "9"]
-        print('Train: ', _subset)
+        opt.logger.info('Train: {0}'.format( _subset))
         subset = [i + "_" for i in _subset]
     else:
         subset = [i + "_" for i in subset]
@@ -54,7 +63,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
     width = args.width
     supporting_matrix(opt)
     total_epoch = epoch
-    print("Dataset: ", len(dataset))
+    opt.logger.info("Dataset: {0}".format( len(dataset)))
     gtv = GTV(
         width=args.width,
         prox_iter=1,
@@ -67,7 +76,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
     )
     if cont:
         gtv.load_state_dict(torch.load(cont))
-        print("LOAD PREVIOUS GTV:", cont)
+        opt.logger.info("LOAD PREVIOUS GTV:", cont)
     if cuda:
         gtv.cuda()
     criterion = nn.MSELoss()
@@ -85,7 +94,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
 
     if cont:
         optimizer.load_state_dict(torch.load(cont+'optim'))
-        print("LOAD PREVIOUS OPTIMIZER:", cont+'optim')
+        opt.logger.info("LOAD PREVIOUS OPTIMIZER:", cont+'optim')
     current_lr = opt.lr
 
     hist = list()
@@ -131,22 +140,21 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
                 with torch.no_grad():
                     histW = gtv(inputs, debug=1, Tmod=5)
                 if opt.ver: # experimental version
-                    print("\tCNNF stats: ", gtv.cnnf.layer[0].weight.grad.median().item())
+                    opt.logger.info("\tCNNF stats: {0:.5f}".format( gtv.cnnf.layer[0].weight.grad.median().item()))
                 else:
-                    print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean().item())
-                print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean().item())
-                print("\tCNNS grads: ", gtv.cnns.layer[0].weight.grad.mean().item())
+                    opt.logger.info("\tCNNF stats: {0:.5f}".format( gtv.cnnf.layer1[0].weight.grad.mean().item()))
+                opt.logger.info("\tCNNU grads: {0:.5f}".format( gtv.cnnu.layer[0].weight.grad.mean().item()))
+                opt.logger.info("\tCNNS grads: {0:.5f}".format( gtv.cnns.layer[0].weight.grad.mean().item()))
 
                 with torch.no_grad():
                     us = gtv.cnnu(inputs)
-                    print("\tCNNU stats: ", us.max().item(),  us.mean().item(),us.min().item())
+                    opt.logger.info("\tCNNU stats: max {0:.5f} mean {1:.5f} min {2:.5f}".format( us.max().item(),  us.mean().item(),us.min().item()))
                     us = gtv.cnns(inputs)
-                    print("\tCNNS stats: ", us.max().item(),  us.mean().item(),us.min().item())
+                    opt.logger.info("\tCNNS stats: max {0:.5f} mean {1:.5f} min {2:.5f}".format( us.max().item(),  us.mean().item(),us.min().item()))
 
 
         tnow = time.time()
-        print(
-            time.ctime(),
+        opt.logger.info(
             '[{0}] \x1b[31mLOSS\x1b[0m: {1:.3f}, time elapsed: {2:.1f} secs, epoch time: {3:.1f} secs'.format(
                 epoch + 1, running_loss / (ld*(i+1)), tnow - tstart, tnow-tprev
             )
@@ -158,24 +166,24 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
             with torch.no_grad():
                 histW = gtv(inputs, debug=1, Tmod= 5)
             if opt.ver: # experimental version
-                print("\tCNNF stats: ", gtv.cnnf.layer[0].weight.grad.mean().item())
+                opt.logger.info("\tCNNF stats: {0:.5f}".format( gtv.cnnf.layer[0].weight.grad.median().item()))
             else:
-                print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean().item())
-            #print("\tCNNF stats: ", gtv.cnnf.layer1[0].weight.grad.mean())
-            print("\tCNNU grads: ", gtv.cnnu.layer[0].weight.grad.mean().item())
-            print("\tCNNS grads: ", gtv.cnns.layer[0].weight.grad.mean().item())
+                opt.logger.info("\tCNNF stats: {0:.5f}".format( gtv.cnnf.layer1[0].weight.grad.mean().item()))
+                opt.logger.info("\tCNNU grads: {0:.5f}".format( gtv.cnnu.layer[0].weight.grad.mean().item()))
+                opt.logger.info("\tCNNS grads: {0:.5f}".format( gtv.cnns.layer[0].weight.grad.mean().item()))
 
             pmax = list()
             for p in gtv.parameters():
                 pmax.append(p.grad.max())
-            print("\tmax gradients", max(pmax))
+            opt.logger.info("\tmax gradients {0}".format( max(pmax)))
             with torch.no_grad():
-                us = gtv.cnnu(inputs[:10])
-                print("\tCNNU stats: ", us.mean().data, us.max().data, us.min().data)
+                us = gtv.cnnu(inputs)
+                opt.logger.info("\tCNNU stats: max {0:.5f} mean {1:.5f} min {2:.5f}".format( us.max().item(),  us.mean().item(),us.min().item()))
                 us = gtv.cnns(inputs)
-                print("\tCNNS stats: ", us.max().item(),  us.mean().item(),us.min().item())
+                opt.logger.info("\tCNNS stats: max {0:.5f} mean {1:.5f} min {2:.5f}".format( us.max().item(),  us.mean().item(),us.min().item()))
 
-            print("\tsave @ epoch ", epoch + 1)
+
+            opt.logger.info("\tsave @ epoch {0}".format( epoch + 1))
             torch.save(gtv.state_dict(), SAVEDIR + str(epoch) +'.'+SAVEPATH)
             torch.save(optimizer.state_dict(), SAVEDIR + str(epoch)+'.'+SAVEPATH + "optim")
 
@@ -183,7 +191,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
     torch.save(gtv.state_dict(), SAVEDIR + str(epoch) +'.'+SAVEPATH)
     torch.save(optimizer.state_dict(), SAVEDIR + str(epoch)+'.'+SAVEPATH + "optim")
            
-    print("Total running time: {0:.3f}".format(time.time() - tstart))
+    opt.logger.info("Total running time: {0:.3f}".format(time.time() - tstart))
     fig, ax = plt.subplots(1, 1, figsize=(12, 5))
 
     cumsum_vec = np.cumsum(np.insert(losshist, 0, 0))
@@ -245,5 +253,5 @@ if __name__=="__main__":
     opt.train=args.train
     opt.width=args.width
     torch.manual_seed(args.seed)
-
+    opt.logger=logger
     main(seed=1, model_name=model_name, cont=cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'], args=args)
