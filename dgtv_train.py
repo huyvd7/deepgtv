@@ -140,7 +140,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 g = gtv.gtv1
                 with torch.no_grad():
                     P1, P2, P3 = gtv(inputs, debug=True)
-                    opt.logger.info("\tLOSS: {0:.8f} {1:.8f} {2:.8f}".format( (P1-labels).norm().item(), (P2-labels).norm().item(), (P3-labels).norm().item()))
+                    opt.logger.info("\tLOSS: {0:.8f} {1:.8f} {2:.8f}".format( (P1-labels).square().mean().item(), (P2-labels).square().mean().item(), (P3-labels).square().mean().item()))
                     P1 = g(inputs, debug=1, Tmod= 5)
                 if opt.ver: # experimental version
                     opt.logger.info("\tCNNF stats: {0:.5f}".format( g.cnnf.layer[0].weight.grad.median().item()))
@@ -172,7 +172,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             g = gtv.gtv1
             with torch.no_grad():
                 P1, P2, P3 = gtv(inputs, debug=True)
-                opt.logger.info("\tLOSS: {0:.8f} {1:.8f} {2:.8f}".format( (P1-labels).norm().item(), (P2-labels).norm().item(), (P3-labels).norm().item()))
+                opt.logger.info("\tLOSS: {0:.8f} {1:.8f} {2:.8f}".format( (P1-labels).square().mean().item(), (P2-labels).square().mean().item(), (P3-labels).square().mean().item()))
 
                 histW = g(inputs, debug=1, Tmod= 5)
             if opt.ver: # experimental version
