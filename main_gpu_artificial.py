@@ -98,8 +98,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
     opt._print()
     pickle.dump(opt, open( "opt", "wb" ))
     ld = len(dataset)
-    
-
+    ld=1
     #scaler = torch.cuda.amp.GradScaler()
     for epoch in range(total_epoch):  # loop over the dataset multiple times
         # running_loss_inside = 0.0
@@ -148,7 +147,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
 
         tnow = time.time()
         opt.logger.info(
-            '[{0}] \x1b[31mLOSS\x1b[0m: {1:.3f}, time elapsed: {2:.1f} secs, epoch time: {3:.1f} secs'.format(
+            '[{0}] \x1b[31mLOSS\x1b[0m: {1:.8f}, time elapsed: {2:.1f} secs, epoch time: {3:.1f} secs'.format(
                 epoch + 1, running_loss / (ld*(i+1)), tnow - tstart, tnow-tprev
             )
         )
