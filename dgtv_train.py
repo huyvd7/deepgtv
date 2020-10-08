@@ -99,7 +99,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     if cont:
         try:
             optimizer.load_state_dict(torch.load(cont+'optim'))
-            opt.logger.info("LOAD PREVIOUS OPTIMIZER:", cont+'optim')
+            opt.logger.info("LOAD PREVIOUS OPTIMIZER: {0}".format( cont+'optim'))
         except Exception:
             opt.logger.info("Using new optimizer")
     current_lr = opt.lr
