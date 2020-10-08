@@ -1114,7 +1114,6 @@ class DeepGTV(nn.Module):
         #    P = self.gtv[i](P)
         P = self.gtv1.predict(sample)
         P = self.gtv1.predict(P)
-        P = self.gtv1.predict(P)
 
         return P
 
@@ -1122,12 +1121,10 @@ class DeepGTV(nn.Module):
         if not debug:
             P = self.gtv1(sample)
             P = self.gtv1(P)
-            P = self.gtv1(P)
         else:
             P1 = self.gtv1(sample)
             P2 = self.gtv1(P1)
-            P3 = self.gtv1(P2)
-            return P1, P2, P3
+            return P1, P2
         return P
 
 
