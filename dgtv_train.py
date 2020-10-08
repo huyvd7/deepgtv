@@ -77,7 +77,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 
     if cont:
         gtv.load_state_dict(torch.load(cont))
-        opt.logger.info("LOAD PREVIOUS DGTV:", cont)
+        opt.logger.info("LOAD PREVIOUS DGTV: {0}".format( cont))
     if cuda:
         gtv.gtv1.cuda()
         #gtv.gtv2.cuda()
