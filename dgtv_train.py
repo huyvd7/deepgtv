@@ -51,6 +51,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
         subset=subset,
     )
+    opt.logger.info(dataset.nimg_name)
     dataloader = DataLoader(
         dataset, batch_size=batch_size, shuffle=True   , pin_memory=True, num_workers=4, drop_last=True
     )
