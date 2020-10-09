@@ -546,6 +546,8 @@ class GTV(nn.Module):
        # u = opt.u
         if dgtv_u != None:
             u = self.cnnu.forward(xf)
+        else:
+            u=dgtv_u
         u_max = self.opt.u_max
         u_min = self.opt.u_min
         if debug:
