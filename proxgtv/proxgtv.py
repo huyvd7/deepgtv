@@ -538,16 +538,14 @@ class GTV(nn.Module):
         self.support_e1[0] = 1
         self.weight_sigma=0.2
     
-    def forward(self, xf, debug=False, manual_debug=False, dgtv_u=None):  # gtvforward
+    def forward(self, xf, debug=False, manual_debug=False, u=None):  # gtvforward
         s = self.cnns.forward(xf)
         s = torch.clamp(s, 0.01, 0.99)
         s = s.unsqueeze(1)
 
        # u = opt.u
-        if dgtv_u != None:
+        if u != None:
             u = self.cnnu.forward(xf)
-        else:
-            u=dgtv_u
         u_max = self.opt.u_max
         u_min = self.opt.u_min
         if debug:
@@ -1116,15 +1114,15 @@ class DeepGTV(nn.Module):
         if not debug:
             P = self.gtv1(sample)
             u = self.cnnu2(P)
-            P = self.gtv1.forward(P, dgtv_u=u)
+            P = self.gtv1.forward(P, u=u)
             u = self.cnnu3(P)
-            P = self.gtv1.forward(P, dgtv_u=u)
+            P = self.gtv1.forward(P, u=u)
         else:
             P1 = self.gtv1(sample)
             u = self.cnnu2(P1)
-            P2 = self.gtv1(P1, dgtv_u=u)
+            P2 = self.gtv1(P1, u=u)
             u = self.cnnu2(P2)
-            P3 = self.gtv1(P2, dgtv_u=u)
+            P3 = self.gtv1(P2, u=u)
             return P1, P2, P3
         return P
        
