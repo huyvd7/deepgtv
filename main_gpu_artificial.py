@@ -130,7 +130,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
 
             if epoch==0 and (i+1)%80==0:
                 with torch.no_grad():
-                    histW = gtv(inputs, debug=1, Tmod=5)
+                    histW = gtv(inputs, debug=1)
                 if opt.ver: # experimental version
                     opt.logger.info("\tCNNF stats: {0:.5f}".format( gtv.cnnf.layer[0].weight.grad.median().item()))
                 else:
@@ -156,7 +156,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
 
         if ((epoch + 1) % 1 == 0) or (epoch + 1) == total_epoch:
             with torch.no_grad():
-                histW = gtv(inputs, debug=1, Tmod= 5)
+                histW = gtv(inputs, debug=1)
             if opt.ver: # experimental version
                 opt.logger.info("\tCNNF stats: {0:.5f}".format( gtv.cnnf.layer[0].weight.grad.median().item()))
             else:

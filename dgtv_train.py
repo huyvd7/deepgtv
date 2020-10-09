@@ -87,13 +87,13 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     
     #gtv1_params = list(filter(lambda kv: 'gtv1' in kv[0] , gtv.named_parameters()))
     #gtv1_params = [i[1] for i in gtv1_params ]
-    cnnf_params = list(filter(lambda kv: 'cnnu' in kv[0], gtv.named_parameters()))
-    cnnf_params = [i[1] for i in cnnf_params]
+    cnnu_params = list(filter(lambda kv: 'cnnu' in kv[0], gtv.named_parameters()))
+    cnnu_params = [i[1] for i in cnnf_params]
 
 
 
     optimizer = optim.SGD([
-                {'params': cnnf_params, 'lr':opt.lr},
+                {'params': cnnu_params, 'lr':opt.lr},
              ], lr=opt.lr, momentum=opt.momentum)
 
     #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
@@ -130,7 +130,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             loss = criterion(outputs, labels)
             loss.backward()
             #torch.nn.utils.clip_grad_norm_(gtv.parameters(), 5e1)
-            torch.nn.utils.clip_grad_value_(cnnf_params, 5e1)
+            torch.nn.utils.clip_grad_value_(cnnu_params, 5e1)
             #torch.nn.utils.clip_grad_value_(cnny_params, 1)
             #torch.nn.utils.clip_grad_value_(cnnu_params, 1e1)
 

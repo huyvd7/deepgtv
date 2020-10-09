@@ -538,13 +538,14 @@ class GTV(nn.Module):
         self.support_e1[0] = 1
         self.weight_sigma=0.2
     
-    def forward(self, xf, debug=False, Tmod=False, manual_debug=False):  # gtvforward
+    def forward(self, xf, debug=False, manual_debug=False, dgtv_u=None):  # gtvforward
         s = self.cnns.forward(xf)
         s = torch.clamp(s, 0.01, 0.99)
         s = s.unsqueeze(1)
 
        # u = opt.u
-        u = self.cnnu.forward(xf)
+        if not dgtv_u:
+            u = self.cnnu.forward(xf)
         u_max = self.opt.u_max
         u_min = self.opt.u_min
         if debug:
@@ -686,7 +687,7 @@ class GTV(nn.Module):
             xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width
         )
 
-    def forward_approx(self, xf, debug=False, Tmod=False, manual_debug=False):  # gtvapprox
+    def forward_approx(self, xf, debug=False, manual_debug=False):  # gtvapprox
         self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
 
 
@@ -1092,12 +1093,15 @@ class DeepGTV(nn.Module):
                     cuda=cuda,
                     opt=opt,
                 )
-
+        self.cnnu2 = cnnu(u_min=0, opt=self.opt)
+        self.cnnu3 = cnnu(u_min=0, opt=self.opt)
         self.opt = opt
         if cuda:
             #for gtv in self.gtv:
             #    gtv.cuda()
             self.gtv1.cuda()
+            self.cnnu2.cuda()
+            self.cnnu3.cuda()
 
 
     def load(self, p1, p2):
@@ -1119,18 +1123,34 @@ class DeepGTV(nn.Module):
         P = self.gtv1.predict(P)
 
         return P
+    def forward(self,sample, debug=False):
 
-    def forward(self, sample, debug=False):
         if not debug:
             P = self.gtv1(sample)
-            P = self.gtv1(P)
-            P = self.gtv1(P)
+            u = self.cnnu2(P)
+            P = self.gtv1.forward(P, dgtv_u=u)
+            u = self.cnnu3(P)
+            P = self.gtv1.forward(P, dgtv_u=u)
         else:
             P1 = self.gtv1(sample)
-            P2 = self.gtv1(P1)
-            P3 = self.gtv1(P2)
+            u = self.cnnu2(P1)
+            P2 = self.gtv1(P1, dgtv_u=u)
+            u = self.cnnu2(P2)
+            P3 = self.gtv1(P2, dgtv_u=u)
             return P1, P2, P3
         return P
+       
+    #def forward(self, sample, debug=False):
+    #    if not debug:
+    #        P = self.gtv1(sample)
+    #        P = self.gtv1(P)
+    #        P = self.gtv1(P)
+    #    else:
+    #        P1 = self.gtv1(sample)
+    #        P2 = self.gtv1(P1)
+    #        P3 = self.gtv1(P2)
+    #        return P1, P2, P3
+    #    return P
 
 
 def supporting_matrix(opt):
