@@ -293,7 +293,7 @@ if __name__=="__main__":
         "-p", "--image_path"
     )
     parser.add_argument(
-        "--layers", default=1
+        "--layers", default=1, type=int
     )
     args = parser.parse_args()
     opt = pickle.load(open(args.opt, "rb"))
