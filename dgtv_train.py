@@ -87,7 +87,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     
     #gtv1_params = list(filter(lambda kv: 'gtv1' in kv[0] , gtv.named_parameters()))
     #gtv1_params = [i[1] for i in gtv1_params ]
-    cnnu_params = list(filter(lambda kv: 'cnnu' in kv[0], gtv.named_parameters()))
+    cnnu_params = list(filter(lambda kv: ('cnnu2' in kv[0] or 'cnnu3' in kv[0]), gtv.named_parameters()))
     cnnu_params = [i[1] for i in cnnu_params]
     print(len(cnnu_params))
 
