@@ -538,13 +538,14 @@ class GTV(nn.Module):
         self.support_e1[0] = 1
         self.weight_sigma=0.2
     
-    def forward(self, xf, debug=False, manual_debug=False):  # gtvforward
+    def forward(self, xf, debug=False, manual_debug=False, uscale=1):  # gtvforward
         s = self.cnns.forward(xf)
         s = torch.clamp(s, 0.01, 0.99)
         s = s.unsqueeze(1)
 
        # u = opt.u
         u = self.cnnu.forward(xf)
+        u/=uscale
         u_max = self.opt.u_max
         u_min = self.opt.u_min
         if debug:
@@ -833,7 +834,7 @@ class GTV(nn.Module):
             self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
         P = self.forward(xf)
         for i in range(layers-1):
-            P = self.forward(P)
+            P = self.forward(P, uscale=2*(i+1))
         return P
 
     def predict9(self, xf, manual_debug=True, debug=True):
