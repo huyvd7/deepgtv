@@ -1120,10 +1120,10 @@ class DeepGTV(nn.Module):
         else:
             P1 = self.gtv1(sample)
             u = self.cnnu2(P1)
-            self.opt.logger.info("{:.5f".format(u[0].item()))
+            self.opt.logger.info("{:.5f}".format(u[0].item()))
             P2 = self.gtv1(P1, u=u)
             u = self.cnnu2(P2)
-            self.opt.logger.info("{:.5f".format(u[0].item()))
+            self.opt.logger.info("{:.5f}".format(u[0].item()))
             P3 = self.gtv1(P2, u=u)
             return P1, P2, P3
         return P
