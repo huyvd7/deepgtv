@@ -544,7 +544,7 @@ class GTV(nn.Module):
         s = s.unsqueeze(1)
 
        # u = opt.u
-        if not dgtv_u:
+        if dgtv_u != None:
             u = self.cnnu.forward(xf)
         u_max = self.opt.u_max
         u_min = self.opt.u_min
