@@ -106,7 +106,7 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         #        dummy[i, jj:(jj+MAX_PATCH)] = P
         #        del P
         for ii, i in enumerate(range(0, T2.shape[0], MAX_PATCH)):
-            P = gtv.predict(T2[i:(i+MAX_PATCH),:,:,:].float().contiguous())
+            P = gtv.predict(T2[i:(i+MAX_PATCH),:,:,:].float().contiguous(), layers=args.layers)
             dummy[i:(i+MAX_PATCH)]=P
     dummy=dummy.view(oT2s0, -1, opt.channels,opt.width,opt.width)
     dummy=dummy.cpu()
@@ -293,7 +293,7 @@ if __name__=="__main__":
         "-p", "--image_path"
     )
     parser.add_argument(
-        "--delta", default=0.9
+        "--layers", default=1
     )
     args = parser.parse_args()
     opt = pickle.load(open(args.opt, "rb"))
@@ -310,7 +310,6 @@ if __name__=="__main__":
         image_path = args.image_path
     else:
         image_path = 'gauss'
-    opt.delta = float(args.delta)
     logging.basicConfig(filename='log/evaluate_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
                             filemode='a',
                             format='%(asctime)s %(name)s %(levelname)s %(message)s',

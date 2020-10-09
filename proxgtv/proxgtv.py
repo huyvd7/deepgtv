@@ -826,13 +826,15 @@ class GTV(nn.Module):
             xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
         )
 
-    def predict(self, xf, change_dtype=False, new_dtype=False):
+    def predict(self, xf, change_dtype=False, new_dtype=False, layers=1):
         if change_dtype:
             self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(new_dtype)
         else:
             self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
-
-        return self.forward(xf)
+        P = self.forward(xf)
+        for i in range(layers-1):
+            P = self.forward(P)
+        return P
 
     def predict9(self, xf, manual_debug=True, debug=True):
         self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
