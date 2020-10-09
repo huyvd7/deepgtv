@@ -80,7 +80,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         gtv.load_state_dict(torch.load(cont))
         opt.logger.info("LOAD PREVIOUS DGTV: {0}".format( cont))
     if cuda:
-        gtv.gtv1.cuda()
+        #gtv.gtv1.cuda()
         #gtv.gtv2.cuda()
         gtv.cuda()
     criterion = nn.MSELoss()
@@ -96,7 +96,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 {'params': cnnf_params, 'lr':opt.lr},
              ], lr=opt.lr, momentum=opt.momentum)
 
-    #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
+    optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
     if cont:
         try:
             optimizer.load_state_dict(torch.load(cont+'optim'))
@@ -129,8 +129,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             outputs = gtv(inputs)
             loss = criterion(outputs, labels)
             loss.backward()
-            #torch.nn.utils.clip_grad_norm_(gtv.parameters(), 5e1)
-            torch.nn.utils.clip_grad_value_(cnnf_params, 5e1)
+            torch.nn.utils.clip_grad_norm_(gtv.parameters(), 5e1)
+            #torch.nn.utils.clip_grad_value_(cnnf_params, 5e1)
             #torch.nn.utils.clip_grad_value_(cnny_params, 1)
             #torch.nn.utils.clip_grad_value_(cnnu_params, 1e1)
 
