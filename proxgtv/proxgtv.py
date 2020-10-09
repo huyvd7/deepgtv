@@ -1071,21 +1071,8 @@ class DeepGTV(nn.Module):
         no=2,
     ):
         super(DeepGTV, self).__init__()
+        self.opt = opt
         self.no = no
-        #self.gtv = list()
-        #for i in range(self.no):
-        #    self.gtv.append(
-        #        GTV(
-        #            width=36,
-        #            prox_iter=prox_iter,
-        #            u_max=u_max,
-        #            u_min=u_min,
-        #            lambda_min=lambda_min,
-        #            lambda_max=lambda_max,
-        #            cuda=cuda,
-        #            opt=opt,
-        #        )
-        #    )
         self.gtv1 = GTV(
                     width=width,
                     u_max=u_max,
@@ -1095,7 +1082,6 @@ class DeepGTV(nn.Module):
                 )
         self.cnnu2 = cnnu(u_min=0, opt=self.opt)
         self.cnnu3 = cnnu(u_min=0, opt=self.opt)
-        self.opt = opt
         if cuda:
             #for gtv in self.gtv:
             #    gtv.cuda()
