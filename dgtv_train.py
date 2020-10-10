@@ -230,7 +230,7 @@ if __name__=="__main__":
         "-c", "--cont", default=None
     )
     parser.add_argument(
-        "--batch", default=64
+        "--batch", default=64, type=int
     )
     parser.add_argument(
         "--lr", default=8e-6
@@ -245,7 +245,7 @@ if __name__=="__main__":
         "--admm_iter", default=4
     )
     parser.add_argument(
-        "--epoch", default=200
+        "--epoch", default=200, type=int
     )
     parser.add_argument(
         "--umax", default=65, type=float
