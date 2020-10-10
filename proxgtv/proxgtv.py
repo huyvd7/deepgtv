@@ -1,4 +1,5 @@
 import scipy.sparse as ss
+import argparse
 import torch
 import numpy as np
 import os
@@ -13,10 +14,42 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 
 cuda = True if torch.cuda.is_available() else False
+
 if cuda:
     dtype = torch.cuda.FloatTensor
 else:
     dtype = torch.FloatTensor
+
+dv = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+        
+class cnnf_2(nn.Module):
+    def __init__(self, opt):
+        super(cnnf_2, self).__init__()
+        self.layer = nn.Sequential(
+            nn.Conv2d(opt.channels, 32, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            # nn.LeakyReLU(0.05),
+            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            # nn.LeakyReLU(0.05),
+            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            # nn.LeakyReLU(0.05),
+            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+
+            nn.Conv2d(32, 6, kernel_size=3, stride=1, padding=1),
+        )
+
+    def forward(self, x):
+        # identity = x
+        out = self.layer(x)
+        # out = identity + out
+        return out
 
 
 class cnnf(nn.Module):
@@ -24,7 +57,7 @@ class cnnf(nn.Module):
     CNN F of GLR
     """
 
-    def __init__(self):
+    def __init__(self, opt):
         super(cnnf, self).__init__()
         self.layer1 = nn.Sequential(
             # nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
@@ -110,7 +143,7 @@ class cnnu(nn.Module):
     CNNU of GLR
     """
 
-    def __init__(self, u_min=1e-3):
+    def __init__(self, u_min=1e-3, opt=None):
         super(cnnu, self).__init__()
         self.layer = nn.Sequential(
             # nn.Conv2d(3, 32, kernel_size=3, stride=2, padding=1),
@@ -131,12 +164,13 @@ class cnnu(nn.Module):
             nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
         )
 
+        self.opt=opt
         self.u_min = u_min
         self.fc = nn.Sequential(
-            nn.Linear(3 * 3 * 32, 1 * 1 * 32),
+            nn.Linear(self.linear_input_neurons(), 1 * 1 * 32),
             nn.Linear(1 * 1 * 32, 1),
-            # nn.ReLU()
-            nn.LeakyReLU(0.05),
+            nn.ReLU()
+            # nn.LeakyReLU(0.05),
         )
 
     def forward(self, x):
@@ -144,14 +178,25 @@ class cnnu(nn.Module):
         out = out.view(out.shape[0], -1)
         out = self.fc(out)
         return out
+    def size_after_relu(self, x):
+        x = self.layer(x)
 
+        return x.size()
+
+    def linear_input_neurons(self):
+        size = self.size_after_relu(torch.rand(1, self.opt.channels, self.opt.width, self.opt.width)) 
+        m = 1
+        for i in size:
+            m *= i
+
+        return int(m)
 
 class cnny(nn.Module):
     """
     CNN Y of GLR
     """
 
-    def __init__(self):
+    def __init__(self, opt):
         super(cnny, self).__init__()
         self.layer = nn.Sequential(
             nn.Conv2d(opt.channels, 32, kernel_size=3, stride=1, padding=1),
@@ -171,6 +216,26 @@ class cnny(nn.Module):
         out = self.layer(x)
         out = identity + out
         del identity
+        return out
+
+
+class mlp(nn.Module):
+    """
+    CNN Y of GLR
+    """
+
+    def __init__(self, opt, in_channels=36 ** 2, out_channels=36 ** 2):
+        super(mlp, self).__init__()
+        self.hidden_nodes = 128
+        self.fc = nn.Sequential(
+            nn.Linear(in_channels, self.hidden_nodes),
+            nn.Linear(self.hidden_nodes, out_channels),
+        )
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+
+    def forward(self, x):
+        out = self.fc(x)
         return out
 
 
@@ -194,7 +259,7 @@ class RENOIR_Dataset(Dataset):
         self.nimg_name = [
             i
             for i in self.nimg_name
-            if i.split(".")[-1].lower() in ["jpeg", "jpg", "png", "bmp"]
+            if i.split(".")[-1].lower() in ["jpeg", "jpg", "png", "bmp", "tif"]
         ]
 
         self.rimg_name = [
@@ -223,11 +288,14 @@ class RENOIR_Dataset(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-
+        uid = np.random.randint(0, 8)
+        #uid = 0
         nimg_name = os.path.join(self.npath, self.nimg_name[idx])
         nimg = cv2.imread(nimg_name)
+        nimg = data_aug(nimg, uid)
         rimg_name = os.path.join(self.rpath, self.rimg_name[idx])
         rimg = cv2.imread(rimg_name)
+        rimg = data_aug(rimg, uid)
 
         sample = {"nimg": nimg, "rimg": rimg}
 
@@ -265,8 +333,8 @@ class standardize(object):
         nimg = cv2.cvtColor(nimg, cv2.COLOR_BGR2RGB)
         rimg = cv2.cvtColor(rimg, cv2.COLOR_BGR2RGB)
         if self.normalize:
-            nimg = nimg / 255
-            rimg = rimg / 255
+            nimg = nimg / 255.0
+            rimg = rimg / 255.0
         return {"nimg": nimg, "rimg": rimg}
 
 
@@ -294,9 +362,29 @@ class ToTensor(object):
         nimg = nimg.transpose((2, 0, 1))
         rimg = rimg.transpose((2, 0, 1))
         return {
-            "nimg": torch.from_numpy(nimg).type(dtype),
-            "rimg": torch.from_numpy(rimg).type(dtype),
+            "nimg": torch.from_numpy(nimg),  # .type(dtype),
+            "rimg": torch.from_numpy(rimg),  # .type(dtype),
         }
+
+
+def data_aug(img, mode=0):
+    # data augmentation
+    if mode == 0:
+        return img
+    elif mode == 1:
+        return np.flipud(img)
+    elif mode == 2:
+        return np.rot90(img)
+    elif mode == 3:
+        return np.flipud(np.rot90(img))
+    elif mode == 4:
+        return np.rot90(img, k=2)
+    elif mode == 5:
+        return np.flipud(np.rot90(img, k=2))
+    elif mode == 6:
+        return np.rot90(img, k=3)
+    elif mode == 7:
+        return np.flipud(np.rot90(img, k=3))
 
 
 def connected_adjacency(image, connect=8, patch_size=(1, 1)):
@@ -338,25 +426,7 @@ def get_w(ij, F):
         ).sum(axis=1)
     )
 
-    return W.type(dtype)
-
-
-def gauss(d, epsilon=1):
-    """
-    Compute (3)
-    """
-
-    return torch.exp(-d / (2 * epsilon ** 2))
-
-
-def graph_construction(opt, F):
-    """
-    Construct Laplacian matrix
-    """
-    #     Fs = F.unsqueeze(-1).repeat(1, 1, 1, F.shape[-1])
-    Fs = (opt.H.matmul(F) ** 2).requires_grad_(True)
-    W = gauss(Fs.sum(axis=1)).requires_grad_(True)
-    return W
+    return W  # .type(dtype)
 
 
 def weights_init_normal(m):
@@ -374,16 +444,16 @@ class OPT:
         batch_size=100,
         width=36,
         connectivity="8",
-        admm_iter=1,
-        prox_iter=1,
-        delta=1,
         channels=3,
-        eta=0.1,
         u=1,
         u_max=100,
         u_min=10,
         lr=1e-4,
         momentum=0.99,
+        ver=None,
+        train="gauss_batch",
+        cuda=False,
+        logger=None
     ):
         self.batch_size = batch_size
         self.width = width
@@ -393,45 +463,29 @@ class OPT:
         self.pairs = None
         self.H = None
         self.connectivity = connectivity
-        self.admm_iter = admm_iter
-        self.prox_iter = prox_iter
         self.channels = channels
-        self.eta = eta
         self.u = u
         self.lr = lr
-        self.delta = delta
         self.momentum = momentum
         self.u_max = u_max
         self.u_min = u_min
+        self.ver = ver
+        self.D = None
+        self.train = train
+        self.cuda= cuda
+        if cuda:
+            self.dtype = torch.cuda.FloatTensor
+        else:
+            self.dtype = torch.FloatTensor
+        self.logger=logger
 
     def _print(self):
-        print(
-            "batch_size =",
-            self.batch_size,
-            ", width =",
-            self.width,
-            ", admm_iter =",
-            self.admm_iter,
-            ", prox_iter =",
-            self.prox_iter,
-            ", delta =",
-            self.delta,
-            ", channels =",
-            self.channels,
-            ", eta =",
-            self.eta,
-            ", u =",
-            self.u,
-            ", lr =",
-            self.lr,
-            ", momentum =",
-            self.momentum,
-        )
+        self.logger.info("batch_size = {0}, width = {1}, channels = {2}, u_min = {3}, u_max = {4}, lr = {5}, momentum = {6}".format(self.batch_size, self.width, self.channels, self.u_min, self.u_max, self.lr, self.momentum))
 
 
 class GTV(nn.Module):
     """
-    GLR network
+    GTV network 
     """
 
     def __init__(
@@ -446,136 +500,642 @@ class GTV(nn.Module):
         opt=None,
     ):
         super(GTV, self).__init__()
-        self.cnnf = cnnf()
 
         self.opt = opt
+        self.logger=opt.logger
         self.wt = width
         self.width = width
-        # self.cnnu = cnnu(u_min=u_min)
+        if self.opt.ver or 1:
+            opt.logger.info("EXPERIMENTAL CNNF")
+            self.cnnf = cnnf_2(opt=self.opt)
+        else:
+            opt.logger.info("ORIGINAL CNNF")
+            self.cnnf = cnnf(opt=self.opt)
+        self.cnnu = cnnu(u_min=u_min, opt=self.opt)
+        self.cnns = cnnu(u_min=u_min, opt=self.opt)
 
-        self.cnny = cnny()
+        # self.cnny = cnny(opt=self.opt)
 
         if cuda:
             self.cnnf.cuda()
-            # self.cnnu.cuda()
-            self.cnny.cuda()
-
+            self.cnnu.cuda()
+            self.cnns.cuda()
+            # self.cnny.cuda()
+        opt.logger.info("GTV created on cuda: {0}".format( cuda))
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
+        self.device = torch.device("cuda") if cuda else torch.device("cpu")
         self.cnnf.apply(weights_init_normal)
-        self.cnny.apply(weights_init_normal)
-        # self.cnnu.apply(weights_init_normal)
+        # self.cnny.apply(weights_init_normal)
+        self.cnnu.apply(weights_init_normal)
+        self.cnns.apply(weights_init_normal)
 
-    def forward(self, xf, debug=False, Tmod=False):  # gtvforward
-        u = opt.u
-        # self.u = self.cnnu.forward(xf)
-        # u_max = opt.u_max
-        # u_min = opt.u_min
+        self.support_zmax = torch.ones(1).type(self.dtype)*0.01
+        self.support_identity = torch.eye(self.opt.width**2, self.opt.width**2).type(self.dtype)
+        self.support_L = torch.ones(opt.width**2, 1).type(self.dtype)
+        self.base_W = torch.zeros(self.opt.batch_size, self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(self.dtype)
+        self.lanczos_order = 20
+        self.support_e1 = torch.zeros(self.lanczos_order,1).type(self.dtype)
+        self.support_e1[0] = 1
+        self.weight_sigma=0.2
+    
+    def forward(self, xf, debug=False, manual_debug=False):  # gtvforward
+        s = self.cnns.forward(xf)
+        s = torch.clamp(s, 0.01, 0.99)
+        s = s.unsqueeze(1)
 
-        # masks = (self.u > u_max).type(dtype)
-        # self.u = self.u - (self.u - u_max)*masks
-        # masks = (self.u > self.u_min).type(dtype)
-        # self.u = self.u - (self.u - self.u_min)*masks
+       # u = opt.u
+        u = self.cnnu.forward(xf)
+        u_max = self.opt.u_max
+        u_min = self.opt.u_min
+        if debug:
+            self.u = u.clone()
+        if manual_debug:
+            return_dict = {'Lgamma':list(), 'z':list(), 'gamma':list(), 'x':list(), 'W':list(),
+                    'Z':list(), 'gtv':list(), 'w':list(), 'f':list()}
 
-        # x = torch.zeros(xf.shape[0], xf.shape[1], opt.width**2, 1).type(dtype).requires_grad_(True)
-        x = xf.view(xf.shape[0], xf.shape[1], opt.width ** 2, 1).requires_grad_(True)
-        z = opt.H.matmul(x).requires_grad_(True)
+        u = torch.clamp(u, u_min, u_max)
+        u = u.unsqueeze(1).unsqueeze(1)
+
+        z = self.opt.H.matmul(
+            xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)
+        )  
 
         ###################
-        # E = xf
-        # Fs = (opt.H.matmul(E.view(E.shape[0], E.shape[1], opt.width**2, 1))**2)
-        # w = torch.exp(-(Fs.sum(axis=1)) / (2 * 1 ** 2)).requires_grad_(True)
+        E = self.cnnf.forward(xf)
+        if manual_debug:
+            return_dict['f'].append(E)
+        Fs = (
+            self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1))
+            ** 2
+        )
+        #w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2)))
+        #w = torch.exp(-(Fs.sum(axis=1)) / (self.weight_sigma**2))
+        w = torch.exp(-(Fs.sum(axis=1)) / (s**2))
+        if manual_debug:
+            #return_dict['gtv'].append((z*w).abs().sum())
+            pass
+        #print('E', E[0,0,0])
+        #print('Fs', Fs[0,0])
+        #print('sum', (-(Fs.sum(axis=1)) / (2 * (1 ** 2)))[0,0])
+        #print('W', w[0,0])
+        if debug:
+            self.logger.info("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0:.6f}".format( w[0, :, :].sum().item()))
+            hist = list()
+            self.logger.info("\tprocessed u: Mean {0:.4f} Median {1:.4f}".format( u.mean().item(), u.median().item()))
+        w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
+
+        W = self.base_W.clone()
+        Z = W.clone()
+        W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
+            xf.shape[0], 3, -1
+        )
+        W[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = w.view(
+            xf.shape[0], 3, -1
+        )
+        Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
+            z.view(xf.shape[0], 3, -1)
+        )
+        Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
+            z.view(xf.shape[0], 3, -1)
+        )
+        Z = torch.max(Z, self.support_zmax)
+        L = W / Z
+
+        if manual_debug:
+            return_dict['gamma'].append(L)
+            return_dict['w'].append(w)
+            return_dict['W'].append(W)
+        L1 = L @ self.support_L
+        L = torch.diag_embed(L1.squeeze(-1)) - L
+        
+        ########################
+        # USE CNNY
+        # Y = self.cnny.forward(xf).squeeze(0)
+        # y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+        ####
+        y = xf.view(xf.shape[0], self.opt.channels, -1, 1)
+        ########################
+
+        xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
+        if manual_debug:
+            return_dict['z'].append(z)
+            return_dict['Z'].append(Z)
+            return_dict['x'].append(xhat)
+            return_dict['Lgamma'].append(L)
+
+        # GLR 2
+        def glr(y, w, u, debug=False, return_dict=None):
+            W = self.base_W.clone()
+            z = self.opt.H.matmul(
+                y
+            )  
+            Z = W.clone()
+            W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
+                xf.shape[0], 3, -1
+            )
+            W[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = w.view(
+                xf.shape[0], 3, -1
+            )
+            Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
+                z.view(xf.shape[0], 3, -1)
+            )
+            Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
+                z.view(xf.shape[0], 3, -1)
+            )
+            Z = torch.max(Z, self.support_zmax)
+            L = W / Z
+            if manual_debug:
+                return_dict['gamma'].append(L)
+                return_dict['w'].append(w)
+                return_dict['W'].append(W)
+
+            L1 = L @ self.support_L
+            L = torch.diag_embed(L1.squeeze(-1)) - L
+
+            xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
+
+            if debug:
+                return_dict['z'].append(z)
+                return_dict['Z'].append(Z)
+                return_dict['Lgamma'].append(L)
+                return_dict['x'].append(xhat)
+            return xhat
+
+        if manual_debug:
+            xhat2 = glr(xhat, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat3 = glr(xhat2, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat4 = glr(xhat3, w, u, debug=manual_debug, return_dict=return_dict)
+            return xhat4.view(
+            xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
+        ), return_dict
+
+
+        #xhat2 = glr(xhat, w, u)
+        #xhat3 = glr(xhat2, w, u)
+        #xhat4 = glr(xhat3, w, u)
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+
+        return xhat.view(
+            xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width
+        )
+
+    def forward_approx(self, xf, debug=False, manual_debug=False):  # gtvapprox
+        self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
+
+
+        # u = opt.u
+        #if debug:
+        #    self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
+        u = self.cnnu.forward(xf)
+        u_max = self.opt.u_max
+        u_min = self.opt.u_min
+        if debug:
+            self.u = u.clone()
+        if manual_debug:
+            return_dict = {'Lgamma':list(), 'z':list(), 'gamma':list(), 'x':list(), 'W':list(),
+                    'Z':list(), 'gtv':list(), 'w':list(), 'f':list()}
+
+        u = torch.clamp(u, u_min, u_max)
+        #u = u.unsqueeze(1).unsqueeze(1)
+        u=u.unsqueeze(1)
+
+        z = self.opt.H.matmul(
+            xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)
+        )  
+
+        ###################
+        E = self.cnnf.forward(xf)
+        if manual_debug:
+            return_dict['f'].append(E)
+        Fs = (
+            self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1))
+            ** 2
+        )
+        w = torch.exp(-(Fs.sum(axis=1)) / (self.weight_sigma**2))
+
+        if manual_debug:
+            #return_dict['gtv'].append((z*w).abs().sum())
+            pass
+        if debug:
+            self.logger.info("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0:.6f}".format( w[0, :, :].sum().item()))
+            hist = list()
+            self.logger.info("\tprocessed u: Mean {0:.4f} Median {1:.4f}".format( u.mean().item(), u.median().item()))
+        w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
+
+        W = self.base_W.clone()
+        Z = W.clone()
+        W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
+            xf.shape[0], 3, -1
+        )
+        W[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = w.view(
+            xf.shape[0], 3, -1
+        )
+        Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
+            z.view(xf.shape[0], 3, -1)
+        )
+        Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
+            z.view(xf.shape[0], 3, -1)
+        )
+        Z = torch.max(Z, self.support_zmax)
+        L = W / Z
+
+        if manual_debug:
+            return_dict['gamma'].append(L)
+            return_dict['w'].append(w)
+            return_dict['W'].append(W)
+        L1 = L @ self.support_L
+        L = torch.diag_embed(L1.squeeze(-1)) - L
+        
+        ########################
+        # USE CNNY
+        # Y = self.cnny.forward(xf).squeeze(0)
+        # y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+        ####
+        y = xf.view(xf.shape[0], self.opt.channels, -1, 1)
+        ########################
+
+        #xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
+        xhat = self.lanczos_approx(L, self.lanczos_order, self.support_e1, y.squeeze(-1), u)
+
+        if manual_debug:
+            return_dict['z'].append(z)
+            return_dict['Z'].append(Z)
+            return_dict['x'].append(xhat)
+            return_dict['Lgamma'].append(L)
+
+        # GLR 2
+        def glr(y, w, u, debug=False, return_dict=None):
+            W = self.base_W.clone()
+            z = self.opt.H.matmul(
+                y
+            )  
+            Z = W.clone()
+            W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
+                xf.shape[0], 3, -1
+            )
+            W[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = w.view(
+                xf.shape[0], 3, -1
+            )
+            Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
+                z.view(xf.shape[0], 3, -1)
+            )
+            Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
+                z.view(xf.shape[0], 3, -1)
+            )
+            Z = torch.max(Z, self.support_zmax)
+            L = W / Z
+            if manual_debug:
+                return_dict['gamma'].append(L)
+                return_dict['w'].append(w)
+                return_dict['W'].append(W)
+
+            L1 = L @ self.support_L
+            L = torch.diag_embed(L1.squeeze(-1)) - L
+
+            #xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
+            xhat = self.lanczos_approx(L, self.lanczos_order, self.support_e1, y.squeeze(-1), u)
+            if debug:
+                return_dict['z'].append(z)
+                return_dict['Z'].append(Z)
+                return_dict['Lgamma'].append(L)
+                return_dict['x'].append(xhat)
+            return xhat
+
+        if manual_debug:
+            xhat2 = glr(xhat, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat3 = glr(xhat2, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat4 = glr(xhat3, w, u, debug=manual_debug, return_dict=return_dict)
+            return xhat4.view(
+            xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
+        ), return_dict
+
+
+        xhat2 = glr(xhat, w, u)
+        xhat3 = glr(xhat2, w, u)
+        xhat4 = glr(xhat3, w, u)
+
+
+        return xhat4.view(
+            xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
+        )
+
+    def predict(self, xf, change_dtype=False, new_dtype=False, layers=1):
+        if change_dtype:
+            self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(new_dtype)
+        else:
+            self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
+        P = self.forward(xf)
+        for i in range(layers-1):
+            P = self.forward(P)
+        return P
+
+    def predict9(self, xf, manual_debug=True, debug=True):
+        self.base_W = torch.zeros(xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2).type(dtype)
+
+        # u = opt.u
+        u = self.cnnu.forward(xf)
+        u_max = self.opt.u_max
+        u_min = self.opt.u_min
+        if debug:
+            self.u = u.clone()
+        if manual_debug:
+            return_dict = {'Lgamma':list(), 'z':list(), 'gamma':list(), 'x':list(), 'W':list(),
+                    'Z':list(), 'gtv':list(), 'w':list()}
+
+        u = torch.clamp(u, u_min, u_max)
+        u = u.unsqueeze(1).unsqueeze(1)
+
+        z = self.opt.H.matmul(
+            xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)
+        )  
+
         ###################
         E = self.cnnf.forward(xf)
         Fs = (
-            opt.H.matmul(E.view(E.shape[0], E.shape[1], opt.width ** 2, 1)) ** 2
-        ).requires_grad_(True)
-        w = torch.exp(-(Fs.sum(axis=1)) / (2 * (1 ** 2))).requires_grad_(True)
-        ###################
-        if debug:
-            print("\tWEIGHT SUM", w[0, :, :].sum().data)
-            hist = list()
-        w = w.unsqueeze(1).repeat(1, opt.channels, 1, 1)
-        # w.register_hook(printfull)
-        T = opt.admm_iter
-        P = opt.prox_iter
-        if debug:
-            if Tmod:
-                T = Tmod
-        delta = opt.delta
-        eta = opt.eta
-        lagrange = opt.lagrange.requires_grad_(True)
-
-        Y = self.cnny.forward(xf).squeeze(0)
-        y = Y.view(xf.shape[0], xf.shape[1], opt.width ** 2, 1).requires_grad_(True)
-        # y = xf.view(xf.shape[0], xf.shape[1], opt.width**2, 1).requires_grad_(True)
-        I = opt.I.requires_grad_(True)
-        H = opt.H.requires_grad_(True)
-        D = (
-            torch.inverse(2 * opt.I + delta * (opt.H.T.mm(H)))
-            .type(dtype)
-            .requires_grad_(True)
+            self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1))
+            ** 2
         )
-        for i in range(T):
-            # STEP 1
-            xhat = D.matmul(
-                2 * y - H.T.matmul(lagrange) + delta * H.T.matmul(z)
-            ).requires_grad_(True)
-            if i == 0:
-                z = opt.H.matmul(xhat).requires_grad_(True)
-            ##### RECOMPUTE W #####
-            # E = self.cnnf.forward(xf)
-            # Fs = (opt.H.matmul(E.view(E.shape[0], E.shape[1], opt.width**2, 1))**2)
-            # w = torch.exp(-(Fs.sum(axis=1)) / (2 * 1 ** 2)).requires_grad_(True)
-            # w = w.unsqueeze(1).repeat(1, opt.channels, 1, 1)
-            #######################
-            # STEP 2
-            for j in range(P):
-                grad = (delta * z - lagrange - delta * H.matmul(xhat)).requires_grad_(
-                    True
-                )
-                z = proximal_gradient_descent(
-                    x=z, grad=grad, w=w, u=u, eta=eta, debug=debug
-                ).requires_grad_(True)
-                if debug:
-                    # l = ((y-xhat).permute(0, 1, 3, 2).matmul(y-xhat) + (u * w * z.abs()).sum(axis=[1, 2, 3]))
-
-                    # hist.append(l[0, 0, :, :])
-                    if debug > 1:
-                        print(
-                            "Left: ",
-                            (y - xhat).permute(0, 1, 3, 2).matmul(y - xhat).data[0],
-                            "Right: ",
-                            (u * w * z.abs()).sum(axis=[1, 2, 3]).data[0],
-                        )
-            # STEP 3
-
-            lagrange = (lagrange + delta * (H.matmul(xhat) - z)).requires_grad_(True)
-            if debug:
-                l = (
-                    (
-                        (y - xhat).permute(0, 1, 3, 2).matmul(y - xhat)
-                        + (u * w * z.abs()).sum(axis=[1, 2, 3])
-                    )
-                    + lagrange.permute(0, 1, 3, 2).matmul(H.matmul(xhat) - z)
-                    + (delta / 2)
-                    * (H.matmul(xhat) - z)
-                    .permute(0, 1, 3, 2)
-                    .matmul(H.matmul(xhat) - z)
-                )
-                hist.append(l[:, 0, :, :])
-
-        # xhat = D.matmul(2*y - H.T.matmul(lagrange) + delta*H.T.matmul(z)).requires_grad_(True)
+        w = torch.exp(-(Fs.sum(axis=1)) / (self.weight_sigma**2))
         if debug:
-            hist = [h.flatten() for h in hist]
-            return hist
-        xhat = _norm(xhat, 0, 255)
-        return xhat.view(xhat.shape[0], opt.channels, opt.width, opt.width)
+            self.logger.info("\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0:.6f}".format( w[0, :, :].sum().item()))
+            hist = list()
+            self.logger.info("\tprocessed u: Mean {0:.4f} Median {1:.4f}".format( u.mean().item(), u.median().item()))
+        w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
 
-    def predict(self, xf):
-        pass
+        W = self.base_W.clone()
+        Z = W.clone()
+        W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
+            xf.shape[0], 3, -1
+        ).clone()
+        W[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = w.view(
+            xf.shape[0], 3, -1
+        ).clone()
+        Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
+            z.view(xf.shape[0], 3, -1)
+        )
+        Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
+            z.view(xf.shape[0], 3, -1)
+        )
+        Z = torch.max(Z, self.support_zmax)
+        L = W / Z
+
+        if manual_debug:
+            return_dict['gamma'].append(L)
+            return_dict['w'].append(w)
+            return_dict['W'].append(W)
+        L1 = L @ self.support_L
+        L = torch.diag_embed(L1.squeeze(-1)) - L
+        
+        ########################
+        y = xf.view(xf.shape[0], self.opt.channels, -1, 1)
+        ########################
+
+        xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
+        if manual_debug:
+            return_dict['z'].append(z)
+            return_dict['Z'].append(Z)
+            return_dict['x'].append(xhat)
+            return_dict['Lgamma'].append(L)
+
+        # GLR 2
+        def glr(y, w, u, debug=False, return_dict=None):
+            W = self.base_W.clone()
+            z = self.opt.H.matmul(
+                y
+            )  
+            Z = W.clone()
+            W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
+                xf.shape[0], 3, -1
+            ).clone()
+            W[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = w.view(
+                xf.shape[0], 3, -1
+            ).clone()
+            Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
+                z.view(xf.shape[0], 3, -1)
+            )
+            Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
+                z.view(xf.shape[0], 3, -1)
+            )
+            Z = torch.max(Z, self.support_zmax)
+            L = W / Z
+            if manual_debug:
+                return_dict['gamma'].append(L)
+                return_dict['w'].append(w)
+                return_dict['W'].append(W)
+
+            L1 = L @ self.support_L
+            L = torch.diag_embed(L1.squeeze(-1)) - L
+
+            xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
+
+            if debug:
+                return_dict['z'].append(z)
+                return_dict['Z'].append(Z)
+                return_dict['Lgamma'].append(L)
+                return_dict['x'].append(xhat)
+            return xhat
+
+        if manual_debug:
+            xhat2 = glr(xhat, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat3 = glr(xhat2, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat4 = glr(xhat3, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat5 = glr(xhat4, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat6 = glr(xhat5, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat7 = glr(xhat6, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat8 = glr(xhat7, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat9 = glr(xhat8, w, u, debug=manual_debug, return_dict=return_dict)
+            return xhat9.view(
+            xhat9.shape[0], self.opt.channels, self.opt.width, self.opt.width
+        ), return_dict
+
+        return xhat
+
+
+    def qpsolve(self, L, u, y, Im, channels=3):
+        """
+        Solve equation (2) using (6)
+        """
+    
+        t = torch.inverse(Im + u * L)
+
+        return t@y
+
+    def planczos(self, A, order, x):
+        N = x.shape[1]
+        q =(x/torch.norm(x, dim=2, keepdim=True))
+        V = torch.zeros((x.shape[0], x.shape[1], x.shape[2], order), device=self.device)
+        V[:,:,:,0] = q
+        q= q.unsqueeze(-1)
+        H = torch.zeros((x.shape[0], x.shape[1], order+1,order), device=self.device)
+        r = A @ q
+        H[:,:,0,0] = torch.sum(q * r, axis=[-2,-1])
+    
+        r = r - H[:,:,0,0].unsqueeze(-1).unsqueeze(-1)*q
+        H[:,:,1,0] = torch.norm(r, dim=2).squeeze(-1)
+    
+        for k in range(1,order):
+            H[:,:,k-1,k] = H[:,:,k,k-1]
+            v = q.clone()        
+            q = r/H[:,:,k-1,k].unsqueeze(-1).unsqueeze(-1)
+            
+            V[:,:,:,k] = q.squeeze(-1)
+    
+            r = A@q
+            r = r -  H[:,:,0,0].unsqueeze(-1).unsqueeze(-1)*v
+            
+            H[:,:,k,k] = torch.sum(q * r, axis=[-2,-1])   
+            
+            r = r - H[:,:,k,k].unsqueeze(-1).unsqueeze(-1)*q
+            r = r - V@(V.permute(0,1,3,2)@r)
+            H[:,:,k+1,k] = torch.norm(r, dim=2).squeeze(-1)
+            
+        return V,H[:,:,:order,:order]
+    
+    def f(x, u=0.5):
+        return 1/(1+u*x)
+    
+    def lanczos_approx(self, L, order, e1, dx, u):
+        v, H_M = self.planczos(L, order, dx)
+        H_M_eval, H_M_evec = torch.symeig(H_M, eigenvectors=True)
+        H_M_eval = torch.clamp(H_M_eval, 0, H_M_eval.max().item())
+        fv = H_M_evec @ torch.diag_embed(f(H_M_eval, u)) @ H_M_evec.permute(0,1,3,2)
+        approx = torch.norm(dx, dim=2).unsqueeze(-1).unsqueeze(-1) * v @ fv @ e1 
+        return approx
+
+
+def planczos(A, order, x):
+    N = x.shape[1]
+    q =(x/torch.norm(x, dim=2, keepdim=True))
+    V = torch.zeros((x.shape[0], x.shape[1], x.shape[2], order), device=dv)
+    V[:,:,:,0] = q
+    q= q.unsqueeze(-1)
+    H = torch.zeros((x.shape[0], x.shape[1], order+1,order), device=dv)
+    r = A @ q
+    H[:,:,0,0] = torch.sum(q * r, axis=[-2,-1])
+
+    r = r - H[:,:,0,0].unsqueeze(-1).unsqueeze(-1)*q
+    H[:,:,1,0] = torch.norm(r, dim=2).squeeze(-1)
+
+    for k in range(1,order):
+        H[:,:,k-1,k] = H[:,:,k,k-1]
+        v = q.clone()        
+        q = r/H[:,:,k-1,k].unsqueeze(-1).unsqueeze(-1)
+        
+        V[:,:,:,k] = q.squeeze(-1)
+
+        r = A@q
+        r = r -  H[:,:,0,0].unsqueeze(-1).unsqueeze(-1)*v
+        
+        H[:,:,k,k] = torch.sum(q * r, axis=[-2,-1])   
+        
+        r = r - H[:,:,k,k].unsqueeze(-1).unsqueeze(-1)*q
+        r = r - V@(V.permute(0,1,3,2)@r)
+        H[:,:,k+1,k] = torch.norm(r, dim=2).squeeze(-1)
+        
+    return V,H[:,:,:order,:order]
+
+def f(x, u=0.5):
+    return 1/(1+u*x)
+
+def lanczos_approx(L, order, e1, dx, u):
+    v, H_M = planczos(L, order, dx)
+    H_M_eval, H_M_evec = torch.symeig(H_M, eigenvectors=True)
+    H_M_eval[H_M_eval<0] = 0
+    fv = H_M_evec @ torch.diag_embed(f(H_M_eval, u)) @ H_M_evec.permute(0,1,3,2)
+    approx = torch.norm(dx, dim=2).unsqueeze(-1).unsqueeze(-1) * v @ fv @ e1 
+    return approx
+
+class DeepGTV(nn.Module):
+    """
+    Stack GTVs
+    """
+
+    def __init__(
+        self,
+        width=36,
+        prox_iter=5,
+        u_min=1e-3,
+        u_max=1,
+        lambda_min=1e-9,
+        lambda_max=1e9,
+        cuda=False,
+        opt=None,
+        no=2,
+    ):
+        super(DeepGTV, self).__init__()
+        self.no = no
+        #self.gtv = list()
+        #for i in range(self.no):
+        #    self.gtv.append(
+        #        GTV(
+        #            width=36,
+        #            prox_iter=prox_iter,
+        #            u_max=u_max,
+        #            u_min=u_min,
+        #            lambda_min=lambda_min,
+        #            lambda_max=lambda_max,
+        #            cuda=cuda,
+        #            opt=opt,
+        #        )
+        #    )
+        self.gtv1 = GTV(
+                    width=width,
+                    u_max=u_max,
+                    u_min=u_min,
+                    cuda=cuda,
+                    opt=opt,
+                )
+
+        self.opt = opt
+        if cuda:
+            #for gtv in self.gtv:
+            #    gtv.cuda()
+            self.gtv1.cuda()
+
+
+    def load(self, p1, p2):
+        if self.cuda:
+            device = torch.device("cuda")
+        else:
+            device = torch.device("cpu")
+        self.gtv1.load_state_dict(torch.load(p1, map_location=device))
+
+
+    def predict(self, sample):
+        if self.cuda:
+            sample.cuda()
+        #P = self.gtv[0](sample)
+        #for i in range(1, self.no):
+        #    P = self.gtv[i](P)
+        P = self.gtv1.predict(sample)
+        P = self.gtv1.predict(P)
+        P = self.gtv1.predict(P)
+
+        return P
+
+    def forward(self, sample, debug=False):
+        if not debug:
+            P = self.gtv1(sample)
+            P = self.gtv1(P)
+            P = self.gtv1(P)
+        else:
+            P1 = self.gtv1(sample)
+            P2 = self.gtv1(P1)
+            P3 = self.gtv1(P2)
+            return P1, P2, P3
+        return P
 
 
 def supporting_matrix(opt):
+    dtype = opt.dtype
+    cuda = opt.cuda
     width = opt.width
 
     pixel_indices = [i for i in range(width * width)]
@@ -597,36 +1157,17 @@ def supporting_matrix(opt):
         H[e, p[0]] = 1
         H[e, p[1]] = -1
         A[p[0], p[1]] = 1
+        # A[p[1], p[0]] = 1
 
-    opt.I = I.type(dtype).requires_grad_(True)
+    opt.I = I  # .type(dtype).requires_grad_(True)
     opt.pairs = A_pair
-    opt.H = H.type(dtype).requires_grad_(True)
+    opt.H = H  # .type(dtype).requires_grad_(True)
     opt.connectivity_full = A.requires_grad_(True)
     opt.connectivity_idx = torch.where(A > 0)
-    opt.lagrange = lagrange.requires_grad_(True)
-    delta = 1
-    # opt.D = torch.inverse(2*opt.I + delta*(opt.H.T.mm(H))).type(dtype)
 
-
-def proximal_gradient_descent(x, grad, w, u=1, eta=1, debug=False):
-    v = x - eta * grad
-    # v = _norm(v,0,255)
-    # print(v.shape, w.shape)
-    masks1 = ((v.abs() - (eta * w * u).abs()) > 0).type(dtype).requires_grad_(True)
-    masks2 = ((v.abs() - (eta * w * u).abs()) <= 0).type(dtype).requires_grad_(True)
-    v = v - masks1 * eta * w * u * torch.sign(v)
-    v = v - masks2 * v
-    # v = _norm(v,0,255)
-    # w.register_hook(printall)
-    # v.register_hook(printfull)
-    if debug and 0:
-        print(
-            w.mean(),
-            # u.mean(),
-            u,
-            eta,
-        )
-    return v
+    for e, p in enumerate(A_pair):
+        A[p[1], p[0]] = 1
+    opt.logger.info("OPT created on cuda: {0} {1}".format( cuda, dtype))
 
 
 def _norm(x, newmin, newmax):
@@ -656,4 +1197,3 @@ def printfull(x):
         global xd
         xd = x.clone()
         return x
-

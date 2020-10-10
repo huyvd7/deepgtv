@@ -15,7 +15,7 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 import argparse
 from main_gpu_artificial import *
-import logging
+import logging 
 
 cuda = True if torch.cuda.is_available() else False
 if cuda:
@@ -23,15 +23,13 @@ if cuda:
 else:
     dtype = torch.FloatTensor
 
-
-def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0,  opt=None, approx=False, args=None, logger=None):
+def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_', verbose=0, opt=None, args=None,logger=None):
     try:
         from skimage.metrics import structural_similarity as compare_ssim
     except Exception:
         from skimage.measure import compare_ssim
-
     sample = cv2.imread(inp)
-    #print(inp)
+    #logger.info(inp)
     if width==None:
         width = sample.shape[0]
     else:
@@ -66,6 +64,8 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
     T1 = sample
     if argref:
         T1r = ref
+    else:
+        logger.info(str(T1.shape))
 
     m = T1.shape[-1]
     T1 = torch.nn.functional.pad(T1, (0, stride, 0, stride), mode="constant", value=0)
@@ -87,26 +87,37 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         )
 
     s2 = int(T2.shape[-1])
-    MAX_PATCH = args.multi
+    MAX_PATCH=args.multi
     oT2s0=T2.shape[0]
     T2  = T2.view(-1,opt.channels,opt.width,opt.width)
     dummy = torch.zeros(T2.shape).type(dtype)
-    logger.info("{0}".format(T2.shape))
     with torch.no_grad():
         #for ii, i in enumerate(range(T2.shape[1])):
-
         #    for jj in range(0, T2.shape[1] , MAX_PATCH):
-        #        if approx:
-        #            P = gtv.forward_approx(T2[i, jj:(jj+MAX_PATCH) : opt.channels, :, :].float().contiguous())
-        #        else:
-        #            P = gtv.predict(T2[i, jj:(jj+MAX_PATCH), : opt.channels, :, :].float().contiguous())
+        #        P = gtv.predict(T2[i, jj:(jj+MAX_PATCH), : opt.channels, :, :].float())
+        #        if cuda:
+        #            P = P.cpu()
+        #        if argref:
+        #            img1 = T2r[i, jj:(jj+MAX_PATCH), : opt.channels, : shape[-1], : shape[-1]].float()
+        #            img2 = P[:, : opt.channels, : shape[-1], : shape[-1]]
 
+        #            psnrs.append(cv2.PSNR(img1.detach().numpy(), img2.detach().numpy()))
+        #            _tref = img1.detach().numpy()
+        #            _d = img2.detach().numpy()
+        #            for iii in range(_d.shape[0]):
+        #                (_score2, _) = compare_ssim(
+        #                    _tref[iii].transpose(1, 2, 0),
+        #                    _d[iii].transpose(1, 2, 0),
+        #                    full=True,
+        #                    multichannel=True,
+        #                )
+        #                score2.append(_score2)
         #        if verbose>0:
-        #            print("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
+        #            logger.info("\r{0}, {1}/{2}".format(P.shape, ii + 1, P.shape[0]), end=" ")
         #        dummy[i, jj:(jj+MAX_PATCH)] = P
         #        del P
         for ii, i in enumerate(range(0, T2.shape[0], MAX_PATCH)):
-            P = gtv.predict(T2[i:(i+MAX_PATCH),:,:,:].float().contiguous(), layers=args.layers)
+            P = gtv.predict(T2[i:(i+MAX_PATCH),:,:,:].float().contiguous())
             dummy[i:(i+MAX_PATCH)]=P
     dummy=dummy.view(oT2s0, -1, opt.channels,opt.width,opt.width)
     dummy=dummy.cpu()
@@ -114,16 +125,18 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         logger.info("Prediction time: {0}".format( time.time() - tstart))
     else:
         logger.info("Prediction time: {0}".format( time.time() - tstart))
+    if argref:
+        #logger.info("PSNR: {:.2f}".format(np.mean(np.array(psnrs))))
+        pass
 
     dummy = (
         patch_merge(dummy, stride=stride, shape=shapex, shapeorg=shape).detach().numpy()
     )
 
     ds = np.array(dummy).copy()
-    new_d = list()
     d = np.minimum(np.maximum(ds, 0), 255)
-    logger.info("RANGE: {0} - {1}".format(d.min(), d.max()))
     d = d.transpose(1, 2, 0)/255
+    logger.info("RANGE: {0} - {1}".format(d.min(), d.max()))
     if 0:
         opath = args.output
     else:
@@ -143,10 +156,9 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         logger.info("SSIM: {:.5f}".format(score))
     logger.info("Saved {0}".format( opath))
     if argref:
-
         return (
             0, score, 0, psnr2 , mse, d
-        )  # psnr, ssim, denoised image
+        )# psnr, ssim, denoised image
     return d
 
 
@@ -172,14 +184,14 @@ def patch_merge(P, stride=36, shape=None, shapeorg=None):
 
     return (R / Rc)[:, : shapeorg[-1], : shapeorg[-1]]
 
-def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_path=None, noise_type='gauss',  opt=None, args=None, logger=None):
+def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_path=None, noise_type='gauss', opt=None, logger=None):
     # INITIALIZE
     #global opt
     opt.width=args.train_width
     supporting_matrix(opt)
     opt._print()
     width = args.train_width
-    gtv = GTV(
+    gtv = DeepGTV(
         width=width,
         prox_iter=1,
         u_max=10,
@@ -187,14 +199,14 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         lambda_min=0.5,
         lambda_max=1e9,
         cuda=cuda,
-        opt=opt
-        
+        opt=opt,
     )
     PATH = model_name
     device = torch.device("cuda") if cuda else torch.device("cpu")
     gtv.load_state_dict(torch.load(PATH, map_location=device))
     width = gtv.opt.width
     opt.width=width
+
     if not image_path:
         image_path = "..\\all\\all\\"
     if noise_type=='gauss':
@@ -203,6 +215,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         npref ='_n'
 
     logger.info("EVALUATING TRAIN SET")
+    
     #trainset = ["10", "1", "7", "8", "9"]
     traineva = {'psnr':list(), 'ssim':list(), 'ssim2':list(), 'psnr2':list(), 'mse':list()}
     stride=args.stride
@@ -235,8 +248,6 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
     logger.info("========================")
     
     logger.info("EVALUATING TEST SET")
-
-
     #testset = ["2", "3", "4", "5", "6"]
     testeva = {'psnr':list(), 'ssim':list(), 'ssim2':list(), 'psnr2':list(), 'mse':list()}
     for t in testset:
@@ -244,7 +255,7 @@ def main_eva(seed, model_name, trainset, testset, imgw=None, verbose=0, image_pa
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
         logger.info(inp)
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
-        _, _ssim, _, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, opt=opt, args=args, logger=logger)
+        _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(inp, gtv, argref, stride=stride, width=imgw, prefix=seed, opt=opt, args=args, logger=logger)
         #testeva["psnr"].append(_psnr)
         testeva["ssim"].append(_ssim)
         #testeva["ssim2"].append(_ssim2)
@@ -278,6 +289,12 @@ if __name__=="__main__":
         "-m", "--model"
     )
     parser.add_argument(
+        "--opt", default='opt'
+    )
+    parser.add_argument(
+        "-p", "--image_path"
+    )
+    parser.add_argument(
         "--stride", default=18, type=int
     )
     parser.add_argument(
@@ -286,15 +303,7 @@ if __name__=="__main__":
     parser.add_argument(
         "--train_width", default=36, type=int, help='patch size that GTV was trained'
     )
-    parser.add_argument(
-        "--opt", default='opt'
-    )
-    parser.add_argument(
-        "-p", "--image_path"
-    )
-    parser.add_argument(
-        "--layers", default=1, type=int
-    )
+
     args = parser.parse_args()
     opt = pickle.load(open(args.opt, "rb"))
     if args.width:
@@ -310,7 +319,7 @@ if __name__=="__main__":
         image_path = args.image_path
     else:
         image_path = 'gauss'
-    logging.basicConfig(filename='log/evaluate_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
+    logging.basicConfig(filename='log/dgtv_test_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
                             filemode='a',
                             format='%(asctime)s %(name)s %(levelname)s %(message)s',
                             datefmt='%H:%M:%S',
@@ -320,6 +329,6 @@ if __name__=="__main__":
     logger.addHandler(logging.StreamHandler(sys.stdout))
 
     opt.logger=logger
-    logger.info("GTV evaluation")
+    logger.info("DGTV evaluation")
     logger.info(' '.join(sys.argv))
-    _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss',  opt=opt, args=args, logger=logger)
+    _, _ = main_eva(seed='gauss', model_name=model_name, trainset=['1', '3', '5', '7', '9'], testset=['10', '2', '4', '6', '8'],imgw=imgw, verbose=1, image_path=image_path, noise_type='gauss' , opt=opt, logger=logger)

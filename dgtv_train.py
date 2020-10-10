@@ -1,4 +1,6 @@
 import scipy.sparse as ss
+import pickle
+import logging
 import argparse
 import torch
 import numpy as np
@@ -13,12 +15,12 @@ import torchvision.transforms as transforms
 import torch.optim as optim
 import matplotlib.pyplot as plt
 from proxgtv.proxgtv import * 
-import pickle
-import logging
 import sys
 
-def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, args=None):
+def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     debug = 0
+
+    xd = None
     cuda = True if torch.cuda.is_available() else False
     torch.autograd.set_detect_anomaly(True)
     opt.logger.info("CUDA: {0}".format( cuda))
@@ -49,15 +51,16 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
         transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
         subset=subset,
     )
+    opt.logger.info(dataset.nimg_name[0])
     dataloader = DataLoader(
-        dataset, batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=4, drop_last=True
+        dataset, batch_size=batch_size, shuffle=True   , pin_memory=True, num_workers=4, drop_last=True
     )
 
     width = args.width
     supporting_matrix(opt)
     total_epoch = epoch
     opt.logger.info("Dataset: {0}".format( len(dataset)))
-    gtv = GTV(
+    gtv = DeepGTV(
         width=args.width,
         prox_iter=1,
         u_max=10,
@@ -67,39 +70,49 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
         cuda=cuda,
         opt=opt,
     )
+    if args.stack:
+        gtv.load(p1=args.stack, p2=args.stack)
+        opt.logger.info("Stacked from {0}".format( args.stack))
+    else:
+        opt.logger.info("Train DGTV from scratch")
+
     if cont:
         gtv.load_state_dict(torch.load(cont))
-        opt.logger.info("LOAD PREVIOUS GTV:", cont)
+        opt.logger.info("LOAD PREVIOUS DGTV: {0}".format( cont))
     if cuda:
+        gtv.gtv1.cuda()
+        #gtv.gtv2.cuda()
         gtv.cuda()
     criterion = nn.MSELoss()
     
-    cnnf_params = list(filter(lambda kv: 'cnnf' in kv[0], gtv.named_parameters()))
+    #gtv1_params = list(filter(lambda kv: 'gtv1' in kv[0] , gtv.named_parameters()))
+    #gtv1_params = [i[1] for i in gtv1_params ]
+    cnnf_params = list(filter(lambda kv: 'cnnu' in kv[0], gtv.named_parameters()))
     cnnf_params = [i[1] for i in cnnf_params]
-    cnnu_params = list(filter(lambda kv: 'cnnu' in kv[0], gtv.named_parameters()))
-    cnnu_params = [i[1] for i in cnnu_params ]
+
+
+
     optimizer = optim.SGD([
-                 {'params': cnnf_params , 'lr': opt.lr},
-                 {'params': cnnu_params , 'lr': opt.lr}
+                {'params': cnnf_params, 'lr':opt.lr},
              ], lr=opt.lr, momentum=opt.momentum)
+
     optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
-
-
     if cont:
-        optimizer.load_state_dict(torch.load(cont+'optim'))
-        opt.logger.info("LOAD PREVIOUS OPTIMIZER:", cont+'optim')
+        try:
+            optimizer.load_state_dict(torch.load(cont+'optim'))
+            opt.logger.info("LOAD PREVIOUS OPTIMIZER: {0}".format( cont+'optim'))
+        except Exception:
+            opt.logger.info("Using new optimizer")
     current_lr = opt.lr
 
     hist = list()
     losshist = list()
     tstart = time.time()
     tprev=tstart
-
     opt._print()
-    pickle.dump(opt, open( "opt", "wb" ))
+    pickle.dump(opt, open( "dopt", "wb" ))
     ld = len(dataset)
     ld=1
-    #scaler = torch.cuda.amp.GradScaler()
     for epoch in range(total_epoch):  # loop over the dataset multiple times
         # running_loss_inside = 0.0
         running_loss = 0.0
@@ -108,42 +121,45 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
             inputs = data["nimg"][:, : opt.channels, :, :].float().type(dtype)
             labels = data["rimg"][:, : opt.channels, :, :].float().type(dtype)
             # zero the parameter gradients
+
             optimizer.zero_grad()
+            #for op in optimizer:
+            #    op.zero_grad()
             # forward + backward + optimize
-            #outputs = gtv.forward_approx(inputs, debug=0)
-            outputs = gtv(inputs, debug=0)
+            outputs = gtv(inputs)
             loss = criterion(outputs, labels)
-            #with torch.cuda.amp.autocast():
-            #    loss = criterion(outputs, labels)
-            #scaler.scale(loss).backward()
-
             loss.backward()
-            #torch.nn.utils.clip_grad_norm_(cnnf_params, 1e1)
-            #torch.nn.utils.clip_grad_norm_(cnnu_params, 1e1)
             torch.nn.utils.clip_grad_norm_(gtv.parameters(), 5e1)
+            #torch.nn.utils.clip_grad_value_(cnnf_params, 5e1)
+            #torch.nn.utils.clip_grad_value_(cnny_params, 1)
+            #torch.nn.utils.clip_grad_value_(cnnu_params, 1e1)
 
-
-            #scaler.step(optimizer)
             optimizer.step()
-            #scaler.update()
+            #optimizer[i%3].step()
             running_loss += loss.item()
 
             if epoch==0 and (i+1)%80==0:
+                g = gtv.gtv1
                 with torch.no_grad():
-                    histW = gtv(inputs, debug=1)
-                    opt.logger.info("\tLOSS: {0:.8f}".format( (histW-labels).square().mean().item()))
+                    #P1, P2 = gtv(inputs, debug=True)
+                    P1, P2, P3 = gtv(inputs, debug=True)
+                    #opt.logger.info("\tLOSS: {0:.8f} {1:.8f}".format( (P1-labels).square().mean().item(), (P2-labels).square().mean().item()))
+                    opt.logger.info("\tLOSS: {0:.8f} {1:.8f} {2:.8f}".format( (P1-labels).square().mean().item(), (P2-labels).square().mean().item(), (P3-labels).square().mean().item()))
+                    P1 = g(inputs, debug=1)
                 if opt.ver: # experimental version
-                    opt.logger.info("\tCNNF stats: {0:.5f}".format( gtv.cnnf.layer[0].weight.grad.median().item()))
+                    opt.logger.info("\tCNNF stats: {0:.5f}".format( g.cnnf.layer[0].weight.grad.median().item()))
                 else:
-                    opt.logger.info("\tCNNF stats: {0:.5f}".format( gtv.cnnf.layer1[0].weight.grad.mean().item()))
-                opt.logger.info("\tCNNU grads: {0:.5f}".format( gtv.cnnu.layer[0].weight.grad.mean().item()))
-                opt.logger.info("\tCNNS grads: {0:.5f}".format( gtv.cnns.layer[0].weight.grad.mean().item()))
-
+                    opt.logger.info("\tCNNF stats: {0:.5f}".format( g.cnnf.layer1[0].weight.grad.mean().item()))
+                opt.logger.info("\tCNNU grads: {0:.5f}".format( g.cnnu.layer[0].weight.grad.mean().item()))
+                opt.logger.info("\tCNNS grads: {0:.5f}".format( g.cnns.layer[0].weight.grad.mean().item()))
                 with torch.no_grad():
-                    us = gtv.cnnu(inputs)
+                    us = g.cnnu(inputs)
                     opt.logger.info("\tCNNU stats: max {0:.5f} mean {1:.5f} min {2:.5f}".format( us.max().item(),  us.mean().item(),us.min().item()))
-                    us = gtv.cnns(inputs)
+                    us = g.cnns(inputs)
                     opt.logger.info("\tCNNS stats: max {0:.5f} mean {1:.5f} min {2:.5f}".format( us.max().item(),  us.mean().item(),us.min().item()))
+                with torch.no_grad():
+                    P2 = g(P1, debug=1)
+                    P3 = g(P2, debug=1)
 
 
         tnow = time.time()
@@ -156,33 +172,41 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
         
 
         if ((epoch + 1) % 1 == 0) or (epoch + 1) == total_epoch:
+            g = gtv.gtv1
             with torch.no_grad():
-                histW = gtv(inputs, debug=1)
-                opt.logger.info("\tLOSS: {0:.8f}".format( (histW-labels).square().mean().item()))
-            if opt.ver: # experimental version
-                opt.logger.info("\tCNNF stats: {0:.5f}".format( gtv.cnnf.layer[0].weight.grad.median().item()))
-            else:
-                opt.logger.info("\tCNNF stats: {0:.5f}".format( gtv.cnnf.layer1[0].weight.grad.mean().item()))
-            opt.logger.info("\tCNNU grads: {0:.5f}".format( gtv.cnnu.layer[0].weight.grad.mean().item()))
-            opt.logger.info("\tCNNS grads: {0:.5f}".format( gtv.cnns.layer[0].weight.grad.mean().item()))
+                #P1, P2 = gtv(inputs, debug=True)
+                P1, P2, P3 = gtv(inputs, debug=True)
+                #opt.logger.info("\tLOSS: {0:.8f} {1:.8f}".format( (P1-labels).square().mean().item(), (P2-labels).square().mean().item()))
+                opt.logger.info("\tLOSS: {0:.8f} {1:.8f} {2:.8f}".format( (P1-labels).square().mean().item(), (P2-labels).square().mean().item(), (P3-labels).square().mean().item()))
 
-            pmax = list()
-            for p in gtv.parameters():
-                pmax.append(p.grad.max())
-            opt.logger.info("\tmax gradients {0}".format( max(pmax)))
+                histW = g(inputs, debug=1)
+            if opt.ver: # experimental version
+                opt.logger.info("\tCNNF stats: {0:.5f}".format( g.cnnf.layer[0].weight.grad.median().item()))
+            else:
+                opt.logger.info("\tCNNF stats: {0:.5f}".format( g.cnnf.layer1[0].weight.grad.mean().item()))
+            opt.logger.info("\tCNNU grads: {0:.5f}".format( g.cnnu.layer[0].weight.grad.mean().item()))
+            opt.logger.info("\tCNNS grads: {0:.5f}".format( g.cnns.layer[0].weight.grad.mean().item()))
+
             with torch.no_grad():
-                us = gtv.cnnu(inputs)
+                us = g.cnnu(inputs[:10])
                 opt.logger.info("\tCNNU stats: max {0:.5f} mean {1:.5f} min {2:.5f}".format( us.max().item(),  us.mean().item(),us.min().item()))
-                us = gtv.cnns(inputs)
+                us = g.cnns(inputs)
                 opt.logger.info("\tCNNS stats: max {0:.5f} mean {1:.5f} min {2:.5f}".format( us.max().item(),  us.mean().item(),us.min().item()))
+
+            with torch.no_grad():
+                P2 = g(P1, debug=1)
+            with torch.no_grad():
+                P3 = g(P2, debug=1)
 
 
             opt.logger.info("\tsave @ epoch {0}".format( epoch + 1))
             torch.save(gtv.state_dict(), SAVEDIR + str(epoch) +'.'+SAVEPATH)
             torch.save(optimizer.state_dict(), SAVEDIR + str(epoch)+'.'+SAVEPATH + "optim")
 
+
+        #scheduler.step() 
         losshist.append(running_loss / (ld*(i+1)))
-    torch.save(gtv.state_dict(), SAVEDIR + str(epoch) +'.'+SAVEPATH)
+        torch.save(gtv.state_dict(), SAVEDIR + str(epoch) +'.'+SAVEPATH)
     torch.save(optimizer.state_dict(), SAVEDIR + str(epoch)+'.'+SAVEPATH + "optim")
            
     opt.logger.info("Total running time: {0:.3f}".format(time.time() - tstart))
@@ -192,10 +216,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100, a
     window_width = 30
     ma_vec = (cumsum_vec[window_width:] - cumsum_vec[:-window_width]) / window_width
     ax.plot(ma_vec)
-    ax.set(ylim=[0, ax.get_ylim()[1] *1.05 ])
     fig.savefig("loss.png")
 
-opt = OPT(batch_size = 50, channels=3, u=50, lr=8e-6, momentum=0.9, u_max=65, u_min=50, cuda=True if torch.cuda.is_available() else False)
+opt = OPT(batch_size = 50,  channels=3,  u=50, lr=8e-6, momentum=0.9, u_max=65, u_min=50, cuda=True if torch.cuda.is_available() else False)
 #batch_size = 50, admm_iter=4, prox_iter=3, delta=.1, channels=3, eta=.3, u=50, lr=8e-6, momentum=0.9, u_max=65, u_min=50)
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
@@ -204,13 +227,22 @@ if __name__=="__main__":
         "-m", "--model"
     )
     parser.add_argument(
-        "-c", "--cont"
+        "-c", "--cont", default=None
     )
     parser.add_argument(
         "--batch", default=64
     )
     parser.add_argument(
-        "--lr", default=8e-6, type=float
+        "--lr", default=8e-6
+    )
+    parser.add_argument(
+        "--delta", default=0.05
+    )
+    parser.add_argument(
+        "--eta", default=0.05, type=float
+    )
+    parser.add_argument(
+        "--admm_iter", default=4
     )
     parser.add_argument(
         "--epoch", default=200
@@ -225,29 +257,30 @@ if __name__=="__main__":
         "--seed", default=0, type=float
     )
     parser.add_argument(
+            "--train", default='gauss_batch')
+    parser.add_argument(
+            "--stack", default=None)
+    parser.add_argument(
         "--width", default=36, type=int
     )
-    parser.add_argument(
-            "--train", default='gauss_batch')
 
     args = parser.parse_args()
-    if args.cont:
-        cont = args.cont
-    else:
-        cont = None
     if args.model:
         model_name = args.model
     else:
-        model_name='GTV.pkl'
+        model_name='DGTV.pkl'
     opt.batch_size = int(args.batch) 
     opt.lr = float(args.lr)
+    opt.admm_iter = int(args.admm_iter)
+    opt.delta = float(args.delta)
+    opt.eta=args.eta
     opt.u_min=args.umin
     opt.u_max=args.umax
     opt.ver=True
     opt.train=args.train
     opt.width=args.width
     torch.manual_seed(args.seed)
-    logging.basicConfig(filename='log/main_gpu_artificial_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
+    logging.basicConfig(filename='log/dgtv_train_{0}.log'.format(time.strftime("%Y-%m-%d-%H%M")),
                             filemode='a',
                             format='%(asctime)s %(name)s %(levelname)s %(message)s',
                             datefmt='%H:%M:%S',
@@ -255,9 +288,7 @@ if __name__=="__main__":
 
     logger = logging.getLogger('root')
     logger.addHandler(logging.StreamHandler(sys.stdout))
-
-
     opt.logger=logger
-    logger.info("Train GTV")
+    logger.info("Train DGTV")
     logger.info(' '.join(sys.argv))
-    main(seed=1, model_name=model_name, cont=cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'], args=args)
+    main(seed=1, model_name=model_name, cont=args.cont, epoch=int(args.epoch), subset=['1', '3', '5', '7', '9'])
