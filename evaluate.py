@@ -55,9 +55,10 @@ def denoise(inp, gtv, argref, normalize=False, stride=36, width=324, prefix='_',
         ref = cv2.imread(argref)
         if ref.shape[0] != width or ref.shape[1] != width:
             ref = cv2.resize(ref, (width, width))
-            plt.imsave('./ref_'+argref, ref)
-            logger.info('./ref_'+argref)
         ref = cv2.cvtColor(ref, cv2.COLOR_BGR2RGB)
+        ref_p = './ref_'+argref.split('/')[-1]
+        plt.imsave(ref_p, ref)
+        logger.info(ref_p)
         tref = ref.copy()
         ref = ref.transpose((2, 0, 1))
         ref = torch.from_numpy(ref)
