@@ -14,7 +14,7 @@ if cuda:
     dtype = torch.cuda.FloatTensor
 else:
     dtype = torch.FloatTensor
-
+RESROOT='result'
 
 def denoise(
     inp,
@@ -112,7 +112,7 @@ def denoise(
         opath = args.output
     else:
         filename = inp.split("/")[-1]
-        opath = "./{0}_{1}".format(prefix, filename)
+        opath = RESROOT + "/{0}_{1}".format(prefix, filename)
         opath = opath[:-3] + "png"
     d = np.minimum(np.maximum(d, 0), 1)
     plt.imsave(opath, d)
