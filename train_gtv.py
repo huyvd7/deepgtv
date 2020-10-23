@@ -131,12 +131,6 @@ def main(
                         gtv.cnnu.layer[0].weight.grad.mean().item()
                     )
                 )
-                opt.logger.info(
-                    "\tCNNS grads: {0:.5f}".format(
-                        gtv.cnns.layer[0].weight.grad.mean().item()
-                    )
-                )
-
                 with torch.no_grad():
                     us = gtv.cnnu(inputs)
                     opt.logger.info(
@@ -144,13 +138,6 @@ def main(
                             us.max().item(), us.mean().item(), us.min().item()
                         )
                     )
-                    us = gtv.cnns(inputs)
-                    opt.logger.info(
-                        "\tCNNS stats: max {0:.5f} mean {1:.5f} min {2:.5f}".format(
-                            us.max().item(), us.mean().item(), us.min().item()
-                        )
-                    )
-
         tnow = time.time()
         opt.logger.info(
             "[{0}] \x1b[31mLOSS\x1b[0m: {1:.8f}, time elapsed: {2:.1f} secs, epoch time: {3:.1f} secs".format(
@@ -182,12 +169,6 @@ def main(
                     gtv.cnnu.layer[0].weight.grad.mean().item()
                 )
             )
-            opt.logger.info(
-                "\tCNNS grads: {0:.5f}".format(
-                    gtv.cnns.layer[0].weight.grad.mean().item()
-                )
-            )
-
             pmax = list()
             for p in gtv.parameters():
                 pmax.append(p.grad.max())
@@ -199,13 +180,6 @@ def main(
                         us.max().item(), us.mean().item(), us.min().item()
                     )
                 )
-                us = gtv.cnns(inputs)
-                opt.logger.info(
-                    "\tCNNS stats: max {0:.5f} mean {1:.5f} min {2:.5f}".format(
-                        us.max().item(), us.mean().item(), us.min().item()
-                    )
-                )
-
             opt.logger.info("\tsave @ epoch {0}".format(epoch + 1))
             torch.save(gtv.state_dict(), SAVEDIR + str(epoch) + "." + SAVEPATH)
             torch.save(

@@ -148,21 +148,10 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                         g.cnnu.layer[0].weight.grad.mean().item()
                     )
                 )
-                opt.logger.info(
-                    "\tCNNS grads: {0:.5f}".format(
-                        g.cnns.layer[0].weight.grad.mean().item()
-                    )
-                )
                 with torch.no_grad():
                     us = g.cnnu(inputs)
                     opt.logger.info(
                         "\tCNNU stats: max {0:.5f} mean {1:.5f} min {2:.5f}".format(
-                            us.max().item(), us.mean().item(), us.min().item()
-                        )
-                    )
-                    us = g.cnns(inputs)
-                    opt.logger.info(
-                        "\tCNNS stats: max {0:.5f} mean {1:.5f} min {2:.5f}".format(
                             us.max().item(), us.mean().item(), us.min().item()
                         )
                     )
@@ -210,12 +199,6 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                     g.cnnu.layer[0].weight.grad.mean().item()
                 )
             )
-            opt.logger.info(
-                "\tCNNS grads: {0:.5f}".format(
-                    g.cnns.layer[0].weight.grad.mean().item()
-                )
-            )
-
             with torch.no_grad():
                 us = g.cnnu(inputs[:10])
                 opt.logger.info(
@@ -223,13 +206,6 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                         us.max().item(), us.mean().item(), us.min().item()
                     )
                 )
-                us = g.cnns(inputs)
-                opt.logger.info(
-                    "\tCNNS stats: max {0:.5f} mean {1:.5f} min {2:.5f}".format(
-                        us.max().item(), us.mean().item(), us.min().item()
-                    )
-                )
-
             with torch.no_grad():
                 P2 = g(P1, debug=1)
             with torch.no_grad():
