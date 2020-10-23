@@ -532,7 +532,7 @@ class GTV(nn.Module):
         self.weight_sigma = 0.2
 
     def forward(self, xf, debug=False, manual_debug=False):  # gtvforward
-        s = s.weight_sigma
+        s = self.weight_sigma
 
         # u = opt.u
         u = self.cnnu.forward(xf)
