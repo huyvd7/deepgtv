@@ -503,22 +503,17 @@ class GTV(nn.Module):
             opt.logger.info("ORIGINAL CNNF")
             self.cnnf = cnnf(opt=self.opt)
         self.cnnu = cnnu(u_min=u_min, opt=self.opt)
-        self.cnns = cnnu(u_min=u_min, opt=self.opt)
 
-        # self.cnny = cnny(opt=self.opt)
 
         if cuda:
             self.cnnf.cuda()
             self.cnnu.cuda()
-            self.cnns.cuda()
-            # self.cnny.cuda()
         opt.logger.info("GTV created on cuda: {0}".format(cuda))
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.device = torch.device("cuda") if cuda else torch.device("cpu")
         self.cnnf.apply(weights_init_normal)
         # self.cnny.apply(weights_init_normal)
         self.cnnu.apply(weights_init_normal)
-        self.cnns.apply(weights_init_normal)
 
         self.support_zmax = torch.ones(1).type(self.dtype) * 0.01
         self.support_identity = torch.eye(
@@ -537,9 +532,7 @@ class GTV(nn.Module):
         self.weight_sigma = 0.2
 
     def forward(self, xf, debug=False, manual_debug=False):  # gtvforward
-        s = self.cnns.forward(xf)
-        s = torch.clamp(s, 0.01, 0.99)
-        s = s.unsqueeze(1)
+        s = s.weight_sigma
 
         # u = opt.u
         u = self.cnnu.forward(xf)
