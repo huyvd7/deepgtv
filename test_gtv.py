@@ -15,7 +15,7 @@ if cuda:
 else:
     dtype = torch.FloatTensor
 
-
+resroot = 'result'
 def denoise(
     inp,
     gtv,
@@ -56,7 +56,7 @@ def denoise(
         if ref.shape[0] != width or ref.shape[1] != width:
             ref = cv2.resize(ref, (width, width))
         ref = cv2.cvtColor(ref, cv2.COLOR_BGR2RGB)
-        ref_p = "./ref_" + argref.split("/")[-1]
+        ref_p = resroot+ "/ref_" + argref.split("/")[-1]
         plt.imsave(ref_p, ref)
         logger.info(ref_p)
         tref = ref.copy()
@@ -113,7 +113,7 @@ def denoise(
         opath = args.output
     else:
         filename = inp.split("/")[-1]
-        opath = "./{0}_{1}".format(prefix, filename)
+        opath = resroot + "/{0}_{1}".format(prefix, filename)
         opath = opath[:-3] + "png"
     d = np.minimum(np.maximum(d, 0), 1)
     plt.imsave(opath, d)

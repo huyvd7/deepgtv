@@ -217,26 +217,6 @@ class cnny(nn.Module):
         return out
 
 
-class mlp(nn.Module):
-    """
-    CNN Y of GLR
-    """
-
-    def __init__(self, opt, in_channels=36 ** 2, out_channels=36 ** 2):
-        super(mlp, self).__init__()
-        self.hidden_nodes = 128
-        self.fc = nn.Sequential(
-            nn.Linear(in_channels, self.hidden_nodes),
-            nn.Linear(self.hidden_nodes, out_channels),
-        )
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-
-    def forward(self, x):
-        out = self.fc(x)
-        return out
-
-
 class RENOIR_Dataset(Dataset):
     """
     Dataset loader
@@ -333,19 +313,6 @@ class standardize(object):
         if self.normalize:
             nimg = nimg / 255.0
             rimg = rimg / 255.0
-        return {"nimg": nimg, "rimg": rimg}
-
-
-class gaussian_noise_(object):
-    def __init__(self, stddev, mean):
-        self.stddev = stddev
-        self.mean = mean
-
-    def __call__(self, sample):
-        nimg, rimg = sample["rimg"], sample["rimg"]
-        noise = Variable(nimg.data.new(nimg.size()).normal_(self.mean, self.stddev))
-        nimg = nimg + noise
-        nimg = _norm(nimg, 0, 255)
         return {"nimg": nimg, "rimg": rimg}
 
 
@@ -964,26 +931,10 @@ class DeepGTV(nn.Module):
     ):
         super(DeepGTV, self).__init__()
         self.no = no
-        # self.gtv = list()
-        # for i in range(self.no):
-        #    self.gtv.append(
-        #        GTV(
-        #            width=36,
-        #            prox_iter=prox_iter,
-        #            u_max=u_max,
-        #            u_min=u_min,
-        #            lambda_min=lambda_min,
-        #            lambda_max=lambda_max,
-        #            cuda=cuda,
-        #            opt=opt,
-        #        )
-        #    )
         self.gtv1 = GTV(width=width, u_max=u_max, u_min=u_min, cuda=cuda, opt=opt,)
 
         self.opt = opt
         if cuda:
-            # for gtv in self.gtv:
-            #    gtv.cuda()
             self.gtv1.cuda()
 
     def load(self, p1, p2):
@@ -996,9 +947,6 @@ class DeepGTV(nn.Module):
     def predict(self, sample):
         if self.cuda:
             sample.cuda()
-        # P = self.gtv[0](sample)
-        # for i in range(1, self.no):
-        #    P = self.gtv[i](P)
         P = self.gtv1.predict(sample)
         P = self.gtv1.predict(P)
         P = self.gtv1.predict(P)
