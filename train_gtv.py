@@ -215,7 +215,7 @@ opt = OPT(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-m", "--model")
+    parser.add_argument("-m", "--model", default='GTV.pkl')
     parser.add_argument("-c", "--cont")
     parser.add_argument("--batch", default=64)
     parser.add_argument("--lr", default=8e-6, type=float)
@@ -231,10 +231,7 @@ if __name__ == "__main__":
         cont = args.cont
     else:
         cont = None
-    if args.model:
-        model_name = args.model
-    else:
-        model_name = "GTV.pkl"
+    model_name = args.model
     opt.batch_size = int(args.batch)
     opt.lr = float(args.lr)
     opt.u_min = args.umin
@@ -259,7 +256,7 @@ if __name__ == "__main__":
     logger.info(" ".join(sys.argv))
     main(
         seed=1,
-        model_name=model_name,
+        model_name=args.model,
         cont=cont,
         epoch=int(args.epoch),
         subset=["1", "3", "5", "7", "9"],
