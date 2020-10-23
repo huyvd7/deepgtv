@@ -80,8 +80,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         # gtv.gtv2.cuda()
         gtv.cuda()
     criterion = nn.MSELoss()
-    #cnnf_params = list(filter(lambda kv: "cnnu" in kv[0], gtv.named_parameters()))
-    #cnnf_params = [i[1] for i in cnnf_params]
+    # cnnf_params = list(filter(lambda kv: "cnnu" in kv[0], gtv.named_parameters()))
+    # cnnf_params = [i[1] for i in cnnf_params]
     optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
     if cont:
         try:
@@ -246,7 +246,7 @@ opt = OPT(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-m", "--model")
+    parser.add_argument("-m", "--model", default="DGTV.pkl")
     parser.add_argument("-c", "--cont", default=None)
     parser.add_argument("--batch", default=64, type=int)
     parser.add_argument("--lr", default=8e-6)
@@ -262,10 +262,7 @@ if __name__ == "__main__":
     parser.add_argument("--width", default=36, type=int)
 
     args = parser.parse_args()
-    if args.model:
-        model_name = args.model
-    else:
-        model_name = "DGTV.pkl"
+    model_name = args.model
     opt.batch_size = int(args.batch)
     opt.lr = float(args.lr)
     opt.u_min = args.umin
@@ -289,7 +286,7 @@ if __name__ == "__main__":
     logger.info(" ".join(sys.argv))
     main(
         seed=1,
-        model_name=model_name,
+        model_name=args.model,
         cont=args.cont,
         epoch=int(args.epoch),
         subset=["1", "3", "5", "7", "9"],
