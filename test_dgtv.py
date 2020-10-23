@@ -312,10 +312,10 @@ if __name__ == "__main__":
     parser.add_argument("-p", "--image_path")
     parser.add_argument("--stride", default=18, type=int)
     parser.add_argument(
-        "--multi", default=30, type=int, help="# of patches evaluation in parallel"
+        "--multi", default=30, type=int, help="# of patches processed concurrently"
     )
     parser.add_argument(
-        "--train_width", default=36, type=int, help="patch size that GTV was trained"
+        "--train_width", default=36, type=int, help="patch size that the model was trained on"
     )
 
     args = parser.parse_args()
