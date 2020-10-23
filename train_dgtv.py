@@ -299,7 +299,7 @@ if __name__ == "__main__":
     opt.width = args.width
     torch.manual_seed(args.seed)
     logging.basicConfig(
-        filename="log/dgtv_train_{0}.log".format(time.strftime("%Y-%m-%d-%H%M")),
+        filename="log/train_dgtv_{0}.log".format(time.strftime("%Y-%m-%d-%H%M")),
         filemode="a",
         format="%(asctime)s %(name)s %(levelname)s %(message)s",
         datefmt="%H:%M:%S",

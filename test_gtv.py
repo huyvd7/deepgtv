@@ -6,7 +6,7 @@ import time
 import cv2
 import matplotlib.pyplot as plt
 import argparse
-from main_gpu_artificial import *
+from train_gtv import *
 import logging
 
 cuda = True if torch.cuda.is_available() else False
@@ -304,7 +304,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "-w", "--width", help="Resize image to a square image with given width", type=int
+        "-w",
+        "--width",
+        help="Resize image to a square image with given width",
+        type=int,
     )
     parser.add_argument("-m", "--model")
     parser.add_argument("--stride", default=18, type=int)
@@ -329,7 +332,7 @@ if __name__ == "__main__":
     else:
         image_path = "gauss"
     logging.basicConfig(
-        filename="log/evaluate_{0}.log".format(time.strftime("%Y-%m-%d-%H%M")),
+        filename="log/test_gtv_{0}.log".format(time.strftime("%Y-%m-%d-%H%M")),
         filemode="a",
         format="%(asctime)s %(name)s %(levelname)s %(message)s",
         datefmt="%H:%M:%S",

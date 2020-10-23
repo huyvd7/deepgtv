@@ -6,7 +6,7 @@ import time
 import cv2
 import matplotlib.pyplot as plt
 import argparse
-from main_gpu_artificial import *
+from train_dgtv import *
 import logging
 
 cuda = True if torch.cuda.is_available() else False
@@ -330,7 +330,7 @@ if __name__ == "__main__":
     else:
         image_path = "gauss"
     logging.basicConfig(
-        filename="log/dgtv_test_{0}.log".format(time.strftime("%Y-%m-%d-%H%M")),
+        filename="log/test_dgtv_{0}.log".format(time.strftime("%Y-%m-%d-%H%M")),
         filemode="a",
         format="%(asctime)s %(name)s %(levelname)s %(message)s",
         datefmt="%H:%M:%S",
