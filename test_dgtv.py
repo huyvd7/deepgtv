@@ -76,7 +76,7 @@ def denoise(
         .unfold(0, opt.width, stride)
         .unfold(1, opt.width, stride)
     ).type(dtype)
-
+    T2 = T2.contiguous()
     if argref:
         T1r = torch.nn.functional.pad(
             T1r, (0, stride, 0, stride), mode="constant", value=0
