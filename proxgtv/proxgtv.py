@@ -1087,7 +1087,7 @@ def patch_splitting(dataset, output_dst, patch_size=36, stride=18):
                 ),
                 img,
             )
-    print("total: ")
+    print("total: ", total)
 
 
 def cleaning(output_dst):

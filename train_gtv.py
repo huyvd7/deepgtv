@@ -45,7 +45,7 @@ def main(
         subset=None,
     )
 
-    patch_splitting(dataset=dataset, output_dst='tmp', patch_size=batch_size)
+    patch_splitting(dataset=dataset, output_dst='tmp', patch_size=args.width, stride=args.width/2)
     print()
     dataset = RENOIR_Dataset(
         img_dir=os.path.join('tmp', "patches"),
