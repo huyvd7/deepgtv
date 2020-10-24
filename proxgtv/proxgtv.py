@@ -1061,6 +1061,7 @@ def patch_splitting(dataset, output_dst, patch_size=36, stride=18):
         for i in range(T1.shape[1]):
             img = T1[:, i, :, :].cpu().detach().numpy().astype(np.uint8)
             img = img.transpose(1, 2, 0)
+            print(img_name,i,img_ext)
             plt.imsave(os.path.join(output_dst_noisy, "{0}_{1}.{2}".format(img_name, i, img_ext),img))
             total += 1
         for i in range(T2.shape[1]):
