@@ -14,7 +14,8 @@ if cuda:
     dtype = torch.cuda.FloatTensor
 else:
     dtype = torch.FloatTensor
-RESROOT='result'
+RESROOT = "result"
+
 
 def denoise(
     inp,
@@ -168,28 +169,17 @@ def main_eva(
 ):
     # INITIALIZE
     # global opt
-    opt.width = args.train_width
-    supporting_matrix(opt)
-    opt._print()
-    width = args.train_width
-    gtv = DeepGTV(
-        width=width,
-        prox_iter=1,
-        u_max=10,
-        u_min=0.5,
-        lambda_min=0.5,
-        lambda_max=1e9,
-        cuda=cuda,
-        opt=opt,
-    )
+    #opt.width = args.train_width
+    #supporting_matrix(opt)
+    #opt._print()
+    #width = args.train_width
+    gtv = DeepGTV(width=36, cuda=cuda, opt=opt)
     PATH = model_name
     device = torch.device("cuda") if cuda else torch.device("cpu")
     gtv.load_state_dict(torch.load(PATH, map_location=device))
     width = gtv.opt.width
     opt.width = width
-
-    if not image_path:
-        image_path = "..\\all\\all\\"
+    opt=gtv.opt
     if noise_type == "gauss":
         npref = "_g"
     else:
@@ -315,7 +305,10 @@ if __name__ == "__main__":
         "--multi", default=30, type=int, help="# of patches processed concurrently"
     )
     parser.add_argument(
-        "--train_width", default=36, type=int, help="patch size that the model was trained on"
+        "--train_width",
+        default=36,
+        type=int,
+        help="patch size that the model was trained on",
     )
 
     args = parser.parse_args()
