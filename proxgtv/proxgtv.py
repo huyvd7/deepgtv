@@ -1,11 +1,14 @@
 import scipy.sparse as ss
+import matplotlib.pyplot as plt
+import shutil
 import torch
 import numpy as np
 import os
 import cv2
 import torch.nn as nn
-from torch.autograd import Variable
-from torch.utils.data import Dataset
+
+from torchvision.utils import save_image
+from torch.utils.data import Dataset, DataLoader
 
 cuda = True if torch.cuda.is_available() else False
 
@@ -470,7 +473,6 @@ class GTV(nn.Module):
             opt.logger.info("ORIGINAL CNNF")
             self.cnnf = cnnf(opt=self.opt)
         self.cnnu = cnnu(u_min=u_min, opt=self.opt)
-
 
         if cuda:
             self.cnnf.cuda()
@@ -1004,3 +1006,76 @@ def supporting_matrix(opt):
 
 def _norm(x, newmin, newmax):
     return (x - x.min()) * (newmax - newmin) / (x.max() - x.min() + 1e-8) + newmin
+
+
+def add_noise(image, sigma):
+    from experiment_funcs import *
+
+    y = np.array(Image.open(imagename)) / 255
+    noise_type = "gw"
+    noise_var = (sigma / 255) ** 2  # Noise variance 25 std
+    seed = 0  # seed for pseudorandom noise realization
+    noise, psd, kernel = get_experiment_noise(noise_type, noise_var, seed, y.shape)
+    z = np.atleast_3d(y) + np.atleast_3d(noise)
+    z_rang = np.minimum(np.maximum(z, 0), 1)
+    noisyimagename = imagepath + "noisy\\" + t + "_g.bmp"
+    plt.imsave(noisyimagename, z_rang)
+
+
+def mkdir(d, remove=True):
+    try:
+        if not os.path.exists(d):
+            os.makedirs(d)
+        else:
+            if remove:
+                shutil.rmtree(d)  # Removes all the subdirectories!
+            os.makedirs(d)
+    except Exception:
+        print(
+            "Cannot create ",
+            d,
+        )
+
+
+def patch_splitting(dataset, output_dst, patch_size=36, stride=18):
+    """Split each image in the dataset to patch size with size patch_size x patch_size
+    dataset: path of full size reference images    
+    """
+
+    output_dst_temp = os.path.join(output_dst, "patches")
+    output_dst_noisy = os.path.join(output_dst_temp, "noisy")
+    output_dst_ref = os.path.join(output_dst_temp, "ref")
+    mkdir(output_dst_temp)
+    mkdir(output_dst_noisy)
+    mkdir(output_dst_ref)
+
+    dataloader = DataLoader(dataset, batch_size=1)
+    total = 0
+    for i_batch, s in enumerate(dataloader):
+        print(i_batch, s['nimg'].size(),
+              s['rimg'].size(), len(s['nimg']), s['nn'], s['rn'])
+        T1 = s['nimg'].unfold(2, patch_size, stride).unfold(3, patch_size, stride).reshape(1, 3, -1, patch_size, patch_size).squeeze()
+        T2 = s['rimg'].unfold(2, patch_size, stride).unfold(3, patch_size, stride).reshape(1, 3, -1, patch_size, patch_size).squeeze()
+        nnn = s['nn'][0].split('.')[0]
+        img_name = dataset.nimg_name.split('.')[0]
+        img_ext = dataset.nimg_name.split('.')[1]
+        for i in range(T1.shape[1]):
+            img = T1[:, i, :, :].cpu().detach().numpy().astype(np.uint8)
+            img = img.transpose(1, 2, 0)
+            plt.imsave(os.path.join(output_dst_noisy, "{0}_{1}.{2}".format(img_name, nnn, img_ext),img))
+            total += 1
+        for i in range(T2.shape[1]):
+            img = T2[:, i, :, :].cpu().detach().numpy().astype(np.uint8)
+            img = img.transpose(1, 2, 0)
+            plt.imsave(os.path.join(output_dst_ref, "{0}_{1}.{2}".format(img_name, nnn, img_ext),img))
+    print('total: ')
+
+
+def cleaning(output_dst):
+    """Clean the directory after running"""
+
+    output_dst_temp = os.path.join(output_dst, "patches")
+    try:
+        shutil.rmtree(output_dst_temp)  # Removes all the subdirectories!
+    except Exception:
+        print("Cannot clean the temporary image patches")

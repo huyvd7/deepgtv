@@ -42,8 +42,17 @@ def main(
     dataset = RENOIR_Dataset(
         img_dir=os.path.join(opt.train),
         transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
+        subset=None,
+    )
+
+    patch_splitting(dataset=dataset, output_dst='tmp', patch_size=batch_size)
+
+    dataset = RENOIR_Dataset(
+        img_dir=os.path.join('tmp', "patches"),
+        transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
         subset=subset,
     )
+
     dataloader = DataLoader(
         dataset,
         batch_size=batch_size,
