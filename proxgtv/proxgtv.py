@@ -1050,7 +1050,8 @@ def patch_splitting(dataset, output_dst, patch_size=36, stride=18):
 
     dataloader = DataLoader(dataset, batch_size=1)
     total = 0
-    print(patch_size, stride)
+    patch_size = int(patch_size)
+    stride = int(stride)
     for i_batch, s in enumerate(dataloader):
         print(i_batch, s["nimg"].size(), s["rimg"].size(), len(s["nimg"]))
         T1 = (
