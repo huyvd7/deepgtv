@@ -1083,8 +1083,9 @@ def patch_splitting(dataset, output_dst, patch_size=36, stride=18):
             img = img.transpose(1, 2, 0)
             plt.imsave(
                 os.path.join(
-                    output_dst_ref, "{0}_{1}.{2}".format(img_name, i, img_ext), img
-                )
+                    output_dst_ref, "{0}_{1}.{2}".format(img_name, i, img_ext)
+                ),
+                img,
             )
     print("total: ")
 
