@@ -1066,7 +1066,7 @@ def patch_splitting(dataset, output_dst, patch_size=36, stride=18):
             .reshape(1, 3, -1, patch_size, patch_size)
             .squeeze()
         )
-        print(i_batch, T1.shape)
+        print(i_batch, dataset.nimg_name[i_batch], T1.shape)
         img_name = dataset.nimg_name[i_batch].split(".")[0]
         img_ext = dataset.nimg_name[i_batch].split(".")[1]
         for i in range(T1.shape[1]):

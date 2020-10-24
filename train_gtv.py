@@ -44,11 +44,12 @@ def main(
         transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
         subset=None,
     )
-
-    patch_splitting(dataset=dataset, output_dst='tmp', patch_size=args.width, stride=args.width/2)
-    print()
+    opt.logger.info("Splitting patches...")
+    patch_splitting(
+        dataset=dataset, output_dst="tmp", patch_size=args.width, stride=args.width / 2
+    )
     dataset = RENOIR_Dataset(
-        img_dir=os.path.join('tmp', "patches"),
+        img_dir=os.path.join("tmp", "patches"),
         transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
         subset=subset,
     )
@@ -224,7 +225,7 @@ opt = OPT(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-m", "--model", default='GTV.pkl')
+    parser.add_argument("-m", "--model", default="GTV.pkl")
     parser.add_argument("-c", "--cont")
     parser.add_argument("--batch", default=64)
     parser.add_argument("--lr", default=8e-6, type=float)

@@ -41,6 +41,15 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     dataset = RENOIR_Dataset(
         img_dir=os.path.join(opt.train),
         transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
+        subset=None,
+    )
+    opt.logger.info("Splitting patches...")
+    patch_splitting(
+        dataset=dataset, output_dst="tmp", patch_size=args.width, stride=args.width / 2
+    )
+    dataset = RENOIR_Dataset(
+        img_dir=os.path.join("tmp", "patches"),
+        transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
         subset=subset,
     )
     opt.logger.info(dataset.nimg_name[0])
