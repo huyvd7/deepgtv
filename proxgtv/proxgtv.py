@@ -1,5 +1,4 @@
 import scipy.sparse as ss
-import matplotlib.pyplot as plt
 import shutil
 import torch
 import numpy as np
@@ -1040,7 +1039,7 @@ def patch_splitting(dataset, output_dst, patch_size=36, stride=18):
     """Split each image in the dataset to patch size with size patch_size x patch_size
     dataset: path of full size reference images    
     """
-
+    import matplotlib.pyplot as plt
     output_dst_temp = os.path.join(output_dst, "patches")
     output_dst_noisy = os.path.join(output_dst_temp, "noisy")
     output_dst_ref = os.path.join(output_dst_temp, "ref")
@@ -1053,7 +1052,6 @@ def patch_splitting(dataset, output_dst, patch_size=36, stride=18):
     patch_size = int(patch_size)
     stride = int(stride)
     for i_batch, s in enumerate(dataloader):
-        print(i_batch, s["nimg"].size(), s["rimg"].size(), len(s["nimg"]))
         T1 = (
             s["nimg"]
             .unfold(2, patch_size, stride)
@@ -1068,6 +1066,7 @@ def patch_splitting(dataset, output_dst, patch_size=36, stride=18):
             .reshape(1, 3, -1, patch_size, patch_size)
             .squeeze()
         )
+        print(i_batch, T1.shape)
         img_name = dataset.nimg_name[i_batch].split(".")[0]
         img_ext = dataset.nimg_name[i_batch].split(".")[1]
         for i in range(T1.shape[1]):
