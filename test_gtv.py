@@ -15,7 +15,9 @@ if cuda:
 else:
     dtype = torch.FloatTensor
 
-resroot = 'result'
+resroot = "result"
+
+
 def denoise(
     inp,
     gtv,
@@ -56,7 +58,7 @@ def denoise(
         if ref.shape[0] != width or ref.shape[1] != width:
             ref = cv2.resize(ref, (width, width))
         ref = cv2.cvtColor(ref, cv2.COLOR_BGR2RGB)
-        ref_p = resroot+ "/ref_" + argref.split("/")[-1]
+        ref_p = resroot + "/ref_" + argref.split("/")[-1]
         plt.imsave(ref_p, ref)
         logger.info(ref_p)
         tref = ref.copy()
@@ -169,27 +171,13 @@ def main_eva(
     args=None,
     logger=None,
 ):
-    # INITIALIZE
-    # global opt
-    opt.width = args.train_width
-    supporting_matrix(opt)
-    opt._print()
-    width = args.train_width
-    gtv = GTV(
-        width=width,
-        prox_iter=1,
-        u_max=10,
-        u_min=0.5,
-        lambda_min=0.5,
-        lambda_max=1e9,
-        cuda=cuda,
-        opt=opt,
-    )
+    gtv = GTV(width=width, cuda=cuda, opt=opt,)
     PATH = model_name
     device = torch.device("cuda") if cuda else torch.device("cpu")
     gtv.load_state_dict(torch.load(PATH, map_location=device))
     width = gtv.opt.width
     opt.width = width
+    opt = gtv.opt
     if not image_path:
         image_path = "..\\all\\all\\"
     if noise_type == "gauss":
@@ -313,9 +301,6 @@ if __name__ == "__main__":
     parser.add_argument("--stride", default=18, type=int)
     parser.add_argument(
         "--multi", default=30, type=int, help="# of patches evaluation in parallel"
-    )
-    parser.add_argument(
-        "--train_width", default=36, type=int, help="patch size that GTV was trained"
     )
     parser.add_argument("--opt", default="opt")
     parser.add_argument("-p", "--image_path")

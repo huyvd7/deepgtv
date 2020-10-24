@@ -167,13 +167,7 @@ def main_eva(
     opt=None,
     logger=None,
 ):
-    # INITIALIZE
-    # global opt
-    #opt.width = args.train_width
-    #supporting_matrix(opt)
-    #opt._print()
-    #width = args.train_width
-    gtv = DeepGTV(width=36, cuda=cuda, opt=opt)
+    gtv = DeepGTV(width=36, cuda=cuda, opt=opt) # just initialize to load the trained model, no need to change
     PATH = model_name
     device = torch.device("cuda") if cuda else torch.device("cpu")
     gtv.load_state_dict(torch.load(PATH, map_location=device))
@@ -304,12 +298,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--multi", default=30, type=int, help="# of patches processed concurrently"
     )
-    parser.add_argument(
-        "--train_width",
-        default=36,
-        type=int,
-        help="patch size that the model was trained on",
-    )
+
 
     args = parser.parse_args()
     opt = pickle.load(open(args.opt, "rb"))
