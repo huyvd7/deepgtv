@@ -18,22 +18,21 @@ python train_dgtv.py --batch 32 --lr 1e-4 -m MODEL_NAME.pkl --epoch 50 --train T
 ```
 
 Params:
-- width: dimension of an image in TRAIN_DATASET
+- width: split images in the dataset to patches of size `width x width`
 
 # Test
 Test GTV
 ```python
-python test_gtv.py -width 720 -m MODEL_NAME.pkl --stride 18 --train_width 36 -multi 500 -p TEST_DATASET
+python test_gtv.py -width 720 -m MODEL_NAME.pkl --stride 18 -multi 500 -p TEST_DATASET
 ```
 
 Test DGTV
 ```python
-python test_dgtv.py -width 720 -m MODEL_NAME.pkl --stride 18 --train_width 36 --multi 500 -p TEST_DATASET
+python test_dgtv.py -width 720 -m MODEL_NAME.pkl --stride 18 --multi 500 -p TEST_DATASET
 ```
 
 Params:
 - width: desired output image size
-- train_width: the width that the model was trained on
 
 # TODO
 - [ ] Denoise a given single image
