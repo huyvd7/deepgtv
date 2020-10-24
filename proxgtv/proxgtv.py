@@ -1032,8 +1032,7 @@ def mkdir(d, remove=True):
             os.makedirs(d)
     except Exception:
         print(
-            "Cannot create ",
-            d,
+            "Cannot create ", d,
         )
 
 
@@ -1052,23 +1051,42 @@ def patch_splitting(dataset, output_dst, patch_size=36, stride=18):
     dataloader = DataLoader(dataset, batch_size=1)
     total = 0
     for i_batch, s in enumerate(dataloader):
-        print(i_batch, s['nimg'].size(),
-              s['rimg'].size(), len(s['nimg']))
-        T1 = s['nimg'].unfold(2, patch_size, stride).unfold(3, patch_size, stride).reshape(1, 3, -1, patch_size, patch_size).squeeze()
-        T2 = s['rimg'].unfold(2, patch_size, stride).unfold(3, patch_size, stride).reshape(1, 3, -1, patch_size, patch_size).squeeze()
-        img_name = dataset.nimg_name[i_batch].split('.')[0]
-        img_ext =  dataset.nimg_name[i_batch].split('.')[1]
+        print(i_batch, s["nimg"].size(), s["rimg"].size(), len(s["nimg"]))
+        T1 = (
+            s["nimg"]
+            .unfold(2, patch_size, stride)
+            .unfold(3, patch_size, stride)
+            .reshape(1, 3, -1, patch_size, patch_size)
+            .squeeze()
+        )
+        T2 = (
+            s["rimg"]
+            .unfold(2, patch_size, stride)
+            .unfold(3, patch_size, stride)
+            .reshape(1, 3, -1, patch_size, patch_size)
+            .squeeze()
+        )
+        img_name = dataset.nimg_name[i_batch].split(".")[0]
+        img_ext = dataset.nimg_name[i_batch].split(".")[1]
         for i in range(T1.shape[1]):
             img = T1[:, i, :, :].cpu().detach().numpy().astype(np.uint8)
             img = img.transpose(1, 2, 0)
-            print(img_name,i,img_ext)
-            plt.imsave(os.path.join(output_dst_noisy, "{0}_{1}.{2}".format(img_name, i, img_ext),img))
+            plt.imsave(
+                os.path.join(
+                    output_dst_noisy, "{0}_{1}.{2}".format(img_name, i, img_ext)
+                ),
+                img,
+            )
             total += 1
         for i in range(T2.shape[1]):
             img = T2[:, i, :, :].cpu().detach().numpy().astype(np.uint8)
             img = img.transpose(1, 2, 0)
-            plt.imsave(os.path.join(output_dst_ref, "{0}_{1}.{2}".format(img_name, i, img_ext),img))
-    print('total: ')
+            plt.imsave(
+                os.path.join(
+                    output_dst_ref, "{0}_{1}.{2}".format(img_name, i, img_ext), img
+                )
+            )
+    print("total: ")
 
 
 def cleaning(output_dst):
