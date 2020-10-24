@@ -1009,7 +1009,7 @@ def _norm(x, newmin, newmax):
 
 
 def add_noise(image, sigma):
-    from experiment_funcs import *
+    from experiment_funcs import get_experiment_noise
 
     y = np.array(Image.open(imagename)) / 255
     noise_type = "gw"
