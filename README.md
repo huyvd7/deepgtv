@@ -33,3 +33,6 @@ python test_dgtv.py -width 720 -m MODEL_NAME.pkl --stride 18 --train_width 36 --
 Params:
 - width: desired output image size
 - train_width: the width that the model was trained on
+
+# TODO
+- [ ] Denoise a given single image
