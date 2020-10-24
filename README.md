@@ -1,5 +1,6 @@
-[Unrolling of Deep Graph Total Variation for Image Denoising](https://arxiv.org/abs/2010.11290)
+Paper: [Unrolling of Deep Graph Total Variation for Image Denoising](https://arxiv.org/abs/2010.11290)
 
+GitHub: [huyvd7/deepgtv](https://github.com/huyvd7/deepgtv)
 <p align="center">
   <img src="legacy/diff_stat.png" class="img-responsive">
 <p align="center"><b>Fig.</b> Trained and tested on different noise distributions.</p>
