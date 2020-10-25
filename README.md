@@ -33,6 +33,7 @@ python test_dgtv.py -width 720 -m MODEL_NAME.pkl --stride 18 --multi 500 -p TEST
 
 Params:
 - width: desired output image size
+- multi: # of patches to be processed simultaneously
 
 # TODO
 - [ ] Denoise a given single image
