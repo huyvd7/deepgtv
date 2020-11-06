@@ -152,11 +152,11 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                             g.cnnf.layer1[0].weight.grad.mean().item()
                         )
                     )
-                opt.logger.info(
-                    "\tCNNU grads: {0:.5f}".format(
-                        g.u.grad.mean().item()
-                    )
-                )
+#                opt.logger.info(
+#                    "\tCNNU grads: {0:.5f}".format(
+#                        g.u.grad.mean().item()
+#                    )
+#                )
                 with torch.no_grad():
                     opt.logger.info(
                             "\t{u.item():.5f}"
@@ -198,11 +198,11 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                         g.cnnf.layer1[0].weight.grad.mean().item()
                     )
                 )
-            opt.logger.info(
-                "\tCNNU grads: {0:.5f}".format(
-                    g.u.grad.mean().item()
-                )
-            )
+#            opt.logger.info(
+#                "\tCNNU grads: {0:.5f}".format(
+#                    g.u.grad.mean().item()
+#                )
+#            )
             with torch.no_grad():
                     opt.logger.info(
                             "\t{u.item():.5f}"
