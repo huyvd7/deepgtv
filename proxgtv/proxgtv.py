@@ -498,7 +498,7 @@ class GTV(nn.Module):
         self.support_e1 = torch.zeros(self.lanczos_order, 1).type(self.dtype)
         self.support_e1[0] = 1
         self.weight_sigma = 0.01
-        self.u = torch.nn.Parameter(torch.rand(1)).type(self.dtype)
+        self.u = torch.nn.Parameter(torch.rand(1), requires_grad=True).type(self.dtype)
 
     def forward(self, xf, debug=False, manual_debug=False):  # gtvforward
         s = self.weight_sigma
