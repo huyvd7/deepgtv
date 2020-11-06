@@ -134,7 +134,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                     P1, P2  = gtv(inputs, debug=True)
                     # opt.logger.info("\tLOSS: {0:.8f} {1:.8f}".format( (P1-labels).square().mean().item(), (P2-labels).square().mean().item()))
                     opt.logger.info(
-                        "\tLOSS: {0:.8f} {1:.8f} {2:.8f}".format(
+                        "\tLOSS: {0:.8f} {1:.8f} ".format(
                             (P1 - labels).square().mean().item(),
                             (P2 - labels).square().mean().item()
                         )
@@ -179,7 +179,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 P1, P2 = gtv(inputs, debug=True)
                 # opt.logger.info("\tLOSS: {0:.8f} {1:.8f}".format( (P1-labels).square().mean().item(), (P2-labels).square().mean().item()))
                 opt.logger.info(
-                    "\tLOSS: {0:.8f} {1:.8f} {2:.8f}".format(
+                    "\tLOSS: {0:.8f} {1:.8f} ".format(
                         (P1 - labels).square().mean().item(),
                         (P2 - labels).square().mean().item()
                     )
