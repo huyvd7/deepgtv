@@ -498,12 +498,14 @@ class GTV(nn.Module):
         self.support_e1 = torch.zeros(self.lanczos_order, 1).type(self.dtype)
         self.support_e1[0] = 1
         self.weight_sigma = 0.01
+        self.u = torch.nn.Parameter(torch.rand(1))
 
     def forward(self, xf, debug=False, manual_debug=False):  # gtvforward
         s = self.weight_sigma
 
         # u = opt.u
-        u = self.cnnu.forward(xf)
+        # u = self.cnnu.forward(xf)
+        u=self.u
         u_max = self.opt.u_max
         u_min = self.opt.u_min
         if debug:
@@ -522,7 +524,7 @@ class GTV(nn.Module):
             }
 
         u = torch.clamp(u, u_min, u_max)
-        u = u.unsqueeze(1).unsqueeze(1)
+        #u = u.unsqueeze(1).unsqueeze(1)
 
         z = self.opt.H.matmul(xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1))
 
