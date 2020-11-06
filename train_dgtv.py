@@ -159,7 +159,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 #                )
                 with torch.no_grad():
                     opt.logger.info(
-                            f"\t{u.item():.5f}"
+                            f"\t{g.u.item():.5f}"
                         )
                 with torch.no_grad():
                     P2 = g(P1, debug=1)
@@ -205,7 +205,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 #            )
             with torch.no_grad():
                     opt.logger.info(
-                            f"\t{u.item():.5f}"
+                            f"\t{g.u.item():.5f}"
                         )
             with torch.no_grad():
                 P2 = g(P1, debug=1)
