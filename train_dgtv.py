@@ -38,17 +38,18 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         subset = [i + "_" for i in _subset]
     else:
         subset = [i + "_" for i in subset]
+    # dataset = RENOIR_Dataset(
+    #     img_dir=os.path.join(opt.train),
+    #     transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
+    #     subset=None,
+    # )
+    # opt.logger.info("Splitting patches...")
+    # patch_splitting(
+    #     dataset=dataset, output_dst="tmp", patch_size=args.width, stride=args.width / 2
+    # )
     dataset = RENOIR_Dataset(
+        # img_dir=os.path.join("tmp", "patches"),
         img_dir=os.path.join(opt.train),
-        transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
-        subset=None,
-    )
-    opt.logger.info("Splitting patches...")
-    patch_splitting(
-        dataset=dataset, output_dst="tmp", patch_size=args.width, stride=args.width / 2
-    )
-    dataset = RENOIR_Dataset(
-        img_dir=os.path.join("tmp", "patches"),
         transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
         subset=subset,
     )
