@@ -471,17 +471,17 @@ class GTV(nn.Module):
         else:
             opt.logger.info("ORIGINAL CNNF")
             self.cnnf = cnnf(opt=self.opt)
-        self.cnnu = cnnu(u_min=u_min, opt=self.opt)
+        #self.cnnu = cnnu(u_min=u_min, opt=self.opt)
 
         if cuda:
             self.cnnf.cuda()
-            self.cnnu.cuda()
+            #self.cnnu.cuda()
         opt.logger.info("GTV created on cuda: {0}".format(cuda))
         self.dtype = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.device = torch.device("cuda") if cuda else torch.device("cpu")
         self.cnnf.apply(weights_init_normal)
         # self.cnny.apply(weights_init_normal)
-        self.cnnu.apply(weights_init_normal)
+        #self.cnnu.apply(weights_init_normal)
 
         self.support_zmax = torch.ones(1).type(self.dtype) * 0.01
         self.support_identity = torch.eye(
@@ -952,7 +952,6 @@ class DeepGTV(nn.Module):
             sample.cuda()
         P = self.gtv1.predict(sample)
         P = self.gtv1.predict(P)
-        P = self.gtv1.predict(P)
 
         return P
 
@@ -960,12 +959,10 @@ class DeepGTV(nn.Module):
         if not debug:
             P = self.gtv1(sample)
             P = self.gtv1(P)
-            P = self.gtv1(P)
         else:
             P1 = self.gtv1(sample)
             P2 = self.gtv1(P1)
-            P3 = self.gtv1(P2)
-            return P1, P2, P3
+            return P1, P2
         return P
 
 

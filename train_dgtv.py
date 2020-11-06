@@ -131,13 +131,12 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 g = gtv.gtv1
                 with torch.no_grad():
                     # P1, P2 = gtv(inputs, debug=True)
-                    P1, P2, P3 = gtv(inputs, debug=True)
+                    P1, P2  = gtv(inputs, debug=True)
                     # opt.logger.info("\tLOSS: {0:.8f} {1:.8f}".format( (P1-labels).square().mean().item(), (P2-labels).square().mean().item()))
                     opt.logger.info(
                         "\tLOSS: {0:.8f} {1:.8f} {2:.8f}".format(
                             (P1 - labels).square().mean().item(),
-                            (P2 - labels).square().mean().item(),
-                            (P3 - labels).square().mean().item(),
+                            (P2 - labels).square().mean().item()
                         )
                     )
                     P1 = g(inputs, debug=1)
@@ -155,19 +154,15 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                     )
                 opt.logger.info(
                     "\tCNNU grads: {0:.5f}".format(
-                        g.cnnu.layer[0].weight.grad.mean().item()
+                        g.u.grad.mean().item()
                     )
                 )
                 with torch.no_grad():
-                    us = g.cnnu(inputs)
                     opt.logger.info(
-                        "\tCNNU stats: max {0:.5f} mean {1:.5f} min {2:.5f}".format(
-                            us.max().item(), us.mean().item(), us.min().item()
+                            "\t{u.item():.5f}"
                         )
-                    )
                 with torch.no_grad():
                     P2 = g(P1, debug=1)
-                    P3 = g(P2, debug=1)
 
         tnow = time.time()
         opt.logger.info(
@@ -181,13 +176,12 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             g = gtv.gtv1
             with torch.no_grad():
                 # P1, P2 = gtv(inputs, debug=True)
-                P1, P2, P3 = gtv(inputs, debug=True)
+                P1, P2 = gtv(inputs, debug=True)
                 # opt.logger.info("\tLOSS: {0:.8f} {1:.8f}".format( (P1-labels).square().mean().item(), (P2-labels).square().mean().item()))
                 opt.logger.info(
                     "\tLOSS: {0:.8f} {1:.8f} {2:.8f}".format(
                         (P1 - labels).square().mean().item(),
-                        (P2 - labels).square().mean().item(),
-                        (P3 - labels).square().mean().item(),
+                        (P2 - labels).square().mean().item()
                     )
                 )
 
@@ -206,20 +200,15 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 )
             opt.logger.info(
                 "\tCNNU grads: {0:.5f}".format(
-                    g.cnnu.layer[0].weight.grad.mean().item()
+                    g.u.grad.mean().item()
                 )
             )
             with torch.no_grad():
-                us = g.cnnu(inputs[:10])
-                opt.logger.info(
-                    "\tCNNU stats: max {0:.5f} mean {1:.5f} min {2:.5f}".format(
-                        us.max().item(), us.mean().item(), us.min().item()
-                    )
-                )
+                    opt.logger.info(
+                            "\t{u.item():.5f}"
+                        )
             with torch.no_grad():
                 P2 = g(P1, debug=1)
-            with torch.no_grad():
-                P3 = g(P2, debug=1)
 
             opt.logger.info("\tsave @ epoch {0}".format(epoch + 1))
             torch.save(gtv.state_dict(), SAVEDIR + str(epoch) + "." + SAVEPATH)
