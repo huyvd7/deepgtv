@@ -136,7 +136,7 @@ class cnnf(nn.Module):
 class uu(nn.Module):
     def __init__(self):
         super(uu,self).__init__()
-        self.u = torch.nn.Parameter(torch.rand(1), requires_grad=True).type(self.dtype)
+        self.u = torch.nn.Parameter(torch.rand(1), requires_grad=True)
     def forward():
         return self.u
 
