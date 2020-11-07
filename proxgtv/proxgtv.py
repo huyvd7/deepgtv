@@ -410,8 +410,10 @@ class OPT:
         train="gauss_batch",
         cuda=False,
         logger=None,
+        legacy=False
     ):
         self.batch_size = batch_size
+        self.legacy = legacy
         self.width = width
         self.edges = 0
         self.nodes = width ** 2
@@ -514,7 +516,8 @@ class GTV(nn.Module):
 
         # u = opt.u
         if self.opt.legacy:
-             u = self.cnnu.forward(xf)
+            u = self.cnnu.forward(xf)
+            u = u.unsqueeze(1).unsqueeze(1)
         else:
             u=self.uu.forward()
         u_max = self.opt.u_max
@@ -535,7 +538,6 @@ class GTV(nn.Module):
             }
 
         u = torch.clamp(u, u_min, u_max)
-        #u = u.unsqueeze(1).unsqueeze(1)
 
         z = self.opt.H.matmul(xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1))
 
