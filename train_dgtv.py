@@ -152,14 +152,14 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                             g.cnnf.layer1[0].weight.grad.mean().item()
                         )
                     )
-#                opt.logger.info(
-#                    "\tCNNU grads: {0:.5f}".format(
-#                        g.u.grad.mean().item()
-#                    )
-#                )
+                opt.logger.info(
+                    "\tCNNU grads: {0:.5f}".format(
+                        g.uu.u.grad.mean().item()
+                    )
+                )
                 with torch.no_grad():
                     opt.logger.info(
-                            f"\t{g.u.item():.5f}"
+                            f"\t{g.uu.forward().item():.5f}"
                         )
                 with torch.no_grad():
                     P2 = g(P1, debug=1)
@@ -205,7 +205,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 #            )
             with torch.no_grad():
                     opt.logger.info(
-                            f"\t{g.u.item():.5f}"
+                            f"\t{g.uu.forward().item():.5f}"
                         )
             with torch.no_grad():
                 P2 = g(P1, debug=1)
