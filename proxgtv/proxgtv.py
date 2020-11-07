@@ -133,6 +133,12 @@ class cnnf(nn.Module):
         out = self.layer5(outl4)
         return out
 
+class uu(nn.Module):
+    def __init__(self):
+        super(uu,self).__init__()
+        self.u = torch.nn.Parameter(torch.rand(1), requires_grad=True).type(self.dtype)
+    def forward():
+        return self.u
 
 class cnnu(nn.Module):
     """
@@ -472,6 +478,7 @@ class GTV(nn.Module):
             opt.logger.info("ORIGINAL CNNF")
             self.cnnf = cnnf(opt=self.opt)
         #self.cnnu = cnnu(u_min=u_min, opt=self.opt)
+        self.u = uu()
 
         if cuda:
             self.cnnf.cuda()
@@ -498,14 +505,14 @@ class GTV(nn.Module):
         self.support_e1 = torch.zeros(self.lanczos_order, 1).type(self.dtype)
         self.support_e1[0] = 1
         self.weight_sigma = 0.01
-        self.u = torch.nn.Parameter(torch.rand(1), requires_grad=True).type(self.dtype)
+#        self.u = torch.nn.Parameter(torch.rand(1), requires_grad=True).type(self.dtype)
 
     def forward(self, xf, debug=False, manual_debug=False):  # gtvforward
         s = self.weight_sigma
 
         # u = opt.u
         # u = self.cnnu.forward(xf)
-        u=self.u
+        u=self.uu.forward()
         u_max = self.opt.u_max
         u_min = self.opt.u_min
         if debug:
