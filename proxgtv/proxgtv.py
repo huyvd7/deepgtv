@@ -478,7 +478,7 @@ class GTV(nn.Module):
             opt.logger.info("ORIGINAL CNNF")
             self.cnnf = cnnf(opt=self.opt)
         #self.cnnu = cnnu(u_min=u_min, opt=self.opt)
-        self.u = uu()
+        self.uu = uu()
 
         if cuda:
             self.cnnf.cuda()
