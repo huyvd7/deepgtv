@@ -152,15 +152,15 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                             g.cnnf.layer1[0].weight.grad.mean().item()
                         )
                     )
-                opt.logger.info(
-                    "\tCNNU grads: {0:.5f}".format(
-                        g.uu.u.grad.mean().item()
-                    )
-                )
-                with torch.no_grad():
-                    opt.logger.info(
-                            f"\t{g.uu.forward().item():.5f}"
-                        )
+                #opt.logger.info(
+                #    "\tCNNU grads: {0:.5f}".format(
+                #        g.uu.u.grad.mean().item()
+                #    )
+                #)
+                #with torch.no_grad():
+                #    opt.logger.info(
+                #            f"\t{g.uu.forward().item():.5f}"
+                #        )
                 with torch.no_grad():
                     P2 = g(P1, debug=1)
 
@@ -203,10 +203,10 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 #                    g.u.grad.mean().item()
 #                )
 #            )
-            with torch.no_grad():
-                    opt.logger.info(
-                            f"\t{g.uu.forward().item():.5f}"
-                        )
+            #with torch.no_grad():
+            #        opt.logger.info(
+            #                f"\t{g.uu.forward().item():.5f}"
+            #            )
             with torch.no_grad():
                 P2 = g(P1, debug=1)
 
@@ -255,6 +255,7 @@ if __name__ == "__main__":
     parser.add_argument("--train", default="gauss_batch")
     parser.add_argument("--stack", default=None)
     parser.add_argument("--width", default=36, type=int)
+    parser.add_argument("--legacy", default=False, type=bool)
 
     args = parser.parse_args()
     model_name = args.model
@@ -262,6 +263,7 @@ if __name__ == "__main__":
     opt.lr = float(args.lr)
     opt.u_min = args.umin
     opt.u_max = args.umax
+    opt.legacy = args.legacy
     opt.ver = True
     opt.train = args.train
     opt.width = args.width

@@ -477,8 +477,10 @@ class GTV(nn.Module):
         else:
             opt.logger.info("ORIGINAL CNNF")
             self.cnnf = cnnf(opt=self.opt)
-        #self.cnnu = cnnu(u_min=u_min, opt=self.opt)
-        self.uu = uu()
+        if self.opt.legacy:
+            self.cnnu = cnnu(u_min=u_min, opt=self.opt)
+        else:
+            self.uu = uu()
 
         if cuda:
             self.cnnf.cuda()
@@ -511,8 +513,10 @@ class GTV(nn.Module):
         s = self.weight_sigma
 
         # u = opt.u
-        # u = self.cnnu.forward(xf)
-        u=self.uu.forward()
+        if self.opt.legacy:
+             u = self.cnnu.forward(xf)
+        else:
+            u=self.uu.forward()
         u_max = self.opt.u_max
         u_min = self.opt.u_min
         if debug:
