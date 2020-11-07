@@ -137,7 +137,7 @@ class uu(nn.Module):
     def __init__(self):
         super(uu,self).__init__()
         self.u = torch.nn.Parameter(torch.rand(1), requires_grad=True)
-    def forward():
+    def forward(self):
         return self.u
 
 class cnnu(nn.Module):
