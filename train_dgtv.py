@@ -222,13 +222,13 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     torch.save(optimizer.state_dict(), SAVEDIR + str(epoch) + "." + SAVEPATH + "optim")
 
     opt.logger.info("Total running time: {0:.3f}".format(time.time() - tstart))
-    fig, ax = plt.subplots(1, 1, figsize=(12, 5))
+    #fig, ax = plt.subplots(1, 1, figsize=(12, 5))
 
-    cumsum_vec = np.cumsum(np.insert(losshist, 0, 0))
-    window_width = 30
-    ma_vec = (cumsum_vec[window_width:] - cumsum_vec[:-window_width]) / window_width
-    ax.plot(ma_vec)
-    fig.savefig("loss.png")
+    #cumsum_vec = np.cumsum(np.insert(losshist, 0, 0))
+    #window_width = 30
+    #ma_vec = (cumsum_vec[window_width:] - cumsum_vec[:-window_width]) / window_width
+    #ax.plot(ma_vec)
+    #fig.savefig("loss.png")
 
 
 opt = OPT(
@@ -281,6 +281,7 @@ if __name__ == "__main__":
     opt.logger = logger
     logger.info("Train DGTV")
     logger.info(" ".join(sys.argv))
+    pickle.dump(opt, open("opt", "wb"))
     main(
         seed=1,
         model_name=args.model,
