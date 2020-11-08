@@ -292,7 +292,7 @@ if __name__ == "__main__":
         type=int,
     )
     parser.add_argument("-m", "--model")
-    parser.add_argument("--opt", default="opt")
+    parser.add_argument("--opt", default="dopt")
     parser.add_argument("-p", "--image_path")
     parser.add_argument("--stride", default=18, type=int)
     parser.add_argument(
