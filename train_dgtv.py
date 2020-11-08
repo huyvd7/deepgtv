@@ -211,14 +211,14 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 P2 = g(P1, debug=1)
 
             opt.logger.info("\tsave @ epoch {0}".format(epoch + 1))
-            torch.save(gtv.state_dict(), SAVEDIR + str(epoch) + "." + SAVEPATH)
+            torch.save(gtv), SAVEDIR + str(epoch) + "." + SAVEPATH)
             torch.save(
                 optimizer.state_dict(), SAVEDIR + str(epoch) + "." + SAVEPATH + "optim"
             )
 
         # scheduler.step()
         losshist.append(running_loss / (ld * (i + 1)))
-        torch.save(gtv.state_dict(), SAVEDIR + str(epoch) + "." + SAVEPATH)
+        torch.save(gtv), SAVEDIR + str(epoch) + "." + SAVEPATH)
     torch.save(optimizer.state_dict(), SAVEDIR + str(epoch) + "." + SAVEPATH + "optim")
 
     opt.logger.info("Total running time: {0:.3f}".format(time.time() - tstart))
