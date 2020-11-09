@@ -172,7 +172,8 @@ def main_eva(
     device = torch.device("cuda") if cuda else torch.device("cpu")
     #saved_params = torch.load(PATH, map_location=device)
     #gtv.load_state_dict(torch.load(PATH, map_location=device))
-    gtv.load(PATH, map_location=device)
+    #gtv.load(PATH, map_location=device)
+    gtv = torch.load(PATH, map_location=device)
     width = gtv.opt.width
     opt.width = width
     opt=gtv.opt
