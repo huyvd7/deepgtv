@@ -105,7 +105,7 @@ def denoise(
     ds = np.array(dummy).copy()
     d = np.minimum(np.maximum(ds, 0), 255)
     d = d.transpose(1, 2, 0) / 255
-    logger.info("RANGE: {0:.4f} - {1:.4f}".format(d.min(), d.max()))
+    #logger.info("RANGE: {0:.4f} - {1:.4f}".format(d.min(), d.max()))
     if 0:
         opath = args.output
     else:
@@ -221,13 +221,13 @@ def main_eva(
         img2 = cv2.imread(argref)[:, :, : opt.channels]
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
         #logger.info("Original {0:.2f} {1:.2f}".format(cv2.PSNR(img1, img2), score))
-    logger.info("========================")
+    logger.info("==============SUMMARY==============")
     logger.info("MEAN SSIM: {:.2f}".format(np.mean(traineva["ssim"])))
     logger.info(
-        "MEAN PSNR2 (image-based PSNR): {:.2f}".format(np.mean(traineva["psnr2"]))
+        "MEAN PSNR: {:.2f}".format(np.mean(traineva["psnr2"]))
     )
-    logger.info("MEAN MSE (image-based MSE): {:.2f}".format(np.mean(traineva["mse"])))
-    logger.info("========================")
+    logger.info("MEAN MSE: {:.2f}".format(np.mean(traineva["mse"])))
+    logger.info("===================================")
 
     logger.info("EVALUATING TEST SET")
     # testset = ["2", "3", "4", "5", "6"]
@@ -268,13 +268,13 @@ def main_eva(
         img2 = cv2.imread(argref)[:, :, : opt.channels]
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
         #logger.info("Original {0:.2f} {1:.2f}".format(cv2.PSNR(img1, img2), score))
-    logger.info("========================")
+    logger.info("==============SUMMARY==============")
     logger.info("MEAN SSIM: {:.2f}".format(np.mean(testeva["ssim"])))
     logger.info(
-        "MEAN PSNR2 (image-based PSNR): {:.2f}".format(np.mean(testeva["psnr2"]))
+        "MEAN PSNR: {:.2f}".format(np.mean(testeva["psnr2"]))
     )
-    logger.info("MEAN MSE (image-based MSE): {:.2f}".format(np.mean(testeva["mse"])))
-    logger.info("========================")
+    logger.info("MEAN MSE: {:.2f}".format(np.mean(testeva["mse"])))
+    logger.info("===================================")
     return traineva, testeva
 
 
