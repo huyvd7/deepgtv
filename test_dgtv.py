@@ -93,7 +93,9 @@ def denoise(
             dummy[i : (i + MAX_PATCH)] = P
     dummy = dummy.view(oT2s0, -1, opt.channels, opt.width, opt.width)
     dummy = dummy.cpu()
-    logger.info("Prediction time: {0:.2f}".format(time.time() - tstart))
+
+    pred_time = time.time()-tstart
+    #logger.info("Prediction time: {0:.2f}".format(time.time() - tstart))
     if argref:
         # logger.info("PSNR: {:.2f}".format(np.mean(np.array(psnrs))))
         pass
@@ -123,8 +125,10 @@ def denoise(
         #logger.info("PSNR: {:.5f}".format(psnr2))
         (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
         #logger.info("SSIM: {:.5f}".format(score))
-        logger.info(f"PSNR: {psnr2:.5f} - SSIM: {score:.5f}")
-    logger.info("Result saved: {0}".format(opath))
+        logger.info(f"Time: {pred_time:.2f} || PSNR: {psnr2:.3f} || SSIM: {score:.3f} || Saved: {opath}")
+    else:
+        logger.info(f"Time: {pred_time:.2f} || Saved: {opath}")
+
     if argref:
         return (0, score, 0, psnr2, mse, d)  # psnr, ssim, denoised image
     return d
