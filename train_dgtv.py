@@ -117,8 +117,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             labels = data["rimg"][:, : opt.channels, :, :].float().type(dtype)
             # zero the parameter gradients
             print(inputs.max())
-            save_image(inputs.type(torch.int32),f'tmp/inputs_{i}.png', nrow=6)
-            save_image(labels.type(torch.int32),f'tmp/labels_{i}.png', nrow=6)
+            save_image(inputs/255,f'tmp/inputs_{i}.png', nrow=6)
+            save_image(labels/255,f'tmp/labels_{i}.png', nrow=6)
 
             optimizer.zero_grad()
             # forward + backward + optimize
