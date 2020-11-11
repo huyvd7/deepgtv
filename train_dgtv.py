@@ -116,8 +116,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             inputs = data["nimg"][:, : opt.channels, :, :].float().type(dtype)
             labels = data["rimg"][:, : opt.channels, :, :].float().type(dtype)
             # zero the parameter gradients
-            save_image(inputs,f'tmp/inputs_{i}.png', nrow=6)
-            save_image(labels,f'tmp/labels_{i}.png', nrow=6)
+            save_image(inputs.int(),f'tmp/inputs_{i}.png', nrow=6)
+            save_image(labels.int(),f'tmp/labels_{i}.png', nrow=6)
 
             optimizer.zero_grad()
             # forward + backward + optimize
