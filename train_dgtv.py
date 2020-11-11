@@ -7,7 +7,7 @@ import os
 import time
 import torch.nn as nn
 import torchvision.transforms as transforms
-import torchvision.utils.save_image as save_image
+from torchvision.utils import save_image as save_image
 from torch.utils.data import DataLoader
 import torch.optim as optim
 import matplotlib.pyplot as plt
