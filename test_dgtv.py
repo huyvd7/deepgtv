@@ -93,10 +93,7 @@ def denoise(
             dummy[i : (i + MAX_PATCH)] = P
     dummy = dummy.view(oT2s0, -1, opt.channels, opt.width, opt.width)
     dummy = dummy.cpu()
-    if verbose:
-        logger.info("Prediction time: {0}".format(time.time() - tstart))
-    else:
-        logger.info("Prediction time: {0}".format(time.time() - tstart))
+    logger.info("Prediction time: {0:.2f}".format(time.time() - tstart))
     if argref:
         # logger.info("PSNR: {:.2f}".format(np.mean(np.array(psnrs))))
         pass
@@ -108,7 +105,7 @@ def denoise(
     ds = np.array(dummy).copy()
     d = np.minimum(np.maximum(ds, 0), 255)
     d = d.transpose(1, 2, 0) / 255
-    logger.info("RANGE: {0} - {1}".format(d.min(), d.max()))
+    logger.info("RANGE: {0:.4f} - {1:.4f}".format(d.min(), d.max()))
     if 0:
         opath = args.output
     else:
@@ -119,13 +116,14 @@ def denoise(
     plt.imsave(opath, d)
     if argref:
         mse = ((d - (tref / 255.0)) ** 2).mean() * 255
-        logger.info("MSE: {:.5f}".format(mse))
+        #logger.info("MSE: {:.5f}".format(mse))
         d = cv2.imread(opath)
         d = cv2.cvtColor(d, cv2.COLOR_BGR2RGB)
         psnr2 = cv2.PSNR(tref, d)
-        logger.info("PSNR: {:.5f}".format(psnr2))
+        #logger.info("PSNR: {:.5f}".format(psnr2))
         (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
-        logger.info("SSIM: {:.5f}".format(score))
+        #logger.info("SSIM: {:.5f}".format(score))
+        logger.info(f"PSNR: {psnr2:.5f} - SSIM: {score:.5f}")
     logger.info("Saved {0}".format(opath))
     if argref:
         return (0, score, 0, psnr2, mse, d)  # psnr, ssim, denoised image
@@ -194,9 +192,9 @@ def main_eva(
     }
     stride = args.stride
     for t in trainset:
-        logger.info("image #{0}".format(t))
+        logger.info("++++++++++++++++++++++++++++++++")
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
-        logger.info(inp)
+        logger.info(f"image #{t}: {inp}")
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
         _, _ssim, _, _psnr2, _mse, _ = denoise(
             inp,
@@ -222,11 +220,9 @@ def main_eva(
         img1 = cv2.imread(inp)[:, :, : opt.channels]
         img2 = cv2.imread(argref)[:, :, : opt.channels]
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
-        logger.info("Original {0:.2f} {1:.2f}".format(cv2.PSNR(img1, img2), score))
+        #logger.info("Original {0:.2f} {1:.2f}".format(cv2.PSNR(img1, img2), score))
     logger.info("========================")
-    # logger.info("MEAN PSNR: {:.2f}".format(np.mean(traineva["psnr"])))
     logger.info("MEAN SSIM: {:.2f}".format(np.mean(traineva["ssim"])))
-    # logger.info("MEAN SSIM2 (patch-based SSIM): {:.2f}".format(np.mean(traineva["ssim2"])))
     logger.info(
         "MEAN PSNR2 (image-based PSNR): {:.2f}".format(np.mean(traineva["psnr2"]))
     )
@@ -243,9 +239,9 @@ def main_eva(
         "mse": list(),
     }
     for t in testset:
-        logger.info("image #{0}".format(t))
+        logger.info("++++++++++++++++++++++++++++++++")
         inp = "{0}/noisy/{1}{2}.bmp".format(image_path, t, npref)
-        logger.info(inp)
+        logger.info(f"image #{t}: {inp}")
         argref = "{0}/ref/{1}_r.bmp".format(image_path, t)
         _psnr, _ssim, _ssim2, _psnr2, _mse, _ = denoise(
             inp,
@@ -271,11 +267,9 @@ def main_eva(
         img1 = cv2.imread(inp)[:, :, : opt.channels]
         img2 = cv2.imread(argref)[:, :, : opt.channels]
         (score, diff) = compare_ssim(img1, img2, full=True, multichannel=True)
-        logger.info("Original {0:.2f} {1:.2f}".format(cv2.PSNR(img1, img2), score))
+        #logger.info("Original {0:.2f} {1:.2f}".format(cv2.PSNR(img1, img2), score))
     logger.info("========================")
-    # logger.info("MEAN PSNR: {:.2f}".format(np.mean(testeva["psnr"])))
     logger.info("MEAN SSIM: {:.2f}".format(np.mean(testeva["ssim"])))
-    # logger.info("MEAN SSIM2 (patch-based SSIM): {:.2f}".format(np.mean(testeva["ssim2"])))
     logger.info(
         "MEAN PSNR2 (image-based PSNR): {:.2f}".format(np.mean(testeva["psnr2"]))
     )
