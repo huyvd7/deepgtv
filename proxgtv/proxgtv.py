@@ -474,10 +474,8 @@ class GTV(nn.Module):
         self.wt = width
         self.width = width
         if self.opt.ver or 1:
-            opt.logger.info("EXPERIMENTAL CNNF")
             self.cnnf = cnnf_2(opt=self.opt)
         else:
-            opt.logger.info("ORIGINAL CNNF")
             self.cnnf = cnnf(opt=self.opt)
         if self.opt.legacy:
             self.cnnu = cnnu(u_min=u_min, opt=self.opt)
