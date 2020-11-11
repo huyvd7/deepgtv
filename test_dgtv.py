@@ -124,7 +124,7 @@ def denoise(
         (score, diff) = compare_ssim(tref, d, full=True, multichannel=True)
         #logger.info("SSIM: {:.5f}".format(score))
         logger.info(f"PSNR: {psnr2:.5f} - SSIM: {score:.5f}")
-    logger.info("Saved {0}".format(opath))
+    logger.info("Result saved: {0}".format(opath))
     if argref:
         return (0, score, 0, psnr2, mse, d)  # psnr, ssim, denoised image
     return d
