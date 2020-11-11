@@ -53,7 +53,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
         subset=subset,
     )
-    opt.logger.info(dataset.nimg_name[0])
+    opt.logger.info(dataset.nimg_name[0:5], dataset.rimg_name[0:5])
     dataloader = DataLoader(
         dataset,
         batch_size=batch_size,
@@ -283,7 +283,7 @@ if __name__ == "__main__":
     logger.info(" ".join(sys.argv))
     pickle.dump(opt, open("opt", "wb"))
     main(
-        seed=1,
+        seed=args.seed,
         model_name=args.model,
         cont=args.cont,
         epoch=int(args.epoch),
