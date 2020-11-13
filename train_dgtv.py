@@ -145,14 +145,14 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                     P1 = g(inputs, debug=1)
                 if opt.ver:  # experimental version
                     opt.logger.info(
-                        "\tCNNF stats: {0:.5f}".format(
+                        "\tCNNF grads: {0:.5f}".format(
                             g.cnnf.layer[0].weight.grad.median().item()
                         )
                     )
                 else:
                     opt.logger.info(
-                        "\tCNNF stats: {0:.5f}".format(
-                            g.cnnf.layer1[0].weight.grad.mean().item()
+                        "\tCNNF grads: {0:.5f}".format(
+                            g.cnnf.layer1[0].weight.grad.median().item()
                         )
                     )
                 #opt.logger.info(
@@ -191,14 +191,14 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 _ = g(inputs, debug=1)
             if opt.ver:  # experimental version
                 opt.logger.info(
-                    "\tCNNF stats: {0:.5f}".format(
+                    "\tCNNF grads: {0:.5f}".format(
                         g.cnnf.layer[0].weight.grad.median().item()
                     )
                 )
             else:
                 opt.logger.info(
-                    "\tCNNF stats: {0:.5f}".format(
-                        g.cnnf.layer1[0].weight.grad.mean().item()
+                    "\tCNNF grads: {0:.5f}".format(
+                        g.cnnf.layer1[0].weight.grad.median().item()
                     )
                 )
 #            opt.logger.info(
@@ -237,11 +237,11 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 opt = OPT(
     batch_size=50,
     channels=3,
-    u=50,
+    #u=50,
     lr=8e-6,
     momentum=0.9,
-    u_max=65,
-    u_min=50,
+    u_max=1000,
+    u_min=0.0001,
     cuda=True if torch.cuda.is_available() else False,
 )
 if __name__ == "__main__":

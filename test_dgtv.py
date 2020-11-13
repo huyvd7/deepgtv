@@ -172,9 +172,8 @@ def main_eva(
     gtv = DeepGTV(width=36, cuda=cuda, opt=opt)  # just initialize to load the trained model, no need to change
     PATH = model_name
     device = torch.device("cuda") if cuda else torch.device("cpu")
-    #saved_params = torch.load(PATH, map_location=device)
+
     #gtv.load_state_dict(torch.load(PATH, map_location=device))
-    #gtv.load(PATH, map_location=device)
     gtv = torch.load(PATH, map_location=device)
     width = gtv.opt.width
     opt.width = width

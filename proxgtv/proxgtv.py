@@ -401,7 +401,7 @@ class OPT:
         width=36,
         connectivity="8",
         channels=3,
-        u=1,
+        #u=1,
         u_max=100,
         u_min=10,
         lr=1e-4,
@@ -422,7 +422,7 @@ class OPT:
         self.H = None
         self.connectivity = connectivity
         self.channels = channels
-        self.u = u
+        #self.u = u
         self.lr = lr
         self.momentum = momentum
         self.u_max = u_max
@@ -462,8 +462,6 @@ class GTV(nn.Module):
         prox_iter=5,
         u_min=1e-3,
         u_max=1,
-        lambda_min=1e-9,
-        lambda_max=1e9,
         cuda=False,
         opt=None,
     ):
@@ -551,16 +549,8 @@ class GTV(nn.Module):
         # w = torch.exp(-(Fs.sum(axis=1)) / (self.weight_sigma**2))
         w = torch.exp(-(Fs.sum(axis=1)) / (s ** 2))
         if debug:
-            self.logger.info(
-                "\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0:.6f}".format(
-                    w[0, :, :].sum().item()
-                )
-            )
-            self.logger.info(
-                "\tprocessed u: Mean {0:.4f} Median {1:.4f}".format(
-                    u.mean().item(), u.median().item()
-                )
-            )
+            self.logger.info(f"Sample WEIGHT SUM: {w[0, :, :].sum().item():.4f} || Mean Processed u: {u.mean().item():.4f")
+            
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
 
         W = self.base_W.clone()
@@ -937,14 +927,10 @@ class DeepGTV(nn.Module):
         prox_iter=5,
         u_min=1e-3,
         u_max=1,
-        lambda_min=1e-9,
-        lambda_max=1e9,
         cuda=False,
-        opt=None,
-        no=2,
+        opt=None
     ):
         super(DeepGTV, self).__init__()
-        self.no = no
         self.gtv1 = GTV(width=width, u_max=u_max, u_min=u_min, cuda=cuda, opt=opt,)
 
         self.opt = opt
