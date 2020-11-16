@@ -549,7 +549,8 @@ class GTV(nn.Module):
         # w = torch.exp(-(Fs.sum(axis=1)) / (self.weight_sigma**2))
         w = torch.exp(-(Fs.sum(axis=1)) / (s ** 2))
         if debug:
-            self.logger.info(f"Sample WEIGHT SUM: {w[0, :, :].sum().item():.4f} || Mean Processed u: {u.mean().item():.4f")
+            s = f"Sample WEIGHT SUM: {w[0, :, :].sum().item():.4f} || Mean Processed u: {u.mean().item():.4f"
+            self.logger.info(s)
             
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
 
