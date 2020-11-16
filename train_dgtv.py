@@ -72,8 +72,6 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         prox_iter=1,
         u_max=10,
         u_min=0.5,
-        lambda_min=0.5,
-        lambda_max=1e9,
         cuda=cuda,
         opt=opt,
     )
