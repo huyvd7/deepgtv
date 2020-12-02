@@ -39,6 +39,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         subset = [i + "_" for i in _subset]
     else:
         subset = [i + "_" for i in subset]
+
     # dataset = RENOIR_Dataset(
     #     img_dir=os.path.join(opt.train),
     #     transform=transforms.Compose([standardize(normalize=False), ToTensor()]),
@@ -48,6 +49,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     # patch_splitting(
     #     dataset=dataset, output_dst="tmp", patch_size=args.width, stride=args.width / 2
     # )
+
     dataset = RENOIR_Dataset(
         # img_dir=os.path.join("tmp", "patches"),
         img_dir=os.path.join(opt.train),
@@ -55,6 +57,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         subset=subset,
     )
     opt.logger.info(dataset.nimg_name[0])
+
     dataloader = DataLoader(
         dataset,
         batch_size=batch_size,
@@ -86,11 +89,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         opt.logger.info("LOAD PREVIOUS DGTV: {0}".format(cont))
     if cuda:
         gtv.gtv1.cuda()
-        # gtv.gtv2.cuda()
         gtv.cuda()
     criterion = nn.MSELoss()
-    # cnnf_params = list(filter(lambda kv: "cnnu" in kv[0], gtv.named_parameters()))
-    # cnnf_params = [i[1] for i in cnnf_params]
     optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
     if cont:
         try:
@@ -104,19 +104,14 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     tprev = tstart
     opt._print()
     pickle.dump(opt, open("dopt", "wb"))
-    ld = len(dataset)
     ld = 1
     for epoch in range(total_epoch):  # loop over the dataset multiple times
-        # running_loss_inside = 0.0
         running_loss = 0.0
         for i, data in enumerate(dataloader, 0):  # start index at 0
             # get the inputs; data is a list of [inputs, labels]
             inputs = data["nimg"][:, : opt.channels, :, :].float().type(dtype)
             labels = data["rimg"][:, : opt.channels, :, :].float().type(dtype)
             # zero the parameter gradients
-            #save_image(inputs/255,f'tmp/inputs_{i}.png', nrow=6)
-            #save_image(labels/255,f'tmp/labels_{i}.png', nrow=6)
-
             optimizer.zero_grad()
             # forward + backward + optimize
             outputs = gtv(inputs)
@@ -125,15 +120,12 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             torch.nn.utils.clip_grad_norm_(gtv.parameters(), 5e1)
 
             optimizer.step()
-            # optimizer[i%3].step()
             running_loss += loss.item()
 
             if epoch == 0 and (i + 1) % 80 == 0:
                 g = gtv.gtv1
                 with torch.no_grad():
-                    # P1, P2 = gtv(inputs, debug=True)
                     P1, P2  = gtv(inputs, debug=True)
-                    # opt.logger.info("\tLOSS: {0:.8f} {1:.8f}".format( (P1-labels).square().mean().item(), (P2-labels).square().mean().item()))
                     opt.logger.info(
                         "\tLOSS: {0:.8f} {1:.8f} ".format(
                             (P1 - labels).square().mean().item(),
@@ -153,15 +145,6 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                             g.cnnf.layer1[0].weight.grad.median().item()
                         )
                     )
-                #opt.logger.info(
-                #    "\tCNNU grads: {0:.5f}".format(
-                #        g.uu.u.grad.mean().item()
-                #    )
-                #)
-                #with torch.no_grad():
-                #    opt.logger.info(
-                #            f"\t{g.uu.forward().item():.5f}"
-                #        )
                 with torch.no_grad():
                     P2 = g(P1, debug=1)
 
@@ -176,9 +159,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         if ((epoch + 1) % 1 == 0) or (epoch + 1) == total_epoch:
             g = gtv.gtv1
             with torch.no_grad():
-                # P1, P2 = gtv(inputs, debug=True)
                 P1, P2 = gtv(inputs, debug=True)
-                # opt.logger.info("\tLOSS: {0:.8f} {1:.8f}".format( (P1-labels).square().mean().item(), (P2-labels).square().mean().item()))
                 opt.logger.info(
                     "\tLOSS: {0:.8f} {1:.8f} ".format(
                         (P1 - labels).square().mean().item(),
@@ -199,15 +180,6 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                         g.cnnf.layer1[0].weight.grad.median().item()
                     )
                 )
-#            opt.logger.info(
-#                "\tCNNU grads: {0:.5f}".format(
-#                    g.u.grad.mean().item()
-#                )
-#            )
-            #with torch.no_grad():
-            #        opt.logger.info(
-            #                f"\t{g.uu.forward().item():.5f}"
-            #            )
             with torch.no_grad():
                 P2 = g(P1, debug=1)
 
@@ -223,14 +195,6 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     torch.save(optimizer.state_dict(), SAVEDIR + str(epoch) + "." + SAVEPATH + "optim")
 
     opt.logger.info("Total running time: {0:.3f}".format(time.time() - tstart))
-    #fig, ax = plt.subplots(1, 1, figsize=(12, 5))
-
-    #cumsum_vec = np.cumsum(np.insert(losshist, 0, 0))
-    #window_width = 30
-    #ma_vec = (cumsum_vec[window_width:] - cumsum_vec[:-window_width]) / window_width
-    #ax.plot(ma_vec)
-    #fig.savefig("loss.png")
-
 
 opt = OPT(
     batch_size=50,
@@ -247,9 +211,9 @@ if __name__ == "__main__":
 
     parser.add_argument("-m", "--model", default="DGTV.pkl")
     parser.add_argument("-c", "--cont", default=None)
-    parser.add_argument("--batch", default=64, type=int)
-    parser.add_argument("--lr", default=8e-6)
-    parser.add_argument("--epoch", default=200, type=int)
+    parser.add_argument("--batch", default=32, type=int)
+    parser.add_argument("--lr", default=1e-4)
+    parser.add_argument("--epoch", default=50, type=int)
     parser.add_argument("--umax", default=1000, type=float)
     parser.add_argument("--umin", default=0.001, type=float)
     parser.add_argument("--seed", default=0, type=float)
