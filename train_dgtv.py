@@ -31,13 +31,13 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     SAVEPATH = PATH.split(".")[-1]
     SAVEDIR = "".join(PATH.split(".")[:-1]) + "_"
     batch_size = opt.batch_size
-    # _subset = ['10', '1', '3', '5', '9']
-    if not subset:
-        _subset = ["10", "1", "7", "8", "9"]
+
+#    if not subset:
+#        _subset = ["10", "1", "7", "8", "9"]
         # _subset = ["1", "3", "5", "7", "9"]
-        opt.logger.info("Train: {0}".format(_subset))
-        subset = [i + "_" for i in _subset]
-    else:
+#        opt.logger.info("Train: {0}".format(_subset))
+#        subset = [i + "_" for i in _subset]
+    if subset:
         subset = [i + "_" for i in subset]
 
     # dataset = RENOIR_Dataset(
@@ -122,7 +122,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             optimizer.step()
             running_loss += loss.item()
 
-            if epoch == 0 and (i + 1) % 80 == 0:
+            if epoch == 0 and (i + 1) % 80 == 0 and args.first: # for the first epoch, print every 80-th patch if 'first' flag is set
                 g = gtv.gtv1
                 with torch.no_grad():
                     P1, P2  = gtv(inputs, debug=True)
@@ -133,16 +133,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                         )
                     )
                     P1 = g(inputs, debug=1)
-                if opt.ver:  # experimental version
-                    opt.logger.info(
+                opt.logger.info(
                         "\tCNNF grads: {0:.5f}".format(
                             g.cnnf.layer[0].weight.grad.median().item()
-                        )
-                    )
-                else:
-                    opt.logger.info(
-                        "\tCNNF grads: {0:.5f}".format(
-                            g.cnnf.layer1[0].weight.grad.median().item()
                         )
                     )
                 with torch.no_grad():
@@ -168,16 +161,9 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 )
 
                 _ = g(inputs, debug=1)
-            if opt.ver:  # experimental version
-                opt.logger.info(
+            opt.logger.info(
                     "\tCNNF grads: {0:.5f}".format(
                         g.cnnf.layer[0].weight.grad.median().item()
-                    )
-                )
-            else:
-                opt.logger.info(
-                    "\tCNNF grads: {0:.5f}".format(
-                        g.cnnf.layer1[0].weight.grad.median().item()
                     )
                 )
             with torch.no_grad():
@@ -197,14 +183,13 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     opt.logger.info("Total running time: {0:.3f}".format(time.time() - tstart))
 
 opt = OPT(
-    batch_size=50,
+    batch_size=32,
     channels=3,
-    #u=50,
-    lr=8e-6,
+    lr=1e-4,
     momentum=0.9,
     u_max=1000,
     u_min=0.0001,
-    cuda=True if torch.cuda.is_available() else False,
+    cuda=True if torch.cuda.is_available() else False
 )
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -221,6 +206,7 @@ if __name__ == "__main__":
     parser.add_argument("--stack", default=None)
     parser.add_argument("--width", default=36, type=int)
     parser.add_argument("--legacy", default=False, type=bool)
+    parser.add_argument("--first", default=False, type=bool, help='print logs for the first epoch')
 
     args = parser.parse_args()
     model_name = args.model

@@ -125,7 +125,7 @@ class RENOIR_Dataset(Dataset):
         self.rimg_name = [
             i
             for i in self.rimg_name
-            if i.split(".")[-1].lower() in ["jpeg", "jpg", "png", "bmp"]
+            if i.split(".")[-1].lower() in ["jpeg", "jpg", "png", "bmp", "tif"]
         ]
 
         if self.subset:
@@ -148,7 +148,7 @@ class RENOIR_Dataset(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        uid = np.random.randint(0, 8)
+        uid = np.random.randint(0, 8) # augment type
         # uid = 0
         nimg_name = os.path.join(self.npath, self.nimg_name[idx])
         nimg = cv2.imread(nimg_name)
