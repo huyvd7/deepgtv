@@ -205,7 +205,7 @@ if __name__ == "__main__":
     parser.add_argument("--train", default="gauss_batch")
     parser.add_argument("--stack", default=None)
     parser.add_argument("--width", default=36, type=int)
-    parser.add_argument("--legacy", default=False, type=bool)
+    parser.add_argument("--legacy", default=True, type=bool, help='original architecture')
     parser.add_argument("--first", default=False, type=bool, help='print logs for the first epoch')
 
     args = parser.parse_args()
