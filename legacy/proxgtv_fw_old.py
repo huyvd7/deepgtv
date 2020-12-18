@@ -125,7 +125,7 @@ class RENOIR_Dataset(Dataset):
         self.rimg_name = [
             i
             for i in self.rimg_name
-            if i.split(".")[-1].lower() in ["jpeg", "jpg", "png", "bmp", "tif"]
+            if i.split(".")[-1].lower() in ["jpeg", "jpg", "png", "bmp"]
         ]
 
         if self.subset:
@@ -148,7 +148,7 @@ class RENOIR_Dataset(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        uid = np.random.randint(0, 8) # augment type
+        uid = np.random.randint(0, 8)
         # uid = 0
         nimg_name = os.path.join(self.npath, self.nimg_name[idx])
         nimg = cv2.imread(nimg_name)
@@ -464,6 +464,301 @@ class GTV(nn.Module):
             xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width
         )
 
+
+    def forward_old(self, xf, debug=False, manual_debug=False):  # gtvforward
+        s = self.weight_sigma
+        if self.opt.legacy:
+            u = self.cnnu.forward(xf)
+            u = u.unsqueeze(1).unsqueeze(1)
+        else:
+            u=self.uu.forward()
+        u_max = self.opt.u_max
+        u_min = self.opt.u_min
+        if debug:
+            self.u = u.clone()
+        if manual_debug:
+            return_dict = {
+                "Lgamma": list(),
+                "z": list(),
+                "gamma": list(),
+                "x": list(),
+                "W": list(),
+                "Z": list(),
+                "gtv": list(),
+                "w": list(),
+                "f": list(),
+            }
+
+        u = torch.clamp(u, u_min, u_max)
+
+        z = self.opt.H.matmul(xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1))
+
+        ###################
+        E = self.cnnf.forward(xf)
+        if manual_debug:
+            return_dict["f"].append(E)
+        Fs = (
+            self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1))
+            ** 2
+        )
+
+        w = torch.exp(-(Fs.sum(axis=1)) / (s ** 2))
+        if debug:
+            s = f"Sample WEIGHT SUM: {w[0, :, :].sum().item():.4f} || Mean Processed u: {u.mean().item():.4f}"
+            self.logger.info(s)
+            
+        w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
+
+        W = self.base_W.clone()
+        Z = W.clone()
+        W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
+            xf.shape[0], 3, -1
+        )
+        W[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = w.view(
+            xf.shape[0], 3, -1
+        )
+        Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
+            z.view(xf.shape[0], 3, -1)
+        )
+        Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
+            z.view(xf.shape[0], 3, -1)
+        )
+        Z = torch.max(Z, self.support_zmax)
+        L = W / Z
+
+        if manual_debug:
+            return_dict["gamma"].append(L)
+            return_dict["w"].append(w)
+            return_dict["W"].append(W)
+        L1 = L @ self.support_L
+        L = torch.diag_embed(L1.squeeze(-1)) - L
+
+        ########################
+        y = xf.view(xf.shape[0], self.opt.channels, -1, 1)
+        ########################
+
+        xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
+        if manual_debug:
+            return_dict["z"].append(z)
+            return_dict["Z"].append(Z)
+            return_dict["x"].append(xhat)
+            return_dict["Lgamma"].append(L)
+
+        # GLR 2
+        def glr(y, w, u, debug=False, return_dict=None):
+            W = self.base_W.clone()
+            z = self.opt.H.matmul(y)
+            Z = W.clone()
+            W[
+                :, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]
+            ] = w.view(xf.shape[0], 3, -1)
+            W[
+                :, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]
+            ] = w.view(xf.shape[0], 3, -1)
+            Z[
+                :, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]
+            ] = torch.abs(z.view(xf.shape[0], 3, -1))
+            Z[
+                :, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]
+            ] = torch.abs(z.view(xf.shape[0], 3, -1))
+            Z = torch.max(Z, self.support_zmax)
+            L = W / Z
+            if manual_debug:
+                return_dict["gamma"].append(L)
+                return_dict["w"].append(w)
+                return_dict["W"].append(W)
+
+            L1 = L @ self.support_L
+            L = torch.diag_embed(L1.squeeze(-1)) - L
+
+            xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
+
+            if debug:
+                return_dict["z"].append(z)
+                return_dict["Z"].append(Z)
+                return_dict["Lgamma"].append(L)
+                return_dict["x"].append(xhat)
+            return xhat
+
+        if manual_debug:
+            xhat2 = glr(xhat, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat3 = glr(xhat2, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat4 = glr(xhat3, w, u, debug=manual_debug, return_dict=return_dict)
+            return (
+                xhat4.view(
+                    xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
+                ),
+                return_dict,
+            )
+
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+        xhat = glr(xhat, w, u)
+
+        return xhat.view(
+            xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width
+        )
+
+    def forward_approx(self, xf, debug=False, manual_debug=False):  # gtvapprox
+        self.base_W = torch.zeros(
+            xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2
+        ).type(dtype)
+
+        u = self.cnnu.forward(xf)
+        u_max = self.opt.u_max
+        u_min = self.opt.u_min
+        if debug:
+            self.u = u.clone()
+        if manual_debug:
+            return_dict = {
+                "Lgamma": list(),
+                "z": list(),
+                "gamma": list(),
+                "x": list(),
+                "W": list(),
+                "Z": list(),
+                "gtv": list(),
+                "w": list(),
+                "f": list(),
+            }
+
+        u = torch.clamp(u, u_min, u_max)
+        # u = u.unsqueeze(1).unsqueeze(1)
+        u = u.unsqueeze(1)
+
+        z = self.opt.H.matmul(xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1))
+
+        ###################
+        E = self.cnnf.forward(xf)
+        if manual_debug:
+            return_dict["f"].append(E)
+        Fs = (
+            self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1))
+            ** 2
+        )
+        w = torch.exp(-(Fs.sum(axis=1)) / (self.weight_sigma ** 2))
+
+        if manual_debug:
+            # return_dict['gtv'].append((z*w).abs().sum())
+            pass
+        if debug:
+            self.logger.info(
+                "\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0:.6f}".format(
+                    w[0, :, :].sum().item()
+                )
+            )
+            self.logger.info(
+                "\tprocessed u: Mean {0:.4f} Median {1:.4f}".format(
+                    u.mean().item(), u.median().item()
+                )
+            )
+        w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
+
+        W = self.base_W.clone()
+        Z = W.clone()
+        W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
+            xf.shape[0], 3, -1
+        )
+        W[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = w.view(
+            xf.shape[0], 3, -1
+        )
+        Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
+            z.view(xf.shape[0], 3, -1)
+        )
+        Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
+            z.view(xf.shape[0], 3, -1)
+        )
+        Z = torch.max(Z, self.support_zmax)
+        L = W / Z
+
+        if manual_debug:
+            return_dict["gamma"].append(L)
+            return_dict["w"].append(w)
+            return_dict["W"].append(W)
+        L1 = L @ self.support_L
+        L = torch.diag_embed(L1.squeeze(-1)) - L
+
+        ########################
+        # USE CNNY
+        # Y = self.cnny.forward(xf).squeeze(0)
+        # y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+        ####
+        y = xf.view(xf.shape[0], self.opt.channels, -1, 1)
+        ########################
+
+        # xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
+        xhat = self.lanczos_approx(
+            L, self.lanczos_order, self.support_e1, y.squeeze(-1), u
+        )
+
+        if manual_debug:
+            return_dict["z"].append(z)
+            return_dict["Z"].append(Z)
+            return_dict["x"].append(xhat)
+            return_dict["Lgamma"].append(L)
+
+        # GLR 2
+        def glr(y, w, u, debug=False, return_dict=None):
+            W = self.base_W.clone()
+            z = self.opt.H.matmul(y)
+            Z = W.clone()
+            W[
+                :, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]
+            ] = w.view(xf.shape[0], 3, -1)
+            W[
+                :, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]
+            ] = w.view(xf.shape[0], 3, -1)
+            Z[
+                :, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]
+            ] = torch.abs(z.view(xf.shape[0], 3, -1))
+            Z[
+                :, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]
+            ] = torch.abs(z.view(xf.shape[0], 3, -1))
+            Z = torch.max(Z, self.support_zmax)
+            L = W / Z
+            if manual_debug:
+                return_dict["gamma"].append(L)
+                return_dict["w"].append(w)
+                return_dict["W"].append(W)
+
+            L1 = L @ self.support_L
+            L = torch.diag_embed(L1.squeeze(-1)) - L
+
+            # xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
+            xhat = self.lanczos_approx(
+                L, self.lanczos_order, self.support_e1, y.squeeze(-1), u
+            )
+            if debug:
+                return_dict["z"].append(z)
+                return_dict["Z"].append(Z)
+                return_dict["Lgamma"].append(L)
+                return_dict["x"].append(xhat)
+            return xhat
+
+        if manual_debug:
+            xhat2 = glr(xhat, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat3 = glr(xhat2, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat4 = glr(xhat3, w, u, debug=manual_debug, return_dict=return_dict)
+            return (
+                xhat4.view(
+                    xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
+                ),
+                return_dict,
+            )
+
+        xhat2 = glr(xhat, w, u)
+        xhat3 = glr(xhat2, w, u)
+        xhat4 = glr(xhat3, w, u)
+
+        return xhat4.view(
+            xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
+        )
+
     def predict(self, xf, change_dtype=False, new_dtype=False, layers=1):
         if change_dtype:
             self.base_W = torch.zeros(
@@ -486,6 +781,92 @@ class GTV(nn.Module):
         t = torch.inverse(Im + u * L)
 
         return t @ y
+
+    def planczos(self, A, order, x):
+        q = x / torch.norm(x, dim=2, keepdim=True)
+        V = torch.zeros((x.shape[0], x.shape[1], x.shape[2], order), device=self.device)
+        V[:, :, :, 0] = q
+        q = q.unsqueeze(-1)
+        H = torch.zeros((x.shape[0], x.shape[1], order + 1, order), device=self.device)
+        r = A @ q
+        H[:, :, 0, 0] = torch.sum(q * r, axis=[-2, -1])
+
+        r = r - H[:, :, 0, 0].unsqueeze(-1).unsqueeze(-1) * q
+        H[:, :, 1, 0] = torch.norm(r, dim=2).squeeze(-1)
+
+        for k in range(1, order):
+            H[:, :, k - 1, k] = H[:, :, k, k - 1]
+            v = q.clone()
+            q = r / H[:, :, k - 1, k].unsqueeze(-1).unsqueeze(-1)
+
+            V[:, :, :, k] = q.squeeze(-1)
+
+            r = A @ q
+            r = r - H[:, :, 0, 0].unsqueeze(-1).unsqueeze(-1) * v
+
+            H[:, :, k, k] = torch.sum(q * r, axis=[-2, -1])
+
+            r = r - H[:, :, k, k].unsqueeze(-1).unsqueeze(-1) * q
+            r = r - V @ (V.permute(0, 1, 3, 2) @ r)
+            H[:, :, k + 1, k] = torch.norm(r, dim=2).squeeze(-1)
+
+        return V, H[:, :, :order, :order]
+
+    def f(x, u=0.5):
+        return 1 / (1 + u * x)
+
+    def lanczos_approx(self, L, order, e1, dx, u):
+        v, H_M = self.planczos(L, order, dx)
+        H_M_eval, H_M_evec = torch.symeig(H_M, eigenvectors=True)
+        H_M_eval = torch.clamp(H_M_eval, 0, H_M_eval.max().item())
+        fv = H_M_evec @ torch.diag_embed(f(H_M_eval, u)) @ H_M_evec.permute(0, 1, 3, 2)
+        approx = torch.norm(dx, dim=2).unsqueeze(-1).unsqueeze(-1) * v @ fv @ e1
+        return approx
+
+
+def planczos(A, order, x):
+    q = x / torch.norm(x, dim=2, keepdim=True)
+    V = torch.zeros((x.shape[0], x.shape[1], x.shape[2], order), device=dv)
+    V[:, :, :, 0] = q
+    q = q.unsqueeze(-1)
+    H = torch.zeros((x.shape[0], x.shape[1], order + 1, order), device=dv)
+    r = A @ q
+    H[:, :, 0, 0] = torch.sum(q * r, axis=[-2, -1])
+
+    r = r - H[:, :, 0, 0].unsqueeze(-1).unsqueeze(-1) * q
+    H[:, :, 1, 0] = torch.norm(r, dim=2).squeeze(-1)
+
+    for k in range(1, order):
+        H[:, :, k - 1, k] = H[:, :, k, k - 1]
+        v = q.clone()
+        q = r / H[:, :, k - 1, k].unsqueeze(-1).unsqueeze(-1)
+
+        V[:, :, :, k] = q.squeeze(-1)
+
+        r = A @ q
+        r = r - H[:, :, 0, 0].unsqueeze(-1).unsqueeze(-1) * v
+
+        H[:, :, k, k] = torch.sum(q * r, axis=[-2, -1])
+
+        r = r - H[:, :, k, k].unsqueeze(-1).unsqueeze(-1) * q
+        r = r - V @ (V.permute(0, 1, 3, 2) @ r)
+        H[:, :, k + 1, k] = torch.norm(r, dim=2).squeeze(-1)
+
+    return V, H[:, :, :order, :order]
+
+
+def f(x, u=0.5):
+    return 1 / (1 + u * x)
+
+
+def lanczos_approx(L, order, e1, dx, u):
+    v, H_M = planczos(L, order, dx)
+    H_M_eval, H_M_evec = torch.symeig(H_M, eigenvectors=True)
+    H_M_eval[H_M_eval < 0] = 0
+    fv = H_M_evec @ torch.diag_embed(f(H_M_eval, u)) @ H_M_evec.permute(0, 1, 3, 2)
+    approx = torch.norm(dx, dim=2).unsqueeze(-1).unsqueeze(-1) * v @ fv @ e1
+    return approx
+
 
 class DeepGTV(nn.Module):
     """
@@ -548,6 +929,7 @@ def supporting_matrix(opt):
     opt.edges = A_pair.shape[0]
     H_dim0 = opt.edges
     H_dim1 = width ** 2
+    # unique_A_pair = np.unique(np.sort(A_pair, axis=1), axis=0)
 
     I = torch.eye(width ** 2, width ** 2).type(dtype)
     A = torch.zeros(width ** 2, width ** 2).type(dtype)
@@ -556,16 +938,36 @@ def supporting_matrix(opt):
         H[e, p[0]] = 1
         H[e, p[1]] = -1
         A[p[0], p[1]] = 1
+        # A[p[1], p[0]] = 1
 
-    opt.I = I  
+    opt.I = I  # .type(dtype).requires_grad_(True)
     opt.pairs = A_pair
-    opt.H = H 
+    opt.H = H  # .type(dtype).requires_grad_(True)
     opt.connectivity_full = A.requires_grad_(True)
     opt.connectivity_idx = torch.where(A > 0)
 
     for e, p in enumerate(A_pair):
         A[p[1], p[0]] = 1
     opt.logger.info("OPT created on cuda: {0} {1}".format(cuda, dtype))
+
+
+def _norm(x, newmin, newmax):
+    return (x - x.min()) * (newmax - newmin) / (x.max() - x.min() + 1e-8) + newmin
+
+
+def add_noise(image, sigma):
+    from experiment_funcs import get_experiment_noise
+
+    y = np.array(Image.open(imagename)) / 255
+    noise_type = "gw"
+    noise_var = (sigma / 255) ** 2  # Noise variance 25 std
+    seed = 0  # seed for pseudorandom noise realization
+    noise, psd, kernel = get_experiment_noise(noise_type, noise_var, seed, y.shape)
+    z = np.atleast_3d(y) + np.atleast_3d(noise)
+    z_rang = np.minimum(np.maximum(z, 0), 1)
+    noisyimagename = imagepath + "noisy\\" + t + "_g.bmp"
+    plt.imsave(noisyimagename, z_rang)
+
 
 def mkdir(d, remove=True):
     try:
