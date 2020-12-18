@@ -6,13 +6,7 @@ GitHub: [huyvd7/deepgtv](https://github.com/huyvd7/deepgtv)
 <p align="center"><b>Fig.</b> Trained and tested on different noise distributions.</p>
 </p>
 
-# Train
-Train GTV
-```python
-python train_gtv.py --batch 64 --lr 1e-4 -m MODEL_NAME.pkl --epoch 50 --train TRAIN_DATASET --width 36
-```
-
-Train DGTV
+# Train DGTV
 ```python
 python train_dgtv.py --batch 32 --lr 1e-4 -m MODEL_NAME.pkl --epoch 50 --train TRAIN_DATASET --width 36
 ```
@@ -20,13 +14,7 @@ python train_dgtv.py --batch 32 --lr 1e-4 -m MODEL_NAME.pkl --epoch 50 --train T
 Params:
 - width: split images in the dataset to patches of size `width x width`
 
-# Test
-Test GTV
-```python
-python test_gtv.py -width 720 -m MODEL_NAME.pkl --stride 18 -multi 500 -p TEST_DATASET
-```
-
-Test DGTV
+# Test DGTV
 ```python
 python test_dgtv.py -width 720 -m MODEL_NAME.pkl --stride 18 --multi 500 -p TEST_DATASET
 ```
