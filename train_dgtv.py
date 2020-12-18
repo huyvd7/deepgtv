@@ -11,7 +11,7 @@ from torchvision.utils import save_image as save_image
 from torch.utils.data import DataLoader
 import torch.optim as optim
 import matplotlib.pyplot as plt
-from proxgtv.proxgtv import *
+from dgtv.dgtv import *
 import sys
 
 
