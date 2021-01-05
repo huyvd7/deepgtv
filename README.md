@@ -6,9 +6,12 @@ GitHub: [huyvd7/deepgtv](https://github.com/huyvd7/deepgtv)
 <p align="center"><b>Fig.</b> Trained and tested on different noise distributions.</p>
 </p>
 
+# Dataset descriptions
+See [Dataset](https://github.com/huyvd7/deepgtv/blob/master/dataset/README.md)
+
 # Train DGTV
 ```python
-python train_dgtv.py --batch 32 --lr 1e-4 --umin 0.001 --umax 1000 -m model/DGTV.pkl --epoch 50 --train TRAIN_DATASET --width 36 
+python train_dgtv.py --batch 32 --lr 1e-4 --umin 0.001 --umax 1000 -m model/DGTV.pkl --epoch 50 --train TRAINSET_PATH --width 36 
 ```
 
 Note:
@@ -16,7 +19,7 @@ Note:
 
 # Test DGTV
 ```python
-python test_dgtv.py -w 720 -m MODEL_NAME --stride 9 --multi 500 -p TEST_DATASET
+python test_dgtv.py -w 720 -m MODEL_NAME --stride 9 --multi 500 -p TESTSET_PATH
 ```
 
 Note:
