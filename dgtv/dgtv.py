@@ -19,6 +19,45 @@ else:
 dv = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 
+import torch.nn.functional as F
+
+class FNet(nn.Module):
+    def __init__(self):
+        super(FNet, self).__init__()
+        self.base_fs = list()
+        self.create_fs(3)
+        self.alphas1 = torch.nn.Parameter(torch.rand(4, 1, 1, 1), requires_grad=True)
+        
+    def create_fs(self, kernel_size):
+        # 3 filter has 3 channeles
+        f = np.random.normal(size=(4, 3, kernel_size, kernel_size))
+        f = torch.from_numpy(f).float()
+        self.base_fs.append(f)
+        
+        f = np.random.normal(size=(4, 4, kernel_size, kernel_size))
+        f = torch.from_numpy(f).float()
+        self.base_fs.append(f)
+        
+    def combine_f(self, alphas):
+        return self.base_fs[1] * alphas
+    
+    def forward(self, x):
+        out = F.conv2d(input=x, weight=self.base_fs[0], padding=1)
+        out = F.relu(out)
+        print(out[0,0,0,0])
+        
+        f = self.base_fs[1]
+        out = F.conv2d(input=out, weight=self.base_fs[1], padding=1)
+        out = F.relu(out)
+        print(out[0,0,0,0])
+        
+        f = self.combine_f(self.alphas1)
+        out = F.conv2d(input=out, weight=f, padding=1)
+        print(out[0,0,0,0])
+        
+        return out
+
+
 class cnnf_2(nn.Module):
     def __init__(self, opt):
         super(cnnf_2, self).__init__()
