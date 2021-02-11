@@ -141,7 +141,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                         ** 2
                 )
 
-                w = torch.exp(-(Fs.sum(axis=1)) / (s ** 2))
+                w = torch.exp(-(Fs.sum(axis=1)) / (g.weight_sigma ** 2))
                 print(E, Fs, w)
                 
                 #opt.logger.info(
