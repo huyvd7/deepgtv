@@ -136,7 +136,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 opt.logger.info(
                         "\tCNNF grads: {0:.5f}".format(
                             #g.cnnf.layer[0].weight.grad.median().item()
-                            fn.alphas1.grad
+                            g.cnnf.alphas1.grad
                         )
                     )
                 with torch.no_grad():
@@ -165,7 +165,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             opt.logger.info(
                     "\tCNNF grads: {0:.5f}".format(
                         #g.cnnf.layer[0].weight.grad.median().item()
-                        fn.alphas1.grad
+                        g.cnnf.alphas1.grad
                     )
                 )
             with torch.no_grad():
