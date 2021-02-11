@@ -137,7 +137,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 
                 E = g.cnnf(inputs)
                 Fs = (
-                    self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1))
+                    g.opt.H.matmul(E.view(E.shape[0], E.shape[1], g.opt.width ** 2, 1))
                         ** 2
                 )
 
