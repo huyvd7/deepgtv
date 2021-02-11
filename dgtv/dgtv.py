@@ -26,16 +26,16 @@ class FNet(nn.Module):
         super(FNet, self).__init__()
         self.base_fs = list()
         self.create_fs(3)
-        self.alphas1 = torch.nn.Parameter(torch.rand(4, 1, 1, 1), requires_grad=True)
+        self.alphas1 = torch.nn.Parameter(torch.rand(4, 1, 1, 1), requires_grad=True).type(dtype)
         
     def create_fs(self, kernel_size):
         # 3 filter has 3 channeles
         f = np.random.normal(size=(4, 3, kernel_size, kernel_size))
-        f = torch.from_numpy(f).float()
+        f = torch.from_numpy(f).type(dtype)
         self.base_fs.append(f)
         
         f = np.random.normal(size=(4, 4, kernel_size, kernel_size))
-        f = torch.from_numpy(f).float()
+        f = torch.from_numpy(f).type(dtype)
         self.base_fs.append(f)
         
     def combine_f(self, alphas):
