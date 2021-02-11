@@ -133,6 +133,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                         )
                     )
                     P1 = g(inputs, debug=1)
+                P1 = g(inputs, debug=1)
                 opt.logger.info(
                         "\tCNNF grads: {0:.5f}".format(
                             #g.cnnf.layer[0].weight.grad.median().item()
@@ -162,6 +163,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 )
 
                 _ = g(inputs, debug=1)
+            P1 = g(inputs, debug=1)
             opt.logger.info(
                     "\tCNNF grads: {0:.5f}".format(
                         #g.cnnf.layer[0].weight.grad.median().item()
