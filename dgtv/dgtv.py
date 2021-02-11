@@ -378,8 +378,8 @@ class GTV(nn.Module):
         self.logger = opt.logger
         self.wt = width
         self.width = width
-        #self.cnnf = cnnf_2(opt=self.opt)
-        self.cnnf = FNet()
+        self.cnnf = cnnf_2(opt=self.opt)
+        #self.cnnf = FNet()
         if self.opt.legacy:
             self.cnnu = cnnu(u_min=u_min, opt=self.opt)
         else:
