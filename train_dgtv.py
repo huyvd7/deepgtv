@@ -134,7 +134,16 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                     )
                     P1 = g(inputs, debug=1)
                 P1 = g(inputs, debug=1)
-                print(g.cnnf.alphas1)
+
+                E = g.cnnf(inputs)
+                Fs = (
+                    self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1))
+                        ** 2
+                )
+
+                w = torch.exp(-(Fs.sum(axis=1)) / (s ** 2))
+                print(E, Fs, w)
+                
                 #opt.logger.info(
                 #        "\tCNNF grads: {0:.5f}".format(
                 #            #g.cnnf.layer[0].weight.grad.median().item()
@@ -165,7 +174,6 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 
                 _ = g(inputs, debug=1)
 
-            print(g.cnnf.alphas1)
             with torch.no_grad():
                 P2 = g(P1, debug=1)
 
