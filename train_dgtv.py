@@ -134,13 +134,13 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                     )
                     P1 = g(inputs, debug=1)
                 P1 = g(inputs, debug=1)
-                opt.logger.info(
-                        "\tCNNF grads: {0:.5f}".format(
-                            #g.cnnf.layer[0].weight.grad.median().item()
-                            #g.cnnf.alphas1.grad
-                            g.cnnf.alphas1
-                        )
-                    )
+                print(g.cnnf.alphas1)
+                #opt.logger.info(
+                #        "\tCNNF grads: {0:.5f}".format(
+                #            #g.cnnf.layer[0].weight.grad.median().item()
+                #            g.cnnf.alphas1.grad
+                #        )
+                #    )
                 with torch.no_grad():
                     P2 = g(P1, debug=1)
 
@@ -164,13 +164,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 )
 
                 _ = g(inputs, debug=1)
-            P1 = g(inputs, debug=1)
-            opt.logger.info(
-                    "\tCNNF grads: {0:.5f}".format(
-                        #g.cnnf.layer[0].weight.grad.median().item()
-                        g.cnnf.alphas1.grad
-                    )
-                )
+
+            print(g.cnnf.alphas1)
             with torch.no_grad():
                 P2 = g(P1, debug=1)
 
