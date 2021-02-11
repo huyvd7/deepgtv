@@ -44,16 +44,13 @@ class FNet(nn.Module):
     def forward(self, x):
         out = F.conv2d(input=x, weight=self.base_fs[0], padding=1)
         out = F.relu(out)
-        print(out[0,0,0,0])
         
         f = self.base_fs[1]
         out = F.conv2d(input=out, weight=self.base_fs[1], padding=1)
         out = F.relu(out)
-        print(out[0,0,0,0])
         
         f = self.combine_f(self.alphas1)
         out = F.conv2d(input=out, weight=f, padding=1)
-        print(out[0,0,0,0])
         
         return out
 
