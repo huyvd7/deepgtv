@@ -31,11 +31,11 @@ class FNet(nn.Module):
     def create_fs(self, kernel_size):
         # 3 filter has 3 channeles
         f = np.random.normal(size=(4, 3, kernel_size, kernel_size), loc=0.0, scale=0.02)
-        f = torch.from_numpy(f).float()
+        f = torch.from_numpy(f).type(dtype)
         self.base_fs.append(f)
         
         f = np.random.normal(size=(4, 4, kernel_size, kernel_size), loc=0.0, scale=0.02)
-        f = torch.from_numpy(f).float()
+        f = torch.from_numpy(f).type(dtype)
         self.base_fs.append(f)
         
     def combine_f(self, alphas):
