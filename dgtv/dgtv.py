@@ -45,8 +45,8 @@ class FNet(nn.Module):
         out = F.conv2d(input=x, weight=self.base_fs[0], padding=1)
         out = F.relu(out)
         
-        f = self.base_fs[1]
-        out = F.conv2d(input=out, weight=self.base_fs[1], padding=1)
+        f1 = self.base_fs[1]
+        out = F.conv2d(input=out, weight=f1, padding=1)
         out = F.relu(out)
         
         #f = self.combine_f(self.alphas1)
