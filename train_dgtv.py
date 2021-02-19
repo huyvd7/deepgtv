@@ -213,8 +213,9 @@ if __name__ == "__main__":
     parser.add_argument("--train", default="gauss_batch")
     parser.add_argument("--stack", default=None)
     parser.add_argument("--width", default=36, type=int)
-    parser.add_argument("--legacy", default=True, type=bool, help='original architecture')
+    parser.add_argument("--legacy", default=True, type=bool, help='original cnnu architecture')
     parser.add_argument("--first", default=False, type=bool, help='print logs for the first epoch')
+    parser.add_argument("--fnet", default=True, type=bool, help='use fnet')
 
     args = parser.parse_args()
     model_name = args.model
@@ -223,6 +224,7 @@ if __name__ == "__main__":
     opt.u_min = args.umin
     opt.u_max = args.umax
     opt.legacy = args.legacy
+    opt.fnet=args.fnet
     opt.ver = True
     opt.train = args.train
     opt.width = args.width

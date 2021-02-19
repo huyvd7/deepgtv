@@ -30,12 +30,12 @@ class FNet(nn.Module):
         
     def create_fs(self, kernel_size):
         # 3 filter has 3 channeles
-        f = np.random.normal(size=(4, 3, kernel_size, kernel_size))
-        f = torch.from_numpy(f).type(dtype)
+        f = np.random.normal(size=(4, 3, kernel_size, kernel_size), loc=0.0, scale=0.02)
+        f = torch.from_numpy(f).float()
         self.base_fs.append(f)
         
-        f = np.random.normal(size=(4, 4, kernel_size, kernel_size))
-        f = torch.from_numpy(f).type(dtype)
+        f = np.random.normal(size=(4, 4, kernel_size, kernel_size), loc=0.0, scale=0.02)
+        f = torch.from_numpy(f).float()
         self.base_fs.append(f)
         
     def combine_f(self, alphas):
@@ -318,8 +318,10 @@ class OPT:
         train="gauss_batch",
         cuda=False,
         logger=None,
-        legacy=False
+        legacy=False,
+        fnet=True
     ):
+        self.fnet=fnet
         self.batch_size = batch_size
         self.legacy = legacy
         self.width = width
@@ -378,8 +380,11 @@ class GTV(nn.Module):
         self.logger = opt.logger
         self.wt = width
         self.width = width
-        self.cnnf = cnnf_2(opt=self.opt)
-        #self.cnnf = FNet()
+        if opt.fnet:
+            opt.logger.info("Use FNet")
+            self.cnnf = FNet()
+        else:
+            self.cnnf = cnnf_2(opt=self.opt)
         if self.opt.legacy:
             self.cnnu = cnnu(u_min=u_min, opt=self.opt)
         else:
