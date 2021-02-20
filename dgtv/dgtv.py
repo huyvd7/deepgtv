@@ -22,32 +22,48 @@ dv = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 import torch.nn.functional as F
 
 class FNet(nn.Module):
-    def __init__(self):
+    def __init__(self, intermediate_filter_no=32, kernel_size=3):
         super(FNet, self).__init__()
         self.base_fs = list()
-        self.create_fs(3)
-        self.alphas1 = torch.nn.Parameter(torch.rand(4, 1, 1, 1), requires_grad=True).type(dtype)
+        self.intermediate_filter_no = intermediate_filter_no
+        self.kernel_size=kernel_size
+        self.create_fs()
         
-    def create_fs(self, kernel_size):
-        # 3 filter has 3 channeles
-        f = np.random.normal(size=(4, 3, kernel_size, kernel_size), loc=0.0, scale=0.02)
+        # 1 additional layer after first 2 layers
+        self.alphas1 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, 1, 1, 1), requires_grad=True).type(dtype)
+        self.alphas2 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, 1, 1, 1), requires_grad=True).type(dtype)
+        
+    def create_fs(self):
+        # 32 output filters has 3 input channels
+        # first layer
+        # input: RGB (3 channels) images
+        # output: self.intermediate_filter_no channels        
+        f = np.random.normal(size=(self.intermediate_filter_no, 3, self.kernel_size, self.kernel_size), loc=0.0, scale=0.02)
         f = torch.from_numpy(f).type(dtype)
         self.base_fs.append(f)
         
-        f = np.random.normal(size=(4, 4, kernel_size, kernel_size), loc=0.0, scale=0.02)
+        # base intermediate layer
+        # input: self.intermediate_filter_no channels
+        # output: self.intermediate_filter_no channels        
+        f = np.random.normal(size=(self.intermediate_filter_no, self.intermediate_filter_no, self.kernel_size, self.kernel_size), loc=0.0, scale=0.02)
         f = torch.from_numpy(f).type(dtype)
         self.base_fs.append(f)
         
     def forward(self, x):
+        # first layer: convolve RGB -> 32 channels
         out = F.conv2d(input=x, weight=self.base_fs[0], padding=1)
         out = F.relu(out)
+        print(out.shape)
         
-        f1 = self.base_fs[1]
+        # 1st intermediate layer: convolve 32 channels -> 32 channels
+        f1 = self.base_fs[1] * self.alphas1
         out = F.conv2d(input=out, weight=f1, padding=1)
         out = F.relu(out)
+        print(out.shape)
         
-        f = self.base_fs[1] * self.alphas1
-        #self.alphas1.register_hook(lambda grad: print(grad))
+        # 2nd intermediate layer: convolve 32 channels -> 32 channels
+        f = self.base_fs[1] * self.alphas2
+        self.alphas1.register_hook(lambda grad: print(grad))
         out = F.conv2d(input=out, weight=f, padding=1)
         
         return out
