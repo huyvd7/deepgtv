@@ -92,7 +92,11 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         gtv.gtv1.cuda()
         gtv.cuda()
     criterion = nn.MSELoss()
-    optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
+    #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
+    optimizer = optim.SGD([
+        {'params': gtv.gtv1.cnnf.parameters(), 'lr':opt.lr},
+                {'params': gtv.gtv1.cnnu.parameters(), 'lr': opt.lr/100}
+            ], lr=opt.lr, momentum=opt.momentum)
     if cont:
         try:
             optimizer.load_state_dict(torch.load(cont + "optim"))
@@ -135,7 +139,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                     )
                     #P1 = g(inputs, debug=1)
                 P1 = g(inputs, debug=1)
-                print(g.cnnf.alphas1.grad)
+                print(g.cnnf.alphas1.grad, g.cnnf.alphas1.is_leaf)
                 #E = g.cnnf(inputs)
                 #Fs = (
                 #    g.opt.H.matmul(E.view(E.shape[0], E.shape[1], g.opt.width ** 2, 1))
