@@ -212,7 +212,8 @@ if __name__ == "__main__":
     parser.add_argument("--epoch", default=50, type=int)
     parser.add_argument("--umax", default=1000, type=float)
     parser.add_argument("--umin", default=0.001, type=float)
-    parser.add_argument("--seed", default=0, type=float)
+    parser.add_argument("--torchseed", default=0, type=float)
+    parser.add_argument("--npseed", default=0, type=float)
     parser.add_argument("--train", default="gauss_batch")
     parser.add_argument("--stack", default=None)
     parser.add_argument("--width", default=36, type=int)
@@ -233,8 +234,8 @@ if __name__ == "__main__":
     opt.train = args.train
     opt.width = args.width
     opt.depth=args.depth
-    torch.manual_seed(args.seed)
-    np.random.seed(args.seed)
+    torch.manual_seed(args.torchseed)
+    np.random.seed(args.npseed)
     logging.basicConfig(
         filename="log/train_dgtv_{0}.log".format(time.strftime("%Y-%m-%d-%H%M")),
         filemode="a",
