@@ -57,7 +57,6 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         subset=subset,
     )
     device = torch.device("cuda") if cuda else torch.device("cpu")
-    dataset=dataset.to(device)
     opt.logger.info(dataset.nimg_name[0])
 
     dataloader = DataLoader(
