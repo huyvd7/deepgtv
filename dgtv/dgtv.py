@@ -22,7 +22,7 @@ dv = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 import torch.nn.functional as F
 
 class FNet(nn.Module):
-    def __init__(self, intermediate_filter_no=32, kernel_size=3):
+    def __init__(self, intermediate_filter_no=4, kernel_size=3):
         super(FNet, self).__init__()
         self.base_fs = list()
         self.intermediate_filter_no = intermediate_filter_no

@@ -215,6 +215,7 @@ if __name__ == "__main__":
     parser.add_argument("--legacy", default=True, type=bool, help='original cnnu architecture')
     parser.add_argument("--first", default=False, type=bool, help='print logs for the first epoch')
     parser.add_argument("--fnet", default=True, type=bool, help='use fnet')
+    parser.add_argument("--depth", default=4, type=int, help='depth of fnet')
 
     args = parser.parse_args()
     model_name = args.model
@@ -227,6 +228,7 @@ if __name__ == "__main__":
     opt.ver = True
     opt.train = args.train
     opt.width = args.width
+    opt.depth=args.depth
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
     logging.basicConfig(
