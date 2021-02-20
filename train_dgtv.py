@@ -133,7 +133,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                             (P2 - labels).square().mean().item()
                         )
                     )
-                    P1 = g(inputs, debug=1)
+                    #P1 = g(inputs, debug=1)
                 P1 = g(inputs, debug=1)
                 print(g.cnnf.alphas1.grad)
                 #E = g.cnnf(inputs)
