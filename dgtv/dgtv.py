@@ -437,7 +437,7 @@ class GTV(nn.Module):
 
         w = torch.exp(-(Fs.sum(axis=1)) / (s ** 2))
         if debug:
-            s = f"\tSample WEIGHT: SUM: {w[0, :, :].sum().item():.4f}, MIN: {w[0,:,:].min().item():.4f}, MAX: {w[0,:,:].max().item():.4f}, MEAN: {w[0,:,:].mean().item():.4f"
+            s = f"\tSample WEIGHT: SUM: {w[0, :, :].sum().item():.4f}, MIN: {w[0,:,:].min().item():.4f}, MAX: {w[0,:,:].max().item():.4f}, MEAN: {w[0,:,:].mean().item():.4f}"
             s2 = f" || Mean Processed u: {u.mean().item():.4f}"
             s+=s2
             self.logger.info(s)
