@@ -38,9 +38,6 @@ class FNet(nn.Module):
         f = torch.from_numpy(f).type(dtype)
         self.base_fs.append(f)
         
-    def combine_f(self, alphas):
-        return self.base_fs[1] * alphas
-    
     def forward(self, x):
         out = F.conv2d(input=x, weight=self.base_fs[0], padding=1)
         out = F.relu(out)
@@ -49,8 +46,8 @@ class FNet(nn.Module):
         out = F.conv2d(input=out, weight=f1, padding=1)
         out = F.relu(out)
         
-        #f = self.combine_f(self.alphas1)
         f = self.base_fs[1] * self.alphas1
+        #self.alphas1.register_hook(lambda grad: print(grad))
         out = F.conv2d(input=out, weight=f, padding=1)
         
         return out
@@ -440,7 +437,9 @@ class GTV(nn.Module):
 
         w = torch.exp(-(Fs.sum(axis=1)) / (s ** 2))
         if debug:
-            s = f"Sample WEIGHT: SUM: {w[0, :, :].sum().item():.4f}, MIN: {w[0,:,:].min().item():.4f}, MAX: {w[0,:,:].max().item():.4f} || Mean Processed u: {u.mean().item():.4f}"
+            s = f"\tSample WEIGHT: SUM: {w[0, :, :].sum().item():.4f}, MIN: {w[0,:,:].min().item():.4f}, MAX: {w[0,:,:].max().item():.4f}, MEAN: {w[0,:,:].mean().item():.4f"
+            s2 = f" || Mean Processed u: {u.mean().item():.4f}"
+            s+=s2
             self.logger.info(s)
             
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)

@@ -155,10 +155,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 
         tnow = time.time()
         opt.logger.info(
-            "[{0}] \x1b[31mLOSS\x1b[0m: {1:.8f}, time elapsed: {2:.1f} secs, epoch time: {3:.1f} secs".format(
-                epoch + 1, running_loss / (ld * (i + 1)), tnow - tstart, tnow - tprev
+            f"{time.ctime()} [{epoch+1}] \x1b[31mLOSS\x1b[0m: {(running_loss / (ld * (i + 1))):.8f}, time elapsed: {(tnow-tstart):.1f} secs, epoch time: {(tnow-tprev):.1f} secs"
             )
-        )
         tprev = tnow
 
         if ((epoch + 1) % 1 == 0) or (epoch + 1) == total_epoch:
