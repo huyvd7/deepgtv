@@ -53,13 +53,11 @@ class FNet(nn.Module):
         # first layer: convolve RGB -> 32 channels
         out = F.conv2d(input=x, weight=self.base_fs[0], padding=1)
         out = F.relu(out)
-        print(out.shape)
         
         # 1st intermediate layer: convolve 32 channels -> 32 channels
         f1 = self.base_fs[1] * self.alphas1
         out = F.conv2d(input=out, weight=f1, padding=1)
         out = F.relu(out)
-        print(out.shape)
         
         # 2nd intermediate layer: convolve 32 channels -> 32 channels
         f = self.base_fs[1] * self.alphas2
