@@ -228,6 +228,7 @@ if __name__ == "__main__":
     opt.train = args.train
     opt.width = args.width
     torch.manual_seed(args.seed)
+    np.random.seed(args.seed)
     logging.basicConfig(
         filename="log/train_dgtv_{0}.log".format(time.strftime("%Y-%m-%d-%H%M")),
         filemode="a",
