@@ -63,7 +63,7 @@ class FNet(nn.Module):
         
         # 2nd intermediate layer: convolve 32 channels -> 32 channels
         f = self.base_fs[1] * self.alphas2
-        self.alphas1.register_hook(lambda grad: print(grad))
+        #self.alphas1.register_hook(lambda grad: print(grad.mean()))
         out = F.conv2d(input=out, weight=f, padding=1)
         
         return out
