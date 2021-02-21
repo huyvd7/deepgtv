@@ -139,7 +139,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                     )
                     #P1 = g(inputs, debug=1)
                 P1 = g(inputs, debug=1)
-                print(g.cnnf.alphas2.grad, g.cnnf.alphas2.is_leaf)
+                if opt.fnet:
+                    print(g.cnnf.alphas2.grad, g.cnnf.alphas2.is_leaf)
                 #E = g.cnnf(inputs)
                 #Fs = (
                 #    g.opt.H.matmul(E.view(E.shape[0], E.shape[1], g.opt.width ** 2, 1))
@@ -148,13 +149,12 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 
                 #w = torch.exp(-(Fs.sum(axis=1)) / (g.weight_sigma ** 2))
                 #print(E, Fs, w)
-                
-                #opt.logger.info(
-                #        "\tCNNF grads: {0:.5f}".format(
-                #            #g.cnnf.layer[0].weight.grad.median().item()
-                #            g.cnnf.alphas1.grad
-                #        )
-                #    )
+                else: 
+                    opt.logger.info(
+                            "\tCNNF grads: {0:.5f}".format(
+                                g.cnnf.layer[0].weight.grad.median().item()
+                            )
+                        )
                 with torch.no_grad():
                     P2 = g(P1, debug=1)
 
