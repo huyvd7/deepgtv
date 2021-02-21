@@ -402,7 +402,7 @@ class GTV(nn.Module):
         if self.opt.legacy:
             self.cnnu = cnnu(u_min=u_min, opt=self.opt)
         else:
-            self.uu = uu()
+            self.cnnu = uu()
 
         if cuda:
             self.cnnf.cuda()
@@ -435,7 +435,7 @@ class GTV(nn.Module):
             u = self.cnnu.forward(xf)
             u = u.unsqueeze(1).unsqueeze(1)
         else:
-            u=self.uu.forward()
+            u=self.cnnu.forward()
         u_max = self.opt.u_max
         u_min = self.opt.u_min
         if debug:
