@@ -396,7 +396,7 @@ class GTV(nn.Module):
         self.width = width
         if opt.fnet:
             opt.logger.info("Use FNet")
-            self.cnnf = FNet(intermediate_layer_no=opt.depth)
+            self.cnnf = FNet(intermediate_filter_no=opt.depth)
         else:
             self.cnnf = cnnf_2(opt=self.opt)
         if self.opt.legacy:
