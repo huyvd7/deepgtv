@@ -251,7 +251,7 @@ if __name__ == "__main__":
     logger.info(" ".join(sys.argv))
     pickle.dump(opt, open("opt", "wb"))
     main(
-        seed=args.seed,
+        seed=args.torchseed,
         model_name=args.model,
         cont=args.cont,
         epoch=int(args.epoch),
