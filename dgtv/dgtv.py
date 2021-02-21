@@ -55,7 +55,7 @@ class FNet(nn.Module):
         out = F.relu(out)
         
         # 1st intermediate layer: convolve 32 channels -> 32 channels
-        f1 = self.base_fs[1]
+        f1 = self.base_fs[1] * self.alphas1
         out = F.conv2d(input=out, weight=f1, padding=1)
         out = F.relu(out)
         
