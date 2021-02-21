@@ -229,7 +229,8 @@ if __name__ == "__main__":
     opt.u_min = args.umin
     opt.u_max = args.umax
     opt.legacy = args.legacy
-    opt.fnet=args.fnet
+    opt.fnet= args.fnet
+    print("FNET ARG: ", args.fnet)
     opt.ver = True
     opt.train = args.train
     opt.width = args.width
