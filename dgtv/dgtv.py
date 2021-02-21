@@ -358,6 +358,7 @@ class OPT:
         else:
             self.dtype = torch.FloatTensor
         self.logger = logger
+        self.depth=depth
 
     def _print(self):
         self.logger.info(
