@@ -217,9 +217,9 @@ if __name__ == "__main__":
     parser.add_argument("--train", default="gauss_batch")
     parser.add_argument("--stack", default=None)
     parser.add_argument("--width", default=36, type=int)
-    parser.add_argument("--legacy", default=True, type=bool, help='original cnnu architecture')
-    parser.add_argument("--first", default=False, type=bool, help='print logs for the first epoch')
-    parser.add_argument("--fnet", default=True, type=bool, help='use fnet')
+    parser.add_argument("--legacy", default=False, type=lambda x: (str(x).lower() == 'true'), help='original cnnu architecture')
+    parser.add_argument("--first", default=False , type=lambda x: (str(x).lower() == 'true'), help='print logs for the first epoch')
+    parser.add_argument("--fnet", default=False, type=lambda x: (str(x).lower() == 'true'), help='use fnet')
     parser.add_argument("--depth", default=4, type=int, help='depth of fnet')
 
     args = parser.parse_args()
