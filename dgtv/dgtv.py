@@ -32,7 +32,6 @@ class FNet(nn.Module):
         # 1 additional layer after first 2 layers
         self.alphas1 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, 1, 1, 1), requires_grad=True).type(dtype)
         self.alphas2 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, 1, 1, 1), requires_grad=True).type(dtype)
-        self.alphas3 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, 1, 1, 1), requires_grad=True).type(dtype)
         self.alphas4 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, 1, 1, 1), requires_grad=True).type(dtype)
         
     def create_fs(self):
@@ -66,10 +65,6 @@ class FNet(nn.Module):
         out = F.relu(out)
         # 3rd intermediate layer: convolve 32 channels -> 32 channels
         f = self.base_fs[1] * self.alphas3
-        out = F.conv2d(input=out, weight=f1, padding=1)
-        out = F.relu(out)
-        # 4th intermediate layer: convolve 32 channels -> 32 channels
-        f = self.base_fs[1] * self.alphas4
         #self.alphas1.register_hook(lambda grad: print(grad.mean()))
         out = F.conv2d(input=out, weight=f, padding=1)
         
