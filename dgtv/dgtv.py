@@ -32,7 +32,7 @@ class FNet(nn.Module):
         # 1 additional layer after first 2 layers
         self.alphas1 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, 1, 1, 1), requires_grad=True).type(dtype)
         self.alphas2 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, 1, 1, 1), requires_grad=True).type(dtype)
-        self.alphas4 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, 1, 1, 1), requires_grad=True).type(dtype)
+        self.alphas3 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, 1, 1, 1), requires_grad=True).type(dtype)
         
     def create_fs(self):
         # 32 output filters has 3 input channels
