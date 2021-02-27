@@ -30,9 +30,9 @@ class FNet(nn.Module):
         self.create_fs()
         
         # 1 additional layer after first 2 layers
-        self.alphas1 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, 1, 1, 1), requires_grad=True).type(dtype)
-        self.alphas2 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, 1, 1, 1), requires_grad=True).type(dtype)
-        self.alphas3 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, 1, 1, 1), requires_grad=True).type(dtype)
+        self.alphas1 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, self.intermediate_filter_no, 1, 1), requires_grad=True).type(dtype)
+        self.alphas2 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, self.intermediate_filter_no, 1, 1), requires_grad=True).type(dtype)
+        self.alphas3 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, self.intermediate_filter_no, 1, 1), requires_grad=True).type(dtype)
         
     def create_fs(self):
         # 32 output filters has 3 input channels
@@ -47,6 +47,12 @@ class FNet(nn.Module):
         # input: self.intermediate_filter_no channels
         # output: self.intermediate_filter_no channels        
         f = np.random.normal(size=(self.intermediate_filter_no, self.intermediate_filter_no, self.kernel_size, self.kernel_size), loc=0.0, scale=0.02)
+        for i in range(self.intermediate_filter_no):
+            shape0, shape1 = self.kernel_size, self.kernel_size
+            X, Y = np.meshgrid(range(shape0), range(shape1))
+            Do = i+1
+            lowpfilter = np.exp(-((X - (shape1/2)) ** 2 + (Y - (shape0/2)) ** 2) / (2*Do*Do))
+            f[:, i, :, :] = lowpfilter
         f = torch.from_numpy(f).type(dtype)
         self.base_fs.append(f)
         
