@@ -149,12 +149,12 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 
                 #w = torch.exp(-(Fs.sum(axis=1)) / (g.weight_sigma ** 2))
                 #print(E, Fs, w)
-                else: 
-                    opt.logger.info(
-                            "\tCNNF grads: {0:.5f}".format(
-                                g.cnnf.layer[0].weight.grad.median().item()
-                            )
-                        )
+                #else: 
+                #    opt.logger.info(
+                #            "\tCNNF grads: {0:.5f}".format(
+                #                g.cnnf.layer[0].weight.grad.median().item()
+                #            )
+                #        )
                 with torch.no_grad():
                     P2 = g(P1, debug=1)
 
