@@ -53,7 +53,7 @@ class FNet(nn.Module):
             lowpfilter = np.exp(-((X - (shape1/2)) ** 2 + (Y - (shape0/2)) ** 2) / (2*Do*Do))
             f[:, i, :, :] = lowpfilter
         print(lowpfilter)
-        f = torch.from_numpy(f/1e2).type(dtype)
+        f = torch.from_numpy(f/1e1).type(dtype)
         self.base_fs.append(f)
 
     def forward(self, x):
