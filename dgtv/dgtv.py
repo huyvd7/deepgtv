@@ -51,6 +51,8 @@ class FNet(nn.Module):
             X, Y = np.meshgrid(range(shape0), range(shape1))
             Do = i+1
             lowpfilter = np.exp(-((X - (shape1/2)) ** 2 + (Y - (shape0/2)) ** 2) / (2*Do*Do))
+            if i>1:
+                lowpfilter=1-lowpfilter
             f[:, i, :, :] = lowpfilter
         print(lowpfilter)
         f = torch.from_numpy(f/3e2).type(dtype)
