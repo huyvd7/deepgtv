@@ -56,7 +56,7 @@ class FNet(nn.Module):
         print(lowpfilter)
         f = torch.from_numpy(f/1e2).type(dtype)
         self.base_fs.append(f)
-        
+     
     def forward(self, x):
         # first layer: convolve RGB -> 32 channels
         out = F.conv2d(input=x, weight=self.base_fs[0], padding=1)
