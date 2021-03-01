@@ -28,7 +28,6 @@ class FNet(nn.Module):
         self.intermediate_filter_no = intermediate_filter_no
         self.kernel_size=kernel_size
         self.create_fs()
-        
         # 1 additional layer after first 2 layers
 
         self.alphas1 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, self.intermediate_filter_no, self.intermediate_filter_no, 1, 1), requires_grad=True).type(dtype)
@@ -43,7 +42,6 @@ class FNet(nn.Module):
         f = np.random.normal(size=(self.intermediate_filter_no, 3, self.kernel_size, self.kernel_size), loc=0.0, scale=0.02)
         f = torch.from_numpy(f).type(dtype)
         self.base_fs.append(f)
-        
         # base intermediate layer
         # input: self.intermediate_filter_no channels
         # output: self.intermediate_filter_no channels        
@@ -57,25 +55,25 @@ class FNet(nn.Module):
         print(lowpfilter)
         f = torch.from_numpy(f/1e2).type(dtype)
         self.base_fs.append(f)
-     
+
     def forward(self, x):
         # first layer: convolve RGB -> 32 channels
         out = F.conv2d(input=x, weight=self.base_fs[0], padding=1)
         out = F.relu(out)
-        
+
         # 1st intermediate layer: convolve 32 channels -> 32 channels
         f = (self.alphas1*self.base_fs[1]).sum(axis=0)
         out = F.conv2d(input=out, weight=f, padding=1)
         out = F.relu(out)
         # 2nd intermediate layer: convolve 32 channels -> 32 channels
-        f = (self.alphas2, self.base_fs[1]).sum(axis=0)
+        f = (self.alphas2* self.base_fs[1]).sum(axis=0)
         out = F.conv2d(input=out, weight=f, padding=1)
         out = F.relu(out)
         # 3rd intermediate layer: convolve 32 channels -> 32 channels
         f = (self.alphas3*self.base_fs[1]).sum(axis=0)
         #self.alphas1.register_hook(lambda grad: print(grad.mean()))
         out = F.conv2d(input=out, weight=f, padding=1)
-        
+
         return out
 
 
