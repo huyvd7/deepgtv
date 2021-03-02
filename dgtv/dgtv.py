@@ -56,7 +56,7 @@ class FNet(nn.Module):
             lowpfilter = np.fft.ifft2(lowpfilter).real
             f[:, i, :, :] = lowpfilter
         print(lowpfilter)
-        f = torch.from_numpy(f/1e2).type(dtype)
+        f = torch.from_numpy(f/1e3).type(dtype)
         self.base_fs.append(f)
 
     def forward(self, x):
