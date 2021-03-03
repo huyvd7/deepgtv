@@ -51,7 +51,7 @@ class FNet(nn.Module):
             X, Y = np.meshgrid(range(shape0), range(shape1))
             Do = i+1
             lowpfilter = np.exp(-((X - (shape1/2)) ** 2 + (Y - (shape0/2)) ** 2) / (2*Do*Do))
-            if i>1:
+            if i>(self.intermediate_filter_no//2):
                 lowpfilter=1-lowpfilter
             lowpfilter = np.fft.ifft2(lowpfilter).real
             f[:, i, :, :] = lowpfilter
