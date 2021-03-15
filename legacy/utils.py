@@ -237,25 +237,29 @@ def _main(imgw=324, sigma=25, args=None):
     os.makedirs(refp)
     print("Noisy images: ", noisyp)
     print("Ref images: ", refp)
-    for i, data in enumerate(dataloader, 0): 
-        print(data['rn'])
-        inputs = data['nimg'].float().type(dtype).squeeze(0)
-        img = inputs.cpu().detach().numpy().astype(np.uint8)
-        img = img.transpose(1, 2, 0)
-        if noisetype!='gauss':
-            plt.imsave('{0}/{1}_g.bmp'.format(noisyp, testset[i]), img )
-        inputs = data['rimg'].float().type(dtype).squeeze(0)
-        img = inputs.cpu().detach().numpy().astype(np.uint8)
-        img = img.transpose(1, 2, 0)
-        plt.imsave('{0}/{1}_r.bmp'.format(refp, testset[i]), img )
-    if noisetype =='gauss': 
-        bm3d_res = {'psnr':list(), 'mse':list()}
-        for t in ['10', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
-            _psnr, _mse = main(t, sigma=sigma, args=args)
-            bm3d_res['psnr'].append(_psnr)
-            bm3d_res['mse'].append(_mse)
-        print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
 
+    if noisetype=='gauss':
+        for i, data in enumerate(dataloader, 0): 
+            print(data['rn'])
+            inputs = data['nimg'].float().type(dtype).squeeze(0)
+            img = inputs.cpu().detach().numpy().astype(np.uint8)
+            img = img.transpose(1, 2, 0)
+            if noisetype!='gauss':
+                plt.imsave('{0}/{1}_g.bmp'.format(noisyp, testset[i]), img )
+            inputs = data['rimg'].float().type(dtype).squeeze(0)
+            img = inputs.cpu().detach().numpy().astype(np.uint8)
+            img = img.transpose(1, 2, 0)
+            plt.imsave('{0}/{1}_r.bmp'.format(refp, testset[i]), img )
+        if noisetype =='gauss': 
+            bm3d_res = {'psnr':list(), 'mse':list()}
+            for t in ['10', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
+                _psnr, _mse = main(t, sigma=sigma, args=args)
+                bm3d_res['psnr'].append(_psnr)
+                bm3d_res['mse'].append(_mse)
+            print("MEAN BM3D PSNR, MSE:", np.mean(bm3d_res['psnr']), np.mean(bm3d_res['mse']))
+    
+    if noisetype!='gauss':
+        args.path=args.train
     dataset = RENOIR_Dataset2(img_dir=args.path,
                              transform = transforms.Compose([standardize2(),
                                                 ToTensor2()])
