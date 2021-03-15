@@ -1,4 +1,4 @@
-from deepgtv.deepgtv import *
+from dgtv.dgtv import *
 import os
 import argparse
 import numpy as np
