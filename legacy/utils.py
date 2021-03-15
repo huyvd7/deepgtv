@@ -2,6 +2,7 @@ from dgtv.dgtv import *
 import os
 import argparse
 import numpy as np
+import torchvision.transforms as transforms
 from bm3d import bm3d_rgb, BM3DProfile
 from experiment_funcs import get_experiment_noise, get_psnr, get_cropped_psnr
 from PIL import Image
