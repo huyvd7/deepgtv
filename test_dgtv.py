@@ -294,7 +294,7 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--model")
     parser.add_argument("--opt", default="dopt")
     parser.add_argument("-p", "--image_path")
-    parser.add_argument("-noise", default="gauss")
+    parser.add_argument("--noise", default="gauss")
     parser.add_argument("--stride", default=18, type=int)
     parser.add_argument(
         "--multi", default=30, type=int, help="# of patches processed concurrently"
