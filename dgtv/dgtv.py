@@ -535,6 +535,10 @@ class GTV(nn.Module):
         xhat = glr(xhat, w, u)
         xhat = glr(xhat, w, u)
         xhat = glr(xhat, w, u)
+        if manual_debug:
+            return xhat.view(
+                xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width
+            ), rd
         return xhat.view(
             xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width
         )
