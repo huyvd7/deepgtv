@@ -444,6 +444,8 @@ class GTV(nn.Module):
 
     def forward(self, xf, debug=False, manual_debug=False):  # gtvforward
         s = self.weight_sigma
+        if manual_debug:
+            rd = {'Lgamma':list()}
         if self.opt.legacy:
             u = self.cnnu.forward(xf)
             u = u.unsqueeze(1).unsqueeze(1)
@@ -492,7 +494,8 @@ class GTV(nn.Module):
 
         L1 = L @ self.support_L
         L = torch.diag_embed(L1.squeeze(-1)) - L
-
+        if manual_debug:
+            rd['Lgamma'].append(L)
         ########################
         y = xf.view(xf.shape[0], self.opt.channels, -1, 1)
         ########################
@@ -520,7 +523,8 @@ class GTV(nn.Module):
             L = W / Z
             L1 = L @ self.support_L
             L = torch.diag_embed(L1.squeeze(-1)) - L
-
+            if manual_debug:
+                rd['Lgamma'].append(L)
             xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
             return xhat
         xhat = glr(xhat, w, u)
@@ -535,7 +539,7 @@ class GTV(nn.Module):
             xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width
         )
 
-    def predict(self, xf, change_dtype=False, new_dtype=False, layers=1):
+    def predict(self, xf, change_dtype=False, new_dtype=False, layers=1, manual_debug=False):
         if change_dtype:
             self.base_W = torch.zeros(
                 xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2
@@ -546,7 +550,7 @@ class GTV(nn.Module):
             ).type(dtype)
         P = self.forward(xf)
         for i in range(layers - 1):
-            P = self.forward(P)
+            P = self.forward(P, manual_debug=manual_debug)
         return P
 
     def qpsolve(self, L, u, y, Im, channels=3):
