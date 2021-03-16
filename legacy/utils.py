@@ -263,7 +263,7 @@ def _main(imgw=324, sigma=25, args=None):
     if args.noise!='gauss':
         args.path=args.train
         dataset = RENOIR_Dataset2(img_dir=args.path,
-                             transform = transforms.Compose([standardize2(),
+                             transform = transforms.Compose([standardize2(w=imgw),
                                                 ToTensor2()])
                             )
     else:
