@@ -289,8 +289,8 @@ def _main(imgw=324, sigma=25, args=None):
     for i_batch, s in enumerate(dataloader):
         if args.noise!='gauss':
             # save noisy and ref images after resizing
-            plt.imsave(f'{noisyp_o}/{testset[i]}_n.bmp', img )
-            plt.imsave(f'{refp_o}/{testset[i]}_r.bmp', img )
+            plt.imsave(f'{noisyp_o}/{testset[i_batch]}_n.bmp', img )
+            plt.imsave(f'{refp_o}/{testset[i_batch]}_r.bmp', img )
         print(i_batch, s['nimg'].size(),
               s['rimg'].size(), len(s['nimg']), s['nn'], s['rn'])
         T1 = s['nimg'].unfold(2, psize, stride).unfold(3, psize, stride).reshape(1, 3, -1, psize, psize).squeeze()
