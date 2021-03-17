@@ -29,4 +29,4 @@ Note:
 # TODO
 - [ ] Denoise a given single image
 
-<img src=https://profile-counter.glitch.me/huyvd7/count.svg style="display: none" /></div>
+<img src=https://profile-counter.glitch.me/huyvd7/count.svg width=0 /></div>
