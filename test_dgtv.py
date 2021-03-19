@@ -43,14 +43,14 @@ def denoise(
     else:
         sample = cv2.resize(sample, (width, width))
 
-            
-    sample = cv2.cvtColor(sample, cv2.COLOR_BGR2RGB)
-    sample = sample.transpose((2, 0, 1))
-    shape = sample.shape
     if args.save_resize:
         _inp = inp.split('.')[-2]
         print(f'{_inp}_resize.png')
-        plt.imsave(f'{_inp}_resize.png', sample)
+        cv2.imwrite(f'{_inp}_resize.png', sample)
+    sample = cv2.cvtColor(sample, cv2.COLOR_BGR2RGB)
+    sample = sample.transpose((2, 0, 1))
+    shape = sample.shape
+
     if normalize:
         sample = _norm(sample, newmin=0, newmax=1)
     sample = torch.from_numpy(sample)
