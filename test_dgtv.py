@@ -45,8 +45,8 @@ def denoise(
 
     if args.save_resize:
         _inp = inp.split('.')[-2]
-        print(f'{_inp}_resize.png')
-        cv2.imwrite(f'{_inp}_resize.png', sample)
+        #print(f'{_inp}_resize.png')
+        #cv2.imwrite(f'{_inp}_resize.png', sample)
     sample = cv2.cvtColor(sample, cv2.COLOR_BGR2RGB)
     sample = sample.transpose((2, 0, 1))
     shape = sample.shape
