@@ -36,6 +36,7 @@ def denoise(
         from skimage.measure import compare_ssim
     sample = cv2.imread(inp)
     # logger.info(inp)
+    print(inp, end=' ')
     print(sample.shape)
     if width is None:
         width = sample.shape[0]
