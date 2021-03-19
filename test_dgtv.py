@@ -42,6 +42,10 @@ def denoise(
         width = sample.shape[0]
     else:
         sample = cv2.resize(sample, (width, width))
+        if args.save_resize:
+            _inp = inp.split('.')[-1]
+            cv2.imwrite(f'{_inp}_resize.png', image)
+            
     sample = cv2.cvtColor(sample, cv2.COLOR_BGR2RGB)
     sample = sample.transpose((2, 0, 1))
     shape = sample.shape
@@ -301,6 +305,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--multi", default=30, type=int, help="# of patches processed concurrently"
     )
+    parser.add_argument("--save_resize", default=False, type=lambda x: (str(x).lower() == 'true'), help='original cnnu architecture')
 
 
     args = parser.parse_args()
