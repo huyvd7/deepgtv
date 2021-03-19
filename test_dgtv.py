@@ -48,7 +48,7 @@ def denoise(
     sample = sample.transpose((2, 0, 1))
     shape = sample.shape
     if args.save_resize:
-        _inp = inp.split('.')[-1]
+        _inp = inp.split('.')[-2]
         print(f'{_inp}_resize.png')
         plt.imsave(f'{_inp}_resize.png', sample)
     if normalize:
