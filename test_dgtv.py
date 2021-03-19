@@ -44,7 +44,7 @@ def denoise(
         sample = cv2.resize(sample, (width, width))
         if args.save_resize:
             _inp = inp.split('.')[-1]
-            cv2.imwrite(f'{_inp}_resize.png', image)
+            cv2.imwrite(f'{_inp}_resize.png', sample)
             
     sample = cv2.cvtColor(sample, cv2.COLOR_BGR2RGB)
     sample = sample.transpose((2, 0, 1))
