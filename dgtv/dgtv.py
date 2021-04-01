@@ -43,9 +43,9 @@ class FNet(nn.Module):
         self.alphas_first=torch.nn.Parameter(torch.rand(self.intermediate_filter_no, self.intermediate_filter_no, 3, 1, 1)).type(dtype)        
         alphas_list = nn.ParameterList()
         for i in range(self.intermediate_filter_no):
-            alphas=torch.nn.Parameter(torch.rand(self.intermediate_filter_no, self.intermediate_filter_no, self.intermediate_filter_no, 1, 1)).type(dtype)
+            alphas=torch.nn.Parameter(torch.rand(self.intermediate_filter_no, self.intermediate_filter_no, self.intermediate_filter_no, 1, 1))
             alphas_list.append(alphas)
-        self.alphas=alphas_list
+        self.alphas=alphas_list.type(dtype)
     def create_fs(self):        
         A = np.zeros((self.intermediate_filter_no, 3, 3))        
         A_pixel_domain = A.copy()
