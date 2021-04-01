@@ -21,60 +21,82 @@ dv = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 import torch.nn.functional as F
 
+
 class FNet(nn.Module):
     def __init__(self, intermediate_filter_no=4, kernel_size=3):
         super(FNet, self).__init__()
         self.base_fs = list()
         self.intermediate_filter_no = intermediate_filter_no
-        self.kernel_size=kernel_size
-        self.base_fs=None
-        self.layers=list()
+        self.kernel_size = kernel_size
+        self.base_fs = None
+        self.layers = list()
         self.create_fs()
-        self.alphas=list()
-        self.alphas_first=None
+        self.alphas = list()
+        self.alphas_first = None
         self.create_coeffs()
-        
-    
+
     def add_channel_to_filter(self, A, times):
         A_rep = torch.from_numpy(A).unsqueeze(0)
-        A_rep = A_rep.permute([1,0,2,3]).repeat(1,times,1,1)
+        A_rep = A_rep.permute([1, 0, 2, 3]).repeat(1, times, 1, 1)
         return A_rep
-    
+
     def create_coeffs(self):
-        self.alphas_first=torch.nn.Parameter(torch.rand(self.intermediate_filter_no, self.intermediate_filter_no, 3, 1, 1), requires_grad=True).type(dtype)
-        self.alphas=list()
+        self.alphas_first = torch.nn.Parameter(
+            torch.rand(
+                self.intermediate_filter_no, self.intermediate_filter_no, 3, 1, 1
+            ),
+            requires_grad=True,
+        ).type(dtype)
+        self.alphas = list()
         for i in range(self.intermediate_filter_no):
-            alphas=torch.nn.Parameter(torch.rand(self.intermediate_filter_no, self.intermediate_filter_no, self.intermediate_filter_no, 1, 1), requires_grad=True).type(dtype)
+            alphas = torch.nn.Parameter(
+                torch.rand(
+                    self.intermediate_filter_no,
+                    self.intermediate_filter_no,
+                    self.intermediate_filter_no,
+                    1,
+                    1,
+                ),
+                requires_grad=True,
+            ).type(dtype)
             self.alphas.append(alphas)
-        
-    def create_fs(self):        
-        A = np.zeros((self.intermediate_filter_no, 3, 3))        
-        r = (int(np.sqrt(A.shape[0])))
-        band_width=2
+
+    def create_fs(self):
+        A = np.zeros((self.intermediate_filter_no, 3, 3))
+        A_pixel_domain = A.copy()
+        r = int(np.sqrt(A.shape[0]))
+        band_width = 2
         for i in range(r):
             for j in range(r):
-                A[i*r + j, i*band_width : (i*band_width + band_width), j*band_width:(j*band_width) + band_width]=1
+                A[
+                    i * r + j,
+                    i * band_width : (i * band_width + band_width),
+                    j * band_width : (j * band_width) + band_width,
+                ] = 1
         for i, a in enumerate(A):
-            a=np.fft.ifft2(a)
-            A_pixel_domain[i,:,:]=a.real
+            a = np.fft.ifft2(a)
+            A_pixel_domain[i, :, :] = a.real
         self.base_fs = A_pixel_domain
         self.layers.append(self.add_channel_to_filter(A_pixel_domain, 3).type(dtype))
-        self.layers.append(self.add_channel_to_filter(A_pixel_domain, self.intermediate_filter_no).type(dtype))
+        self.layers.append(
+            self.add_channel_to_filter(
+                A_pixel_domain, self.intermediate_filter_no
+            ).type(dtype)
+        )
 
     def forward(self, x):
         # first layer: convolve RGB -> 32 channels
-        i=0
-        f = (self.alphas_first*self.layers[0]).sum(axis=0)
+        i = 0
+        f = (self.alphas_first * self.layers[0]).sum(axis=0)
         out = F.conv2d(input=x, weight=f, padding=1)
         out = F.relu(out)
-        
+
         for i in range(self.intermediate_filter_no):
-            f = (self.alphas[i]*self.layers[1]).sum(axis=0)
+            f = (self.alphas[i] * self.layers[1]).sum(axis=0)
             out = F.conv2d(input=out, weight=f, padding=1)
-            if i<(self.intermediate_filter_no-1):
+            if i < (self.intermediate_filter_no - 1):
                 out = F.relu(out)
         return out
-
 
 
 class cnnf_2(nn.Module):
@@ -100,12 +122,15 @@ class cnnf_2(nn.Module):
         out = self.layer(x)
         return out
 
+
 class uu(nn.Module):
     def __init__(self):
-        super(uu,self).__init__()
+        super(uu, self).__init__()
         self.u = torch.nn.Parameter(torch.rand(1), requires_grad=True)
+
     def forward(self):
         return self.u
+
 
 class cnnu(nn.Module):
     """
@@ -133,7 +158,7 @@ class cnnu(nn.Module):
         self.fc = nn.Sequential(
             nn.Linear(self.linear_input_neurons(), 1 * 1 * 32),
             nn.Linear(1 * 1 * 32, 1),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
     def forward(self, x):
@@ -156,6 +181,7 @@ class cnnu(nn.Module):
             m *= i
 
         return int(m)
+
 
 class RENOIR_Dataset(Dataset):
     """
@@ -206,7 +232,7 @@ class RENOIR_Dataset(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        uid = np.random.randint(0, 8) # augment type
+        uid = np.random.randint(0, 8)  # augment type
         # uid = 0
         nimg_name = os.path.join(self.npath, self.nimg_name[idx])
         nimg = cv2.imread(nimg_name)
@@ -266,10 +292,7 @@ class ToTensor(object):
         nimg, rimg = sample["nimg"], sample["rimg"]
         nimg = nimg.transpose((2, 0, 1))
         rimg = rimg.transpose((2, 0, 1))
-        return {
-            "nimg": torch.from_numpy(nimg), 
-            "rimg": torch.from_numpy(rimg)
-        }
+        return {"nimg": torch.from_numpy(nimg), "rimg": torch.from_numpy(rimg)}
 
 
 def data_aug(img, mode=0):
@@ -325,6 +348,7 @@ def weights_init_normal(m):
     if classname.find("Conv") != -1:
         torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
 
+
 class OPT:
     def __init__(
         self,
@@ -342,9 +366,9 @@ class OPT:
         logger=None,
         legacy=False,
         fnet=True,
-        depth=4
+        depth=4,
     ):
-        self.fnet=fnet
+        self.fnet = fnet
         self.batch_size = batch_size
         self.legacy = legacy
         self.width = width
@@ -368,7 +392,7 @@ class OPT:
         else:
             self.dtype = torch.FloatTensor
         self.logger = logger
-        self.depth=depth
+        self.depth = depth
 
     def _print(self):
         self.logger.info(
@@ -390,13 +414,7 @@ class GTV(nn.Module):
     """
 
     def __init__(
-        self,
-        width=36,
-        prox_iter=5,
-        u_min=1e-3,
-        u_max=1,
-        cuda=False,
-        opt=None,
+        self, width=36, prox_iter=5, u_min=1e-3, u_max=1, cuda=False, opt=None,
     ):
         super(GTV, self).__init__()
 
@@ -442,12 +460,12 @@ class GTV(nn.Module):
     def forward(self, xf, debug=False, manual_debug=False):  # gtvforward
         s = self.weight_sigma
         if manual_debug:
-            rd = {'Lgamma':list()}
+            rd = {"Lgamma": list()}
         if self.opt.legacy:
             u = self.cnnu.forward(xf)
             u = u.unsqueeze(1).unsqueeze(1)
         else:
-            u=self.cnnu.forward()
+            u = self.cnnu.forward()
         u_max = self.opt.u_max
         u_min = self.opt.u_min
         if debug:
@@ -467,9 +485,9 @@ class GTV(nn.Module):
         if debug:
             s = f"\tSample WEIGHT: SUM: {w[0, :, :].sum().item():.4f}, MIN: {w[0,:,:].min().item():.4f}, MAX: {w[0,:,:].max().item():.4f}, MEAN: {w[0,:,:].mean().item():.4f}"
             s2 = f" || Mean Processed u: {u.mean().item():.4f}"
-            s+=s2
+            s += s2
             self.logger.info(s)
-            
+
         w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
 
         W = self.base_W.clone()
@@ -492,7 +510,7 @@ class GTV(nn.Module):
         L1 = L @ self.support_L
         L = torch.diag_embed(L1.squeeze(-1)) - L
         if manual_debug:
-            rd['Lgamma'].append(L)
+            rd["Lgamma"].append(L)
         ########################
         y = xf.view(xf.shape[0], self.opt.channels, -1, 1)
         ########################
@@ -521,9 +539,10 @@ class GTV(nn.Module):
             L1 = L @ self.support_L
             L = torch.diag_embed(L1.squeeze(-1)) - L
             if manual_debug:
-                rd['Lgamma'].append(L)
+                rd["Lgamma"].append(L)
             xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
             return xhat
+
         xhat = glr(xhat, w, u)
         xhat = glr(xhat, w, u)
         xhat = glr(xhat, w, u)
@@ -533,14 +552,19 @@ class GTV(nn.Module):
         xhat = glr(xhat, w, u)
         xhat = glr(xhat, w, u)
         if manual_debug:
-            return xhat.view(
-                xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width
-            ), rd
+            return (
+                xhat.view(
+                    xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width
+                ),
+                rd,
+            )
         return xhat.view(
             xhat.shape[0], self.opt.channels, self.opt.width, self.opt.width
         )
 
-    def predict(self, xf, change_dtype=False, new_dtype=False, layers=1, manual_debug=False):
+    def predict(
+        self, xf, change_dtype=False, new_dtype=False, layers=1, manual_debug=False
+    ):
         if change_dtype:
             self.base_W = torch.zeros(
                 xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2
@@ -563,19 +587,14 @@ class GTV(nn.Module):
 
         return t @ y
 
+
 class DeepGTV(nn.Module):
     """
     Stack GTVs
     """
 
     def __init__(
-        self,
-        width=36,
-        prox_iter=5,
-        u_min=1e-3,
-        u_max=1,
-        cuda=False,
-        opt=None
+        self, width=36, prox_iter=5, u_min=1e-3, u_max=1, cuda=False, opt=None
     ):
         super(DeepGTV, self).__init__()
         self.gtv1 = GTV(width=width, u_max=u_max, u_min=u_min, cuda=cuda, opt=opt,)
@@ -619,7 +638,7 @@ def supporting_matrix(opt):
     pixel_indices = np.reshape(pixel_indices, (width, width))
     A = connected_adjacency(pixel_indices, connect=opt.connectivity)
     A_pair = np.asarray(np.where(A.toarray() == 1)).T
-    #A_pair = np.unique(np.sort(A_pair, axis=1), axis=0)
+    # A_pair = np.unique(np.sort(A_pair, axis=1), axis=0)
 
     opt.edges = A_pair.shape[0]
     H_dim0 = opt.edges
@@ -633,15 +652,16 @@ def supporting_matrix(opt):
         H[e, p[1]] = -1
         A[p[0], p[1]] = 1
 
-    opt.I = I  
+    opt.I = I
     opt.pairs = A_pair
-    opt.H = H 
+    opt.H = H
     opt.connectivity_full = A.requires_grad_(True)
     opt.connectivity_idx = torch.where(A > 0)
 
     for e, p in enumerate(A_pair):
         A[p[1], p[0]] = 1
     opt.logger.info("OPT created on cuda: {0} {1}".format(cuda, dtype))
+
 
 def mkdir(d, remove=True):
     try:
@@ -662,6 +682,7 @@ def patch_splitting(dataset, output_dst, patch_size=36, stride=18):
     dataset: path of full size reference images    
     """
     import matplotlib.pyplot as plt
+
     output_dst_temp = os.path.join(output_dst, "patches")
     output_dst_noisy = os.path.join(output_dst_temp, "noisy")
     output_dst_ref = os.path.join(output_dst_temp, "ref")

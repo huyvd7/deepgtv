@@ -32,11 +32,11 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     SAVEDIR = "".join(PATH.split(".")[:-1]) + "_"
     batch_size = opt.batch_size
 
-#    if not subset:
-#        _subset = ["10", "1", "7", "8", "9"]
-        # _subset = ["1", "3", "5", "7", "9"]
-#        opt.logger.info("Train: {0}".format(_subset))
-#        subset = [i + "_" for i in _subset]
+    #    if not subset:
+    #        _subset = ["10", "1", "7", "8", "9"]
+    # _subset = ["1", "3", "5", "7", "9"]
+    #        opt.logger.info("Train: {0}".format(_subset))
+    #        subset = [i + "_" for i in _subset]
     if subset:
         subset = [i + "_" for i in subset]
 
@@ -72,12 +72,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
     total_epoch = epoch
     opt.logger.info("Dataset: {0}".format(len(dataset)))
     gtv = DeepGTV(
-        width=args.width,
-        prox_iter=1,
-        u_max=10,
-        u_min=0.5,
-        cuda=cuda,
-        opt=opt,
+        width=args.width, prox_iter=1, u_max=10, u_min=0.5, cuda=cuda, opt=opt,
     )
     if args.stack:
         gtv.load(p1=args.stack, p2=args.stack)
@@ -92,11 +87,15 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         gtv.gtv1.cuda()
         gtv.cuda()
     criterion = nn.MSELoss()
-    #optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
-    optimizer = optim.SGD([
-        {'params': gtv.gtv1.cnnf.parameters(), 'lr':opt.lr},
-                {'params': gtv.gtv1.cnnu.parameters(), 'lr': opt.lr/100}
-            ], lr=opt.lr, momentum=opt.momentum)
+    # optimizer = optim.SGD(gtv.parameters(), lr=opt.lr, momentum=opt.momentum)
+    optimizer = optim.SGD(
+        [
+            {"params": gtv.gtv1.cnnf.parameters(), "lr": opt.lr},
+            {"params": gtv.gtv1.cnnu.parameters(), "lr": opt.lr / 100},
+        ],
+        lr=opt.lr,
+        momentum=opt.momentum,
+    )
     if cont:
         try:
             optimizer.load_state_dict(torch.load(cont + "optim"))
@@ -127,29 +126,31 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
             optimizer.step()
             running_loss += loss.item()
 
-            if epoch == 0 and (i + 1) % 80 == 0 and args.first: # for the first epoch, print every 80-th patch if 'first' flag is set
+            if (
+                epoch == 0 and (i + 1) % 80 == 0 and args.first
+            ):  # for the first epoch, print every 80-th patch if 'first' flag is set
                 g = gtv.gtv1
                 with torch.no_grad():
-                    P1, P2  = gtv(inputs, debug=True)
+                    P1, P2 = gtv(inputs, debug=True)
                     opt.logger.info(
                         "\tLOSS: {0:.8f} {1:.8f} ".format(
                             (P1 - labels).square().mean().item(),
-                            (P2 - labels).square().mean().item()
+                            (P2 - labels).square().mean().item(),
                         )
                     )
-                    #P1 = g(inputs, debug=1)
+                    # P1 = g(inputs, debug=1)
                 P1 = g(inputs, debug=1)
-                #if opt.fnet:
+                # if opt.fnet:
                 #    print(g.cnnf.alphas2.grad, g.cnnf.alphas2.is_leaf)
-                #E = g.cnnf(inputs)
-                #Fs = (
+                # E = g.cnnf(inputs)
+                # Fs = (
                 #    g.opt.H.matmul(E.view(E.shape[0], E.shape[1], g.opt.width ** 2, 1))
                 #        ** 2
-                #)
+                # )
 
-                #w = torch.exp(-(Fs.sum(axis=1)) / (g.weight_sigma ** 2))
-                #print(E, Fs, w)
-                #else: 
+                # w = torch.exp(-(Fs.sum(axis=1)) / (g.weight_sigma ** 2))
+                # print(E, Fs, w)
+                # else:
                 #    opt.logger.info(
                 #            "\tCNNF grads: {0:.5f}".format(
                 #                g.cnnf.layer[0].weight.grad.median().item()
@@ -161,7 +162,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
         tnow = time.time()
         opt.logger.info(
             f"{time.ctime()} [{epoch+1}] \x1b[31mLOSS\x1b[0m: {(running_loss / (ld * (i + 1))):.8f}, time elapsed: {(tnow-tstart):.1f} secs, epoch time: {(tnow-tprev):.1f} secs"
-            )
+        )
         tprev = tnow
 
         if ((epoch + 1) % 1 == 0) or (epoch + 1) == total_epoch:
@@ -171,7 +172,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 opt.logger.info(
                     "\tLOSS: {0:.8f} {1:.8f} ".format(
                         (P1 - labels).square().mean().item(),
-                        (P2 - labels).square().mean().item()
+                        (P2 - labels).square().mean().item(),
                     )
                 )
 
@@ -193,6 +194,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
 
     opt.logger.info("Total running time: {0:.3f}".format(time.time() - tstart))
 
+
 opt = OPT(
     batch_size=32,
     channels=3,
@@ -200,7 +202,7 @@ opt = OPT(
     momentum=0.9,
     u_max=1000,
     u_min=0.0001,
-    cuda=True if torch.cuda.is_available() else False
+    cuda=True if torch.cuda.is_available() else False,
 )
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -217,10 +219,25 @@ if __name__ == "__main__":
     parser.add_argument("--train", default="gauss_batch")
     parser.add_argument("--stack", default=None)
     parser.add_argument("--width", default=36, type=int)
-    parser.add_argument("--legacy", default=False, type=lambda x: (str(x).lower() == 'true'), help='original cnnu architecture')
-    parser.add_argument("--first", default=False , type=lambda x: (str(x).lower() == 'true'), help='print logs for the first epoch')
-    parser.add_argument("--fnet", default=False, type=lambda x: (str(x).lower() == 'true'), help='use fnet')
-    parser.add_argument("--depth", default=4, type=int, help='depth of fnet')
+    parser.add_argument(
+        "--legacy",
+        default=False,
+        type=lambda x: (str(x).lower() == "true"),
+        help="original cnnu architecture",
+    )
+    parser.add_argument(
+        "--first",
+        default=False,
+        type=lambda x: (str(x).lower() == "true"),
+        help="print logs for the first epoch",
+    )
+    parser.add_argument(
+        "--fnet",
+        default=False,
+        type=lambda x: (str(x).lower() == "true"),
+        help="use fnet",
+    )
+    parser.add_argument("--depth", default=4, type=int, help="depth of fnet")
 
     args = parser.parse_args()
     model_name = args.model
@@ -229,12 +246,14 @@ if __name__ == "__main__":
     opt.u_min = args.umin
     opt.u_max = args.umax
     opt.legacy = args.legacy
-    opt.fnet= args.fnet
-    print(f"FNET ARG: {args.fnet} - FIRST ARG: {args.first} - LEGACY ARG: {args.legacy}")
+    opt.fnet = args.fnet
+    print(
+        f"FNET ARG: {args.fnet} - FIRST ARG: {args.first} - LEGACY ARG: {args.legacy}"
+    )
     opt.ver = True
     opt.train = args.train
     opt.width = args.width
-    opt.depth=args.depth
+    opt.depth = args.depth
     torch.manual_seed(args.torchseed)
     np.random.seed(args.npseed)
     logging.basicConfig(
