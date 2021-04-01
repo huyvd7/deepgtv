@@ -27,57 +27,54 @@ class FNet(nn.Module):
         self.base_fs = list()
         self.intermediate_filter_no = intermediate_filter_no
         self.kernel_size=kernel_size
+        self.base_fs=None
+        self.layers=list()
         self.create_fs()
-        # 1 additional layer after first 2 layers
-
-        self.alphas1 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, self.intermediate_filter_no, self.intermediate_filter_no, 1, 1), requires_grad=True).type(dtype)
-        self.alphas2 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, self.intermediate_filter_no, self.intermediate_filter_no, 1, 1), requires_grad=True).type(dtype)
-        self.alphas3 = torch.nn.Parameter(torch.rand(self.intermediate_filter_no, self.intermediate_filter_no, self.intermediate_filter_no, 1, 1), requires_grad=True).type(dtype)
-
-    def create_fs(self):
-        # 32 output filters has 3 input channels
-        # first layer
-        # input: RGB (3 channels) images
-        # output: self.intermediate_filter_no channels        
-        f = np.random.normal(size=(self.intermediate_filter_no, 3, self.kernel_size, self.kernel_size), loc=0.0, scale=0.02)
-        f = torch.from_numpy(f).type(dtype)
-        self.base_fs.append(f)
-        # base intermediate layer
-        # input: self.intermediate_filter_no channels
-        # output: self.intermediate_filter_no channels        
-        f = np.random.normal(size=(self.intermediate_filter_no, self.intermediate_filter_no, self.kernel_size, self.kernel_size), loc=0.0, scale=0.02)
+        self.alphas=list()
+        self.alphas_first=None
+        self.create_coeffs()
+        
+    
+    def add_channel_to_filter(self, A, times):
+        A_rep = torch.from_numpy(A).unsqueeze(0)
+        A_rep = A_rep.permute([1,0,2,3]).repeat(1,times,1,1)
+        return A_rep
+    
+    def create_coeffs(self):
+        self.alphas_first=torch.nn.Parameter(torch.rand(self.intermediate_filter_no, self.intermediate_filter_no, 3, 1, 1), requires_grad=True).type(dtype)
+        self.alphas=list()
         for i in range(self.intermediate_filter_no):
-            shape0, shape1 = self.kernel_size, self.kernel_size
-            X, Y = np.meshgrid(range(shape0), range(shape1))
-            Do = i+1
-            lowpfilter = np.exp(-((X - (shape1/2)) ** 2 + (Y - (shape0/2)) ** 2) / (2*Do*Do))
-            if i>(self.intermediate_filter_no//2):
-                lowpfilter=1-lowpfilter
-            lowpfilter = np.fft.ifft2(lowpfilter).real
-            f[:, i, :, :] = lowpfilter
-        print(lowpfilter)
-        f = torch.from_numpy(f/10).type(dtype)
-        self.base_fs.append(f)
+            alphas=torch.nn.Parameter(torch.rand(self.intermediate_filter_no, self.intermediate_filter_no, self.intermediate_filter_no, 1, 1), requires_grad=True).type(dtype)
+            self.alphas.append(alphas)
+        
+    def create_fs(self):        
+        A = np.zeros((self.intermediate_filter_no, 3, 3))        
+        r = (int(np.sqrt(A.shape[0])))
+        band_width=2
+        for i in range(r):
+            for j in range(r):
+                A[i*r + j, i*band_width : (i*band_width + band_width), j*band_width:(j*band_width) + band_width]=1
+        for i, a in enumerate(A):
+            a=np.fft.ifft2(a)
+            A_pixel_domain[i,:,:]=a.real
+        self.base_fs = A_pixel_domain
+        self.layers.append(self.add_channel_to_filter(A_pixel_domain, 3).type(dtype))
+        self.layers.append(self.add_channel_to_filter(A_pixel_domain, self.intermediate_filter_no).type(dtype))
 
     def forward(self, x):
         # first layer: convolve RGB -> 32 channels
-        out = F.conv2d(input=x, weight=self.base_fs[0], padding=1)
+        i=0
+        f = (self.alphas_first*self.layers[0]).sum(axis=0)
+        out = F.conv2d(input=x, weight=f, padding=1)
         out = F.relu(out)
-
-        # 1st intermediate layer: convolve 32 channels -> 32 channels
-        f = (self.alphas1*self.base_fs[1]).sum(axis=0)
-        out = F.conv2d(input=out, weight=f, padding=1)
-        out = F.relu(out)
-        # 2nd intermediate layer: convolve 32 channels -> 32 channels
-        f = (self.alphas2* self.base_fs[1]).sum(axis=0)
-        out = F.conv2d(input=out, weight=f, padding=1)
-        out = F.relu(out)
-        # 3rd intermediate layer: convolve 32 channels -> 32 channels
-        f = (self.alphas3*self.base_fs[1]).sum(axis=0)
-        #self.alphas1.register_hook(lambda grad: print(grad.mean()))
-        out = F.conv2d(input=out, weight=f, padding=1)
-
+        
+        for i in range(self.intermediate_filter_no):
+            f = (self.alphas[i]*self.layers[1]).sum(axis=0)
+            out = F.conv2d(input=out, weight=f, padding=1)
+            if i<(self.intermediate_filter_no-1):
+                out = F.relu(out)
         return out
+
 
 
 class cnnf_2(nn.Module):
