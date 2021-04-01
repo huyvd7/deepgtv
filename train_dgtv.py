@@ -143,7 +143,7 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                 if opt.fnet:
                     print(g.cnnf.alphas_first[0, 0, 0])
                     print(g.cnnf.alphas_first.grad, g.cnnf.alphas_first.is_leaf)
-                    print(g.cnnf.alphas.grad, g.cnnf.alphas.is_leaf)
+                    print(g.cnnf.alphas[0].grad, g.cnnf.alphas[0].is_leaf)
                 # E = g.cnnf(inputs)
                 # Fs = (
                 #    g.opt.H.matmul(E.view(E.shape[0], E.shape[1], g.opt.width ** 2, 1))
