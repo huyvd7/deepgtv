@@ -70,22 +70,22 @@ class FNet(nn.Module):
         out = F.relu(out)
  
         i=0
-        f = (self.alphas[i]*self.layer0).sum(axis=0)
+        f = (self.alphas[i]*self.layer1).sum(axis=0)
         out = F.conv2d(input=out, weight=f, padding=1)
         out = F.relu(out)
 
         i=1
-        f = (self.alphas[i]*self.layer0).sum(axis=0)
+        f = (self.alphas[i]*self.layer1).sum(axis=0)
         out = F.conv2d(input=out, weight=f, padding=1)
         out = F.relu(out)
 
         i=2
-        f = (self.alphas[i]*self.layer0).sum(axis=0)
+        f = (self.alphas[i]*self.layer1).sum(axis=0)
         out = F.conv2d(input=out, weight=f, padding=1)
         out = F.relu(out)
 
         i=3
-        f = (self.alphas[i]*self.layer0).sum(axis=0)
+        f = (self.alphas[i]*self.layer1).sum(axis=0)
         out = F.conv2d(input=out, weight=f, padding=1)
         
         return out
