@@ -7,10 +7,10 @@ import os
 import time
 import torch.nn as nn
 import torchvision.transforms as transforms
-from torchvision.utils import save_image as save_image
+# from torchvision.utils import save_image as save_image
 from torch.utils.data import DataLoader
 import torch.optim as optim
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from dgtv.dgtv import *
 import sys
 
@@ -140,8 +140,8 @@ def main(seed, model_name, cont=None, optim_name=None, subset=None, epoch=100):
                     )
                     # P1 = g(inputs, debug=1)
                 P1 = g(inputs, debug=1)
-                # if opt.fnet:
-                #    print(g.cnnf.alphas2.grad, g.cnnf.alphas2.is_leaf)
+                if opt.fnet:
+                   print(g.cnnf.alphas2.grad, g.cnnf.alphas2.is_leaf)
                 # E = g.cnnf(inputs)
                 # Fs = (
                 #    g.opt.H.matmul(E.view(E.shape[0], E.shape[1], g.opt.width ** 2, 1))
