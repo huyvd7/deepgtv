@@ -48,6 +48,7 @@ class FNet(nn.Module):
         self.alphas=alphas_list
     def create_fs(self):        
         A = np.zeros((self.intermediate_filter_no, 3, 3))        
+        A_pixel_domain = A.copy()
         r = (int(np.sqrt(A.shape[0])))
         band_width=2
         for i in range(r):
