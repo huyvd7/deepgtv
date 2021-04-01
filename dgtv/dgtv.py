@@ -27,77 +27,54 @@ class FNet(nn.Module):
         super(FNet, self).__init__()
         self.base_fs = list()
         self.intermediate_filter_no = intermediate_filter_no
-        self.kernel_size = kernel_size
-        self.base_fs = None
-        self.layers = list()
+        self.kernel_size=kernel_size
+        self.base_fs=None
+        self.layers=list()
         self.create_fs()
-        self.alphas = list()
-        self.alphas_first = None
         self.create_coeffs()
-
+        
+    
     def add_channel_to_filter(self, A, times):
         A_rep = torch.from_numpy(A).unsqueeze(0)
-        A_rep = A_rep.permute([1, 0, 2, 3]).repeat(1, times, 1, 1)
+        A_rep = A_rep.permute([1,0,2,3]).repeat(1,times,1,1)
         return A_rep
-
+    
     def create_coeffs(self):
-        self.alphas_first = torch.nn.Parameter(
-            torch.rand(
-                self.intermediate_filter_no, self.intermediate_filter_no, 3, 1, 1
-            ),
-            requires_grad=True,
-        ).type(dtype)
-        self.alphas = list()
+        self.alphas_first=torch.nn.Parameter(torch.rand(self.intermediate_filter_no, self.intermediate_filter_no, 3, 1, 1)).type(dtype)        
+        alphas_list = nn.ParameterList()
         for i in range(self.intermediate_filter_no):
-            alphas = torch.nn.Parameter(
-                torch.rand(
-                    self.intermediate_filter_no,
-                    self.intermediate_filter_no,
-                    self.intermediate_filter_no,
-                    1,
-                    1,
-                ),
-                requires_grad=True,
-            ).type(dtype)
-            self.alphas.append(alphas)
-
-    def create_fs(self):
-        A = np.zeros((self.intermediate_filter_no, 3, 3))
-        A_pixel_domain = A.copy()
-        r = int(np.sqrt(A.shape[0]))
-        band_width = 2
+            alphas=torch.nn.Parameter(torch.rand(self.intermediate_filter_no, self.intermediate_filter_no, self.intermediate_filter_no, 1, 1)).type(dtype)
+            alphas_list.append(alphas)
+        self.alphas=alphas_list
+    def create_fs(self):        
+        A = np.zeros((self.intermediate_filter_no, 3, 3))        
+        r = (int(np.sqrt(A.shape[0])))
+        band_width=2
         for i in range(r):
             for j in range(r):
-                A[
-                    i * r + j,
-                    i * band_width : (i * band_width + band_width),
-                    j * band_width : (j * band_width) + band_width,
-                ] = 1
+                A[i*r + j, i*band_width : (i*band_width + band_width), j*band_width:(j*band_width) + band_width]=1
         for i, a in enumerate(A):
-            a = np.fft.ifft2(a)
-            A_pixel_domain[i, :, :] = a.real
+            a=np.fft.ifft2(a)
+            A_pixel_domain[i,:,:]=a.real
         self.base_fs = A_pixel_domain
-        self.layers.append(self.add_channel_to_filter(A_pixel_domain, 3).type(dtype))
-        self.layers.append(
-            self.add_channel_to_filter(
-                A_pixel_domain, self.intermediate_filter_no
-            ).type(dtype)
-        )
-
+        self.layer0 = (self.add_channel_to_filter(A_pixel_domain, 3).type(dtype))
+        self.layer1 = (self.add_channel_to_filter(A_pixel_domain, self.intermediate_filter_no).type(dtype))
+        
+        
     def forward(self, x):
         # first layer: convolve RGB -> 32 channels
-        i = 0
-        f = (self.alphas_first * self.layers[0]).sum(axis=0)
+        i=0
+        f = (self.alphas_first*self.layer0).sum(axis=0)
         out = F.conv2d(input=x, weight=f, padding=1)
         out = F.relu(out)
-
+        
         for i in range(self.intermediate_filter_no):
-            f = (self.alphas[i] * self.layers[1]).sum(axis=0)
+            f = (self.alphas[i]*self.layer1).sum(axis=0)
             out = F.conv2d(input=out, weight=f, padding=1)
-            if i < (self.intermediate_filter_no - 1):
+            if i<(self.intermediate_filter_no-1):
                 out = F.relu(out)
+        
         return out
-
 
 class cnnf_2(nn.Module):
     def __init__(self, opt):
