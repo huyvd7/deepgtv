@@ -486,6 +486,216 @@ class GTV(nn.Module):
         t = torch.inverse(Im + u * L)
 
         return t @ y
+    
+    def forward_approx(self, xf, debug=False, manual_debug=False):  # gtvapprox
+        self.base_W = torch.zeros(
+            xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2
+        ).type(dtype)
+
+        u = self.cnnu.forward(xf)
+        u_max = self.opt.u_max
+        u_min = self.opt.u_min
+        if debug:
+            self.u = u.clone()
+        if manual_debug:
+            return_dict = {
+                "Lgamma": list(),
+                "z": list(),
+                "gamma": list(),
+                "x": list(),
+                "W": list(),
+                "Z": list(),
+                "gtv": list(),
+                "w": list(),
+                "f": list(),
+            }
+
+        u = torch.clamp(u, u_min, u_max)
+        # u = u.unsqueeze(1).unsqueeze(1)
+        u = u.unsqueeze(1)
+
+        z = self.opt.H.matmul(xf.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1))
+
+        ###################
+        E = self.cnnf.forward(xf)
+        if manual_debug:
+            return_dict["f"].append(E)
+        Fs = (
+            self.opt.H.matmul(E.view(E.shape[0], E.shape[1], self.opt.width ** 2, 1))
+            ** 2
+        )
+        w = torch.exp(-(Fs.sum(axis=1)) / (self.weight_sigma ** 2))
+
+        if manual_debug:
+            # return_dict['gtv'].append((z*w).abs().sum())
+            pass
+        if debug:
+            self.logger.info(
+                "\t\x1b[31mWEIGHT SUM (1 sample)\x1b[0m {0:.6f}".format(
+                    w[0, :, :].sum().item()
+                )
+            )
+            self.logger.info(
+                "\tprocessed u: Mean {0:.4f} Median {1:.4f}".format(
+                    u.mean().item(), u.median().item()
+                )
+            )
+        w = w.unsqueeze(1).repeat(1, self.opt.channels, 1, 1)
+
+        W = self.base_W.clone()
+        Z = W.clone()
+        W[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = w.view(
+            xf.shape[0], 3, -1
+        )
+        W[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = w.view(
+            xf.shape[0], 3, -1
+        )
+        Z[:, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]] = torch.abs(
+            z.view(xf.shape[0], 3, -1)
+        )
+        Z[:, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]] = torch.abs(
+            z.view(xf.shape[0], 3, -1)
+        )
+        Z = torch.max(Z, self.support_zmax)
+        L = W / Z
+
+        if manual_debug:
+            return_dict["gamma"].append(L)
+            return_dict["w"].append(w)
+            return_dict["W"].append(W)
+        L1 = L @ self.support_L
+        L = torch.diag_embed(L1.squeeze(-1)) - L
+
+        ########################
+        # USE CNNY
+        # Y = self.cnny.forward(xf).squeeze(0)
+        # y = Y.view(xf.shape[0], xf.shape[1], self.opt.width ** 2, 1)#.requires_grad_(True)
+        ####
+        y = xf.view(xf.shape[0], self.opt.channels, -1, 1)
+        ########################
+
+        # xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
+        xhat = self.lanczos_approx(
+            L, self.lanczos_order, self.support_e1, y.squeeze(-1), u
+        )
+
+        if manual_debug:
+            return_dict["z"].append(z)
+            return_dict["Z"].append(Z)
+            return_dict["x"].append(xhat)
+            return_dict["Lgamma"].append(L)
+
+        # GLR 2
+        def glr(y, w, u, debug=False, return_dict=None):
+            W = self.base_W.clone()
+            z = self.opt.H.matmul(y)
+            Z = W.clone()
+            W[
+                :, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]
+            ] = w.view(xf.shape[0], 3, -1)
+            W[
+                :, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]
+            ] = w.view(xf.shape[0], 3, -1)
+            Z[
+                :, :, self.opt.connectivity_idx[0], self.opt.connectivity_idx[1]
+            ] = torch.abs(z.view(xf.shape[0], 3, -1))
+            Z[
+                :, :, self.opt.connectivity_idx[1], self.opt.connectivity_idx[0]
+            ] = torch.abs(z.view(xf.shape[0], 3, -1))
+            Z = torch.max(Z, self.support_zmax)
+            L = W / Z
+            if manual_debug:
+                return_dict["gamma"].append(L)
+                return_dict["w"].append(w)
+                return_dict["W"].append(W)
+
+            L1 = L @ self.support_L
+            L = torch.diag_embed(L1.squeeze(-1)) - L
+
+            # xhat = self.qpsolve(L, u, y, self.support_identity, self.opt.channels)
+            xhat = self.lanczos_approx(
+                L, self.lanczos_order, self.support_e1, y.squeeze(-1), u
+            )
+            if debug:
+                return_dict["z"].append(z)
+                return_dict["Z"].append(Z)
+                return_dict["Lgamma"].append(L)
+                return_dict["x"].append(xhat)
+            return xhat
+
+        if manual_debug:
+            xhat2 = glr(xhat, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat3 = glr(xhat2, w, u, debug=manual_debug, return_dict=return_dict)
+            xhat4 = glr(xhat3, w, u, debug=manual_debug, return_dict=return_dict)
+            return (
+                xhat4.view(
+                    xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
+                ),
+                return_dict,
+            )
+
+        xhat2 = glr(xhat, w, u)
+        xhat3 = glr(xhat2, w, u)
+        xhat4 = glr(xhat3, w, u)
+
+        return xhat4.view(
+            xhat4.shape[0], self.opt.channels, self.opt.width, self.opt.width
+        )
+
+    def lanczos_approx(self, L, order, e1, dx, u):
+        v, H_M = self.planczos(L, order, dx)
+        H_M_eval, H_M_evec = torch.symeig(H_M, eigenvectors=True)
+        H_M_eval = torch.clamp(H_M_eval, 0, H_M_eval.max().item())
+        fv = H_M_evec @ torch.diag_embed(f(H_M_eval, u)) @ H_M_evec.permute(0, 1, 3, 2)
+        approx = torch.norm(dx, dim=2).unsqueeze(-1).unsqueeze(-1) * v @ fv @ e1
+        return approx
+
+    def planczos(self, A, order, x):
+        q = x / torch.norm(x, dim=2, keepdim=True)
+        V = torch.zeros((x.shape[0], x.shape[1], x.shape[2], order), device=self.device)
+        V[:, :, :, 0] = q
+        q = q.unsqueeze(-1)
+        H = torch.zeros((x.shape[0], x.shape[1], order + 1, order), device=self.device)
+        r = A @ q
+        H[:, :, 0, 0] = torch.sum(q * r, axis=[-2, -1])
+
+        r = r - H[:, :, 0, 0].unsqueeze(-1).unsqueeze(-1) * q
+        H[:, :, 1, 0] = torch.norm(r, dim=2).squeeze(-1)
+
+        for k in range(1, order):
+            H[:, :, k - 1, k] = H[:, :, k, k - 1]
+            v = q.clone()
+            q = r / H[:, :, k - 1, k].unsqueeze(-1).unsqueeze(-1)
+
+            V[:, :, :, k] = q.squeeze(-1)
+
+            r = A @ q
+            r = r - H[:, :, 0, 0].unsqueeze(-1).unsqueeze(-1) * v
+
+            H[:, :, k, k] = torch.sum(q * r, axis=[-2, -1])
+
+            r = r - H[:, :, k, k].unsqueeze(-1).unsqueeze(-1) * q
+            r = r - V @ (V.permute(0, 1, 3, 2) @ r)
+            H[:, :, k + 1, k] = torch.norm(r, dim=2).squeeze(-1)
+
+        return V, H[:, :, :order, :order]
+
+    def f(x, u=0.5):
+        return 1 / (1 + u * x)
+
+    def lancz_predict(self, xf, change_dtype=False, new_dtype=False, layers=1):
+        if change_dtype:
+            self.base_W = torch.zeros(
+                xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2
+            ).type(new_dtype)
+        else:
+            self.base_W = torch.zeros(
+                xf.shape[0], self.opt.channels, self.opt.width ** 2, self.opt.width ** 2
+            ).type(dtype)
+        P = self.forward_approx(xf)
+        for i in range(layers - 1):
+            P = self.forward_approx(P)
+        return P
 
 class DeepGTV(nn.Module):
     """
@@ -522,6 +732,16 @@ class DeepGTV(nn.Module):
         P = self.gtv1.predict(P)
 
         return P
+
+    def lancz_predict():
+        if self.cuda:
+            sample.cuda()
+        P = self.gtv1.lancz_predict(sample)
+        P = self.gtv1.lancz_predict(P)
+
+        return P
+
+
 
     def forward(self, sample, debug=False):
         if not debug:
