@@ -697,6 +697,9 @@ class GTV(nn.Module):
             P = self.forward_approx(P)
         return P
 
+def f(x, u=0.5):
+    return 1 / (1 + u * x)
+
 class DeepGTV(nn.Module):
     """
     Stack GTVs
