@@ -16,7 +16,7 @@ model.support_e1 = torch.zeros(model.lanczos_order, 1).type(model.dtype)
 model.support_e1[0] = 1
 ```
 
-Here is a sample runtime benchmark:
+Here is a sample runtime benchmark when Lanczos order is `20`:
 ```python
 %timeit gtv.gtv1.forward(inputs) # Inverse matrix
 # 6.99 s ± 165 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
